@@ -1,0 +1,75 @@
+# Example test matrix (coarse pass). Copy, edit, then:
+#   hfbench sheet runs/my-matrix.toml
+#
+# Values marked TBD are open questions in docs/test-protocol.md.
+
+[campaign]
+name = "coarse01"            # becomes the run-ID prefix and the campaign directory name
+stage = "coarse"             # coarse | targeted | impairment | pilot
+replicates = 3
+snr_db = [30, 20, 10, 5, 0]  # in the 2500 Hz reference bandwidth
+order = "blocked-random"     # blocked by modem, randomised within each block
+order_seed = 20261110
+abort_minutes = 30
+abort_retries = 3
+
+# Targeted passes: override the SNR list per profile to refine around each knee.
+# [campaign.snr_by_profile]
+# Moderate = [12, 10, 8, 6]
+
+[payload]
+# Regenerate exactly with: hfbench payload make payloads/payload-20k.bin --bytes 20000 --seed 1
+file = "payload-20k.bin"
+bytes = 20000                # TBD: final payload size and message count
+sha256 = "6746bb57c0b14feb72784f4d9bacd640d5cc1c20e02f1348c1b4f405c81dc64c"
+
+[channel]
+seed_mode = "fixed"          # fixed | per-replicate | none (if IONOS has no seed control)
+seed = 1
+
+[[modems]]
+name = "VARA HF"
+version = "TBD"
+bandwidth_hz = 2300
+
+[[modems]]
+name = "ARDOP"
+version = "TBD"
+bandwidth_hz = 2000
+
+[[modems]]
+name = "Data2G"
+version = "TBD"
+# bandwidth_hz = TBD
+
+# Two-path Watterson figures. Verify against ITU-R F.1487 and the IONOS presets
+# before the first real run (see docs/test-protocol.md).
+[[profiles]]
+name = "AWGN"
+delay_ms = 0
+doppler_hz = 0
+
+[[profiles]]
+name = "Good"
+delay_ms = 0.5
+doppler_hz = 0.1
+
+[[profiles]]
+name = "Moderate"
+delay_ms = 1.0
+doppler_hz = 0.5
+
+[[profiles]]
+name = "Poor"
+delay_ms = 2.0
+doppler_hz = 1.0
+
+[[profiles]]
+name = "Flutter"
+delay_ms = 0.5
+doppler_hz = 10.0
+
+# Impairments are crossed with everything above, so keep the coarse pass at
+# "none" and put impairments in their own, smaller matrix.
+[[impairments]]
+name = "none"

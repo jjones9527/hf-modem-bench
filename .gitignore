@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+build/
+dist/
+
+# Real Winlink logs and campaign data can contain callsigns, grids and subjects.
+# Commit only redacted fixtures (tests/fixtures/) and the example matrix.
+logs/
+runs/*/
+!runs/example-matrix.toml
+reports/*
+!reports/.gitkeep
+payloads/*
+!payloads/.gitkeep
