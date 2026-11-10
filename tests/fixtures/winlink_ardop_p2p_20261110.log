@@ -1,0 +1,209 @@
+﻿2026/11/10 16:59:02 1.8.6.0 Installing new Standard Forms files into C:\RMS Express\Templates\
+2026/11/10 16:59:02 1.8.6.0 Successfully reported Winlink Express version number (1.8.6.0)
+2026/11/10 17:02:54 1.8.6.0 RMS Channels.dat file does not exist.  Extracted channels from default channels file.  Success = True
+2026/11/10 17:03:03 1.8.6.0 *** Ardop P2P *** Failure to open Command Port 8200 to Ardop TNC at 127.0.0.1Check and make sure port is unused.
+2026/11/10 17:04:20 1.8.6.0 *** Ardop P2P *** ARDOP peer-to-peer session
+2026/11/10 17:04:20 1.8.6.0 *** Ardop P2P *** No radio has been selected.
+2026/11/10 17:04:20 1.8.6.0 *** Ardop P2P *** Waiting for TNC to initialize...
+2026/11/10 17:04:20 1.8.6.0 *** Ardop P2P *** FAULT PLAYBACK DEVICE SETUP, DEVICE  NOT FOUND IN WINDOWS ENUMERATED PLAYBACK DEVICES
+2026/11/10 17:04:28 1.8.6.0 *** Ardop P2P *** Ready to start calling.
+2026/11/10 17:04:46 1.8.6.0 *** Ardop P2P *** ARDOP peer-to-peer session
+2026/11/10 17:04:46 1.8.6.0 *** Ardop P2P *** No radio has been selected.
+2026/11/10 17:04:46 1.8.6.0 *** Ardop P2P *** Waiting for TNC to initialize...
+2026/11/10 17:04:46 1.8.6.0 *** Ardop P2P *** FAULT PLAYBACK DEVICE SETUP, DEVICE  NOT FOUND IN WINDOWS ENUMERATED PLAYBACK DEVICES
+2026/11/10 17:04:54 1.8.6.0 *** Ardop P2P *** Ready to start calling.
+2026/11/10 17:07:00 1.8.6.0 *** Ardop P2P *** ARDOP peer-to-peer session
+2026/11/10 17:07:00 1.8.6.0 *** Ardop P2P *** No radio has been selected.
+2026/11/10 17:07:00 1.8.6.0 *** Ardop P2P *** Waiting for TNC to initialize...
+2026/11/10 17:07:08 1.8.6.0 *** Ardop P2P *** Ready to start calling.
+2026/11/10 17:18:36 1.8.6.0 *** Ardop P2P *** Calling N0BBB
+2026/11/10 17:18:43 1.8.6.0 
+2026/11/10 17:18:43 1.8.6.0 *** Ardop P2P *** Connected to Peer: N0BBB @ 2026/11/10 17:18:43  USB Dial: 7098.500
+2026/11/10 17:18:52 1.8.6.0 *** Ardop P2P ;FW: N0BBB
+2026/11/10 17:18:52 1.8.6.0 *** Ardop P2P [RMS Express-1.8.6.0-B2FHM$]
+2026/11/10 17:18:52 1.8.6.0 *** Ardop P2P N0AAA DE N0BBB >
+2026/11/10 17:18:52 1.8.6.0 *** Ardop P2P    ;FW: N0AAA
+2026/11/10 17:18:52 1.8.6.0 *** Ardop P2P    [RMS Express-1.8.6.0-B2FHM$]
+2026/11/10 17:18:52 1.8.6.0 *** Ardop P2P    ; N0BBB DE N0AAA (AA00AA)
+2026/11/10 17:18:52 1.8.6.0 *** Ardop P2P    FF
+2026/11/10 17:19:06 1.8.6.0 *** Ardop P2P FQ
+2026/11/10 17:19:06 1.8.6.0 *** Ardop P2P *** --- End of session with N0BBB at 2026/11/10 17:19:06 ---
+2026/11/10 17:19:06 1.8.6.0 *** Ardop P2P *** Messages sent: 0.  Total bytes sent: 0,  Time: 00:23,  bytes/minute: 0
+2026/11/10 17:19:06 1.8.6.0 *** Ardop P2P *** Messages Received: 0.  Total bytes received: 0,  Total session time: 00:23,  bytes/minute: 0
+2026/11/10 17:19:09 1.8.6.0 *** Ardop P2P *** Disconnected from Peer: N0BBB @ 2026/11/10 17:19:09
+2026/11/10 17:19:09 1.8.6.0 *** Ardop P2P *** Session: 0.4 min;  Avg Throughput: 0 Bytes/min;   1 Min Peak Throughput: 0 Bytes/min
+2026/11/10 17:19:36 1.8.6.0 
+2026/11/10 17:19:36 1.8.6.0 *** Ardop P2P *** Connected to Peer: N0BBB @ 2026/11/10 17:19:36  USB Dial: 7098.500
+2026/11/10 17:19:38 1.8.6.0 *** Ardop P2P    ;FW: N0AAA
+2026/11/10 17:19:38 1.8.6.0 *** Ardop P2P    [RMS Express-1.8.6.0-B2FHM$]
+2026/11/10 17:19:38 1.8.6.0 *** Ardop P2P    N0BBB DE N0AAA >
+2026/11/10 17:19:53 1.8.6.0 *** Ardop P2P ;FW: N0BBB
+2026/11/10 17:19:53 1.8.6.0 *** Ardop P2P [RMS Express-1.8.6.0-B2FHM$]
+2026/11/10 17:19:53 1.8.6.0 *** Ardop P2P ; N0AAA DE N0BBB (AA00AA)
+2026/11/10 17:19:53 1.8.6.0 *** Ardop P2P FF
+2026/11/10 17:19:53 1.8.6.0 *** Ardop P2P    FQ
+2026/11/10 17:19:57 1.8.6.0 *** Ardop P2P *** --- End of session with N0BBB at 2026/11/10 17:19:57 ---
+2026/11/10 17:19:57 1.8.6.0 *** Ardop P2P *** Messages sent: 0.  Total bytes sent: 0,  Time: 00:20,  bytes/minute: 0
+2026/11/10 17:19:57 1.8.6.0 *** Ardop P2P *** Messages Received: 0.  Total bytes received: 0,  Total session time: 00:20,  bytes/minute: 0
+2026/11/10 17:19:57 1.8.6.0 *** Ardop P2P *** Disconnecting
+2026/11/10 17:20:03 1.8.6.0 *** Ardop P2P *** Disconnected from Peer: N0BBB @ 2026/11/10 17:20:03
+2026/11/10 17:20:03 1.8.6.0 *** Ardop P2P *** Session: 0.5 min;  Avg Throughput: 0 Bytes/min;   1 Min Peak Throughput: 0 Bytes/min
+2026/11/10 17:23:08 1.8.6.0 *** Message BNKQ5S5H6YQX posted to Outbox
+2026/11/10 17:24:04 1.8.6.0 *** Message IYNCRCASTUY3 posted to Outbox
+2026/11/10 17:24:06 1.8.6.0 *** Message IYNCRCASTUY3 has been viewed
+2026/11/10 17:24:43 1.8.6.0 
+2026/11/10 17:24:43 1.8.6.0 *** Ardop P2P *** Connected to Peer: N0BBB @ 2026/11/10 17:24:43  USB Dial: 7098.500
+2026/11/10 17:24:45 1.8.6.0 *** Ardop P2P    ;FW: N0AAA
+2026/11/10 17:24:45 1.8.6.0 *** Ardop P2P    [RMS Express-1.8.6.0-B2FHM$]
+2026/11/10 17:24:45 1.8.6.0 *** Ardop P2P    N0BBB DE N0AAA >
+2026/11/10 17:25:00 1.8.6.0 *** Ardop P2P ;FW: N0BBB
+2026/11/10 17:25:00 1.8.6.0 *** Ardop P2P [RMS Express-1.8.6.0-B2FHM$]
+2026/11/10 17:25:00 1.8.6.0 *** Ardop P2P ; N0AAA DE N0BBB (AA00AA)
+2026/11/10 17:25:00 1.8.6.0 *** Ardop P2P FF
+2026/11/10 17:25:00 1.8.6.0 *** Ardop P2P    ;PM: N0BBB IYNCRCASTUY3 42205 N0AAA test payload
+2026/11/10 17:25:00 1.8.6.0 *** Ardop P2P    FC EM IYNCRCASTUY3 51433 42205 0
+2026/11/10 17:25:00 1.8.6.0 *** Ardop P2P    F> 7A
+2026/11/10 17:25:14 1.8.6.0 *** Ardop P2P FS Y
+2026/11/10 17:25:14 1.8.6.0 *** Ardop P2P *** Sending IYNCRCASTUY3.
+2026/11/10 17:29:30 1.8.6.0 *** Ardop P2P FF
+2026/11/10 17:29:30 1.8.6.0 *** Message IYNCRCASTUY3 moved from Outbox to Sent Items
+2026/11/10 17:29:30 1.8.6.0 *** Ardop P2P *** Completed send of message IYNCRCASTUY3
+2026/11/10 17:29:30 1.8.6.0 *** Ardop P2P *** Sent 1 message.  Bytes: 42559,  Time: 04:15,  bytes/minute: 9985
+2026/11/10 17:29:30 1.8.6.0 *** Ardop P2P    FQ
+2026/11/10 17:29:32 1.8.6.0 *** Logging to CMS P2P message IYNCRCASTUY3
+2026/11/10 17:29:34 1.8.6.0 *** Ardop P2P *** --- End of session with N0BBB at 2026/11/10 17:29:34 ---
+2026/11/10 17:29:34 1.8.6.0 *** Ardop P2P *** Messages sent: 1.  Total bytes sent: 42559,  Time: 04:50,  bytes/minute: 8783
+2026/11/10 17:29:34 1.8.6.0 *** Ardop P2P *** Messages Received: 0.  Total bytes received: 0,  Total session time: 04:50,  bytes/minute: 0
+2026/11/10 17:29:34 1.8.6.0 *** Ardop P2P *** Disconnecting
+2026/11/10 17:29:40 1.8.6.0 *** Ardop P2P *** Disconnected from Peer: N0BBB @ 2026/11/10 17:29:40
+2026/11/10 17:29:40 1.8.6.0 *** Ardop P2P *** Session: 5.0 min;  Avg Throughput: 8652 Bytes/min;   1 Min Peak Throughput: 8652 Bytes/min
+2026/11/10 17:30:20 1.8.6.0 
+2026/11/10 17:30:20 1.8.6.0 *** Ardop P2P *** Connected to Peer: N0BBB @ 2026/11/10 17:30:20  USB Dial: 7098.500
+2026/11/10 17:30:22 1.8.6.0 *** Ardop P2P    ;FW: N0AAA
+2026/11/10 17:30:22 1.8.6.0 *** Ardop P2P    [RMS Express-1.8.6.0-B2FHM$]
+2026/11/10 17:30:22 1.8.6.0 *** Ardop P2P    N0BBB DE N0AAA >
+2026/11/10 17:30:37 1.8.6.0 *** Ardop P2P ;FW: N0BBB
+2026/11/10 17:30:37 1.8.6.0 *** Ardop P2P [RMS Express-1.8.6.0-B2FHM$]
+2026/11/10 17:30:37 1.8.6.0 *** Ardop P2P ; N0AAA DE N0BBB (AA00AA)
+2026/11/10 17:30:37 1.8.6.0 *** Ardop P2P FF
+2026/11/10 17:30:37 1.8.6.0 *** Ardop P2P    FQ
+2026/11/10 17:30:41 1.8.6.0 *** Ardop P2P *** --- End of session with N0BBB at 2026/11/10 17:30:41 ---
+2026/11/10 17:30:41 1.8.6.0 *** Ardop P2P *** Messages sent: 0.  Total bytes sent: 0,  Time: 00:20,  bytes/minute: 0
+2026/11/10 17:30:41 1.8.6.0 *** Ardop P2P *** Messages Received: 0.  Total bytes received: 0,  Total session time: 00:20,  bytes/minute: 0
+2026/11/10 17:30:41 1.8.6.0 *** Ardop P2P *** Disconnecting
+2026/11/10 17:30:48 1.8.6.0 *** Ardop P2P *** Disconnected from Peer: N0BBB @ 2026/11/10 17:30:48
+2026/11/10 17:30:48 1.8.6.0 *** Ardop P2P *** Session: 0.5 min;  Avg Throughput: 0 Bytes/min;   1 Min Peak Throughput: 0 Bytes/min
+2026/11/10 17:31:24 1.8.6.0 
+2026/11/10 17:31:24 1.8.6.0 *** Ardop P2P *** Connected to Peer: N0BBB @ 2026/11/10 17:31:24  USB Dial: 7098.500
+2026/11/10 17:31:26 1.8.6.0 *** Ardop P2P    ;FW: N0AAA
+2026/11/10 17:31:26 1.8.6.0 *** Ardop P2P    [RMS Express-1.8.6.0-B2FHM$]
+2026/11/10 17:31:26 1.8.6.0 *** Ardop P2P    N0BBB DE N0AAA >
+2026/11/10 17:31:41 1.8.6.0 *** Ardop P2P ;FW: N0BBB
+2026/11/10 17:31:41 1.8.6.0 *** Ardop P2P [RMS Express-1.8.6.0-B2FHM$]
+2026/11/10 17:31:41 1.8.6.0 *** Ardop P2P ; N0AAA DE N0BBB (AA00AA)
+2026/11/10 17:31:41 1.8.6.0 *** Ardop P2P ;PM: N0AAA PLYBTHW27AG9 42206 N0BBB test payload
+2026/11/10 17:31:46 1.8.6.0 *** Ardop P2P FC EM PLYBTHW27AG9 51433 42206 0
+2026/11/10 17:31:46 1.8.6.0 *** Ardop P2P F> B6
+2026/11/10 17:31:46 1.8.6.0 *** Ardop P2P    FS Y
+2026/11/10 17:32:03 1.8.6.0 *** Ardop P2P *** Receiving PLYBTHW27AG9
+2026/11/10 17:35:55 1.8.6.0 *** Stored unauthenticated P2P message PLYBTHW27AG9 without performing automatic system or form-data actions.
+2026/11/10 17:35:55 1.8.6.0 *** Message PLYBTHW27AG9 posted to InBox
+2026/11/10 17:35:55 1.8.6.0 *** Ardop P2P *** PLYBTHW27AG9 - 51433/42206 bytes received
+2026/11/10 17:35:55 1.8.6.0 *** Ardop P2P *** Bytes: 42560,  Time: 03:51,  bytes/minute: 11018
+2026/11/10 17:35:55 1.8.6.0 *** Ardop P2P    FF
+2026/11/10 17:35:58 1.8.6.0 *** Logging to CMS P2P message PLYBTHW27AG9
+2026/11/10 17:36:09 1.8.6.0 *** Ardop P2P FQ
+2026/11/10 17:36:09 1.8.6.0 *** Ardop P2P *** --- End of session with N0BBB at 2026/11/10 17:36:09 ---
+2026/11/10 17:36:09 1.8.6.0 *** Ardop P2P *** Messages sent: 0.  Total bytes sent: 0,  Time: 04:44,  bytes/minute: 0
+2026/11/10 17:36:09 1.8.6.0 *** Ardop P2P *** Messages Received: 1.  Total bytes received: 42560,  Total session time: 04:44,  bytes/minute: 8967
+2026/11/10 17:36:12 1.8.6.0 *** Ardop P2P *** Disconnected from Peer: N0BBB @ 2026/11/10 17:36:12
+2026/11/10 17:36:12 1.8.6.0 *** Ardop P2P *** Session: 4.8 min;  Avg Throughput: 8830 Bytes/min;   1 Min Peak Throughput: 8830 Bytes/min
+2026/11/10 17:44:15 1.8.6.0 *** Message V8VCK0HNF0XO posted to Outbox
+2026/11/10 17:44:17 1.8.6.0 *** Message V8VCK0HNF0XO has been viewed
+2026/11/10 17:44:49 1.8.6.0 *** Message 8NM9TJ8L9L68 posted to Outbox
+2026/11/10 17:45:21 1.8.6.0 *** Message VFWD5OS02JX5 posted to Outbox
+2026/11/10 17:45:50 1.8.6.0 *** Message QTOVU1YQY0UP posted to Outbox
+2026/11/10 17:49:28 1.8.6.0 
+2026/11/10 17:49:28 1.8.6.0 *** Ardop P2P *** Connected to Peer: N0BBB @ 2026/11/10 17:49:28  USB Dial: 7098.500
+2026/11/10 17:49:29 1.8.6.0 *** Ardop P2P    ;FW: N0AAA
+2026/11/10 17:49:30 1.8.6.0 *** Ardop P2P    [RMS Express-1.8.6.0-B2FHM$]
+2026/11/10 17:49:30 1.8.6.0 *** Ardop P2P    N0BBB DE N0AAA >
+2026/11/10 17:49:47 1.8.6.0 *** Ardop P2P ;FW: N0BBB
+2026/11/10 17:49:47 1.8.6.0 *** Ardop P2P [RMS Express-1.8.6.0-B2FHM$]
+2026/11/10 17:49:47 1.8.6.0 *** Ardop P2P ; N0AAA DE N0BBB (AA00AA)
+2026/11/10 17:49:47 1.8.6.0 *** Ardop P2P FC EM E9RH8Y3I15P8 51441 42147 0
+2026/11/10 17:49:47 1.8.6.0 *** Ardop P2P F> F4
+2026/11/10 17:49:47 1.8.6.0 *** Ardop P2P    FS Y
+2026/11/10 17:50:04 1.8.6.0 *** Ardop P2P *** Receiving E9RH8Y3I15P8
+2026/11/10 17:54:05 1.8.6.0 *** Stored unauthenticated P2P message E9RH8Y3I15P8 without performing automatic system or form-data actions.
+2026/11/10 17:54:05 1.8.6.0 *** Message E9RH8Y3I15P8 posted to InBox
+2026/11/10 17:54:05 1.8.6.0 *** Ardop P2P *** E9RH8Y3I15P8 - 51441/42147 bytes received
+2026/11/10 17:54:05 1.8.6.0 *** Ardop P2P *** Bytes: 42498,  Time: 04:00,  bytes/minute: 10584
+2026/11/10 17:54:05 1.8.6.0 *** Ardop P2P    FC EM VFWD5OS02JX5 51441 42113 0
+2026/11/10 17:54:05 1.8.6.0 *** Ardop P2P    F> C7
+2026/11/10 17:54:06 1.8.6.0 *** Logging to CMS P2P message E9RH8Y3I15P8
+2026/11/10 17:54:20 1.8.6.0 *** Ardop P2P FS Y
+2026/11/10 17:54:20 1.8.6.0 *** Ardop P2P *** Sending VFWD5OS02JX5.
+2026/11/10 18:02:13 1.8.6.0 *** Ardop P2P FC EM WCR5C7KDEGEL 51441 42179 0
+2026/11/10 18:02:13 1.8.6.0 *** Message VFWD5OS02JX5 moved from Outbox to Sent Items
+2026/11/10 18:02:13 1.8.6.0 *** Ardop P2P *** Completed send of message VFWD5OS02JX5
+2026/11/10 18:02:13 1.8.6.0 *** Ardop P2P *** Sent 1 message.  Bytes: 42464,  Time: 07:53,  bytes/minute: 5384
+2026/11/10 18:02:13 1.8.6.0 *** Ardop P2P F> BB
+2026/11/10 18:02:13 1.8.6.0 *** Ardop P2P    FS Y
+2026/11/10 18:02:18 1.8.6.0 *** Logging to CMS P2P message VFWD5OS02JX5
+2026/11/10 18:02:38 1.8.6.0 *** Ardop P2P *** Receiving WCR5C7KDEGEL
+2026/11/10 18:06:18 1.8.6.0 *** Stored unauthenticated P2P message WCR5C7KDEGEL without performing automatic system or form-data actions.
+2026/11/10 18:06:18 1.8.6.0 *** Message WCR5C7KDEGEL posted to InBox
+2026/11/10 18:06:18 1.8.6.0 *** Ardop P2P *** WCR5C7KDEGEL - 51441/42179 bytes received
+2026/11/10 18:06:18 1.8.6.0 *** Ardop P2P *** Bytes: 42530,  Time: 03:39,  bytes/minute: 11634
+2026/11/10 18:06:18 1.8.6.0 *** Ardop P2P    FC EM 8NM9TJ8L9L68 51441 42183 0
+2026/11/10 18:06:18 1.8.6.0 *** Ardop P2P    F> E6
+2026/11/10 18:06:19 1.8.6.0 *** Logging to CMS P2P message WCR5C7KDEGEL
+2026/11/10 18:06:35 1.8.6.0 *** Ardop P2P FS Y
+2026/11/10 18:06:35 1.8.6.0 *** Ardop P2P *** Sending 8NM9TJ8L9L68.
+2026/11/10 18:14:32 1.8.6.0 *** Ardop P2P FC EM S8PRSB66GTK1 51441 42193 0
+2026/11/10 18:14:32 1.8.6.0 *** Message 8NM9TJ8L9L68 moved from Outbox to Sent Items
+2026/11/10 18:14:32 1.8.6.0 *** Ardop P2P *** Completed send of message 8NM9TJ8L9L68
+2026/11/10 18:14:32 1.8.6.0 *** Ardop P2P *** Sent 1 message.  Bytes: 42534,  Time: 07:57,  bytes/minute: 5346
+2026/11/10 18:14:32 1.8.6.0 *** Ardop P2P F> C1
+2026/11/10 18:14:32 1.8.6.0 *** Ardop P2P    FS Y
+2026/11/10 18:14:35 1.8.6.0 *** Logging to CMS P2P message 8NM9TJ8L9L68
+2026/11/10 18:14:50 1.8.6.0 *** Ardop P2P *** Receiving S8PRSB66GTK1
+2026/11/10 18:18:27 1.8.6.0 *** Stored unauthenticated P2P message S8PRSB66GTK1 without performing automatic system or form-data actions.
+2026/11/10 18:18:27 1.8.6.0 *** Message S8PRSB66GTK1 posted to InBox
+2026/11/10 18:18:27 1.8.6.0 *** Ardop P2P *** S8PRSB66GTK1 - 51441/42193 bytes received
+2026/11/10 18:18:27 1.8.6.0 *** Ardop P2P *** Bytes: 42544,  Time: 03:37,  bytes/minute: 11729
+2026/11/10 18:18:27 1.8.6.0 *** Ardop P2P    FC EM QTOVU1YQY0UP 51441 42188 0
+2026/11/10 18:18:27 1.8.6.0 *** Ardop P2P    F> 5A
+2026/11/10 18:18:31 1.8.6.0 *** Logging to CMS P2P message S8PRSB66GTK1
+2026/11/10 18:18:42 1.8.6.0 *** Ardop P2P FS Y
+2026/11/10 18:18:42 1.8.6.0 *** Ardop P2P *** Sending QTOVU1YQY0UP.
+2026/11/10 18:27:01 1.8.6.0 *** Ardop P2P FC EM F0O215LY9V02 51441 42231 0
+2026/11/10 18:27:01 1.8.6.0 *** Message QTOVU1YQY0UP moved from Outbox to Sent Items
+2026/11/10 18:27:01 1.8.6.0 *** Ardop P2P *** Completed send of message QTOVU1YQY0UP
+2026/11/10 18:27:01 1.8.6.0 *** Ardop P2P *** Sent 1 message.  Bytes: 42539,  Time: 08:19,  bytes/minute: 5115
+2026/11/10 18:27:01 1.8.6.0 *** Ardop P2P F> 1A
+2026/11/10 18:27:01 1.8.6.0 *** Ardop P2P    FS Y
+2026/11/10 18:27:03 1.8.6.0 *** Logging to CMS P2P message QTOVU1YQY0UP
+2026/11/10 18:27:19 1.8.6.0 *** Ardop P2P *** Receiving F0O215LY9V02
+2026/11/10 18:31:01 1.8.6.0 *** Stored unauthenticated P2P message F0O215LY9V02 without performing automatic system or form-data actions.
+2026/11/10 18:31:01 1.8.6.0 *** Message F0O215LY9V02 posted to InBox
+2026/11/10 18:31:01 1.8.6.0 *** Ardop P2P *** F0O215LY9V02 - 51441/42231 bytes received
+2026/11/10 18:31:01 1.8.6.0 *** Ardop P2P *** Bytes: 42582,  Time: 03:41,  bytes/minute: 11516
+2026/11/10 18:31:01 1.8.6.0 *** Ardop P2P    FC EM V8VCK0HNF0XO 51441 42218 0
+2026/11/10 18:31:01 1.8.6.0 *** Ardop P2P    F> B3
+2026/11/10 18:31:04 1.8.6.0 *** Logging to CMS P2P message F0O215LY9V02
+2026/11/10 18:31:18 1.8.6.0 *** Ardop P2P FS Y
+2026/11/10 18:31:18 1.8.6.0 *** Ardop P2P *** Sending V8VCK0HNF0XO.
+2026/11/10 18:39:25 1.8.6.0 *** Ardop P2P FF
+2026/11/10 18:39:25 1.8.6.0 *** Message V8VCK0HNF0XO moved from Outbox to Sent Items
+2026/11/10 18:39:25 1.8.6.0 *** Ardop P2P *** Completed send of message V8VCK0HNF0XO
+2026/11/10 18:39:25 1.8.6.0 *** Ardop P2P *** Sent 1 message.  Bytes: 42569,  Time: 08:06,  bytes/minute: 5248
+2026/11/10 18:39:25 1.8.6.0 *** Ardop P2P    FQ
+2026/11/10 18:39:26 1.8.6.0 *** Logging to CMS P2P message V8VCK0HNF0XO
+2026/11/10 18:39:29 1.8.6.0 *** Ardop P2P *** --- End of session with N0BBB at 2026/11/10 18:39:29 ---
+2026/11/10 18:39:29 1.8.6.0 *** Ardop P2P *** Messages sent: 4.  Total bytes sent: 170106,  Time: 50:01,  bytes/minute: 3401
+2026/11/10 18:39:29 1.8.6.0 *** Ardop P2P *** Messages Received: 4.  Total bytes received: 170154,  Total session time: 50:01,  bytes/minute: 3402
+2026/11/10 18:39:29 1.8.6.0 *** Ardop P2P *** Disconnecting
+2026/11/10 18:39:36 1.8.6.0 *** Ardop P2P *** Disconnected from Peer: N0BBB @ 2026/11/10 18:39:36
+2026/11/10 18:39:36 1.8.6.0 *** Ardop P2P *** Session: 50.1 min;  Avg Throughput: 15252 Bytes/min;   1 Min Peak Throughput: 15252 Bytes/min

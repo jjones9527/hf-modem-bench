@@ -1,0 +1,100 @@
+﻿ 
+2026-11-10 17:19:08 [1.0.2.9] ******************** ARQ session stats with N0BBB (0.5 minutes) ****************************
+     Session Bandwidth=2000 Hz   Measured Round Trip=460 ms   ARDOP_Win Virtual TNC Ver: 1.0.2.9
+     Con Request S:N=0 dB,  Con Req Quality=0
+    Leader Timing: Received Leader from Remote (ms):145 ms   Remote Reported My Leader (ms):140 ms
+     LeaderDetects=12   AvgLeader S:N(3KHz noise BW)=20.7dB  LeaderSyncs=12
+     FrameSyncs=12   Good Frame Type Decodes=12  Failed Frame Type Decodes =0
+     Avg Frame Type decode distance=0.011 over 10 decodes
+     Total Bytes Sent=73    Total Bytes Received=63     Session Throughput=255 bytes/min
+ 
+  Received Frame Quality:
+     Avg 4FSK  Quality=98  on 10 frames
+     Avg 4PSK  Quality=99  on 2 frames
+ 
+  N0AAA Local Details:  Squelch Threshold=5  BusyDet Threshold=5  Mode Shift UPs=0   Mode Shift DOWNs=0  Link Turnovers=3
+2026-11-10 17:19:09 [1.0.2.9] *******************************************************************************************
+ 
+2026-11-10 17:20:03 [1.0.2.9] ******************** ARQ session stats with N0BBB (0.5 minutes) ****************************
+     Session Bandwidth=2000 Hz   Measured Round Trip=320 ms   ARDOP_Win Virtual TNC Ver: 1.0.2.9
+     Con Request S:N=0 dB,  Con Req Quality=0
+    Leader Timing: Received Leader from Remote (ms):138 ms   Remote Reported My Leader (ms):140 ms
+     LeaderDetects=12   AvgLeader S:N(3KHz noise BW)=20.8dB  LeaderSyncs=12
+     FrameSyncs=12   Good Frame Type Decodes=12  Failed Frame Type Decodes =0
+     Avg Frame Type decode distance=0.001 over 11 decodes
+     Total Bytes Sent=63    Total Bytes Received=73     Session Throughput=284 bytes/min
+ 
+  Received Frame Quality:
+     Avg 4FSK  Quality=98  on 11 frames
+     Avg 4PSK  Quality=98  on 1 frames
+ 
+  N0AAA Local Details:  Squelch Threshold=5  BusyDet Threshold=5  Mode Shift UPs=1   Mode Shift DOWNs=0  Link Turnovers=3
+2026-11-10 17:20:03 [1.0.2.9] *******************************************************************************************
+ 
+2026-11-10 17:29:40 [1.0.2.9] ******************** ARQ session stats with N0BBB (5.0 minutes) ****************************
+     Session Bandwidth=2000 Hz   Measured Round Trip=410 ms   ARDOP_Win Virtual TNC Ver: 1.0.2.9
+     Con Request S:N=0 dB,  Con Req Quality=0
+    Leader Timing: Received Leader from Remote (ms):134 ms   Remote Reported My Leader (ms):140 ms
+     LeaderDetects=68   AvgLeader S:N(3KHz noise BW)=20.6dB  LeaderSyncs=68
+     FrameSyncs=68   Good Frame Type Decodes=67  Failed Frame Type Decodes =1
+     Avg Frame Type decode distance=0.001 over 67 decodes
+     Total Bytes Sent=42709    Total Bytes Received=81     Session Throughput=8593 bytes/min
+ 
+  Received Frame Quality:
+     Avg 4FSK  Quality=98  on 65 frames
+     Avg 4PSK  Quality=99  on 3 frames
+ 
+  N0AAA Local Details:  Squelch Threshold=5  BusyDet Threshold=5  Mode Shift UPs=4   Mode Shift DOWNs=0  Link Turnovers=7
+2026-11-10 17:29:40 [1.0.2.9] *******************************************************************************************
+ 
+2026-11-10 17:30:47 [1.0.2.9] ******************** ARQ session stats with N0BBB (0.5 minutes) ****************************
+     Session Bandwidth=2000 Hz   Measured Round Trip=390 ms   ARDOP_Win Virtual TNC Ver: 1.0.2.9
+     Con Request S:N=0 dB,  Con Req Quality=0
+    Leader Timing: Received Leader from Remote (ms):133 ms   Remote Reported My Leader (ms):140 ms
+     LeaderDetects=12   AvgLeader S:N(3KHz noise BW)=19.9dB  LeaderSyncs=12
+     FrameSyncs=12   Good Frame Type Decodes=12  Failed Frame Type Decodes =0
+     Avg Frame Type decode distance=0.001 over 11 decodes
+     Total Bytes Sent=63    Total Bytes Received=73     Session Throughput=285 bytes/min
+ 
+  Received Frame Quality:
+     Avg 4FSK  Quality=97  on 11 frames
+     Avg 4PSK  Quality=98  on 1 frames
+ 
+  N0AAA Local Details:  Squelch Threshold=5  BusyDet Threshold=5  Mode Shift UPs=1   Mode Shift DOWNs=0  Link Turnovers=3
+2026-11-10 17:30:47 [1.0.2.9] *******************************************************************************************
+ 
+2026-11-10 17:36:12 [1.0.2.9] ******************** ARQ session stats with N0BBB (4.8 minutes) ****************************
+     Session Bandwidth=2000 Hz   Measured Round Trip=330 ms   ARDOP_Win Virtual TNC Ver: 1.0.2.9
+     Con Request S:N=0 dB,  Con Req Quality=0
+    Leader Timing: Received Leader from Remote (ms):148 ms   Remote Reported My Leader (ms):140 ms
+     LeaderDetects=65   AvgLeader S:N(3KHz noise BW)=20.6dB  LeaderSyncs=65
+     FrameSyncs=65   Good Frame Type Decodes=65  Failed Frame Type Decodes =0
+     Avg Frame Type decode distance=0.000 over 64 decodes
+     Total Bytes Sent=68    Total Bytes Received=42720     Session Throughput=8880 bytes/min
+ 
+  Received Frame Quality:
+     Avg 4FSK  Quality=98  on 17 frames
+     Avg 4PSK  Quality=98  on 6 frames
+     Avg 8PSK  Quality=99  on 2 frames
+     Avg 16QAM Quality=98  on 40 frames
+ 
+  N0AAA Local Details:  Squelch Threshold=5  BusyDet Threshold=5  Mode Shift UPs=1   Mode Shift DOWNs=0  Link Turnovers=6
+2026-11-10 17:36:12 [1.0.2.9] *******************************************************************************************
+ 
+2026-11-10 18:39:36 [1.0.2.9] ******************** ARQ session stats with N0BBB (50.2 minutes) ****************************
+     Session Bandwidth=2000 Hz   Measured Round Trip=352 ms   ARDOP_Win Virtual TNC Ver: 1.0.2.9
+     Con Request S:N=0 dB,  Con Req Quality=0
+    Leader Timing: Received Leader from Remote (ms):140 ms   Remote Reported My Leader (ms):80 ms
+     LeaderDetects=611   AvgLeader S:N(3KHz noise BW)=18.6dB  LeaderSyncs=611
+     FrameSyncs=610   Good Frame Type Decodes=588  Failed Frame Type Decodes =22
+     Avg Frame Type decode distance=0.020 over 609 decodes
+     Total Bytes Sent=170345    Total Bytes Received=170403     Session Throughput=6793 bytes/min
+ 
+  Received Frame Quality:
+     Avg 4FSK  Quality=98  on 406 frames
+     Avg 4PSK  Quality=98  on 6 frames
+     Avg 8PSK  Quality=98  on 2 frames
+     Avg 16QAM Quality=96  on 174 frames
+ 
+  N0AAA Local Details:  Squelch Threshold=5  BusyDet Threshold=5  Mode Shift UPs=2   Mode Shift DOWNs=0  Link Turnovers=27
+2026-11-10 18:39:36 [1.0.2.9] *******************************************************************************************

@@ -15,7 +15,8 @@ See [docs/test-protocol.md](docs/test-protocol.md) for the test design.
 | Part | Status |
 | --- | --- |
 | Matrix → run sheet, run stamping, manifest, payload tools | ✅ |
-| Winlink log parser | ⏳ waiting on sample logs |
+| Winlink session log + ARDOP session-stats parser (`hfbench parse`) | ✅ |
+| Session ↔ run join, both-ends pairing, ARDOP debug timeline | ⏳ next |
 | Analysis and reports (CSV, Markdown/HTML, throughput-vs-SNR plots) | ⏳ Phase 2 |
 
 ## Install
@@ -44,13 +45,15 @@ hfbench status
 hfbench manifest                   # creates runs/coarse01/manifest.csv
 ```
 
-Run the `start` and `end` stamps on the machine that writes the Winlink logs, so that both use the same clock.
+Winlink and ARDOP log in UTC, and the stamps are UTC too. Any machine on NTP can run the stamps, as long as its clock is within about a second of the Windows bench machine.
+
+To parse logs: `hfbench parse "RMS Express 20261110.log" --ardop ARDOP_WinTNC_ARQSession_20261110.log -o out/` writes `sessions.csv` and `transfers.csv`. See [docs/log-formats.md](docs/log-formats.md).
 
 ## Layout
 
 | Path | Contents |
 | --- | --- |
-| `src/hfbench/` | `matrix` (TOML to run sheet), `manifest` (event log to manifest), `payload`, `cli` |
+| `src/hfbench/` | `matrix` (TOML to run sheet), `manifest` (event log to manifest), `logparse`, `payload`, `cli` |
 | `runs/` | Matrix files. Campaign directories (run sheet, events, manifest) are git-ignored. |
 | `reports/` | Generated reports (git-ignored) |
 | `docs/` | Test protocol |

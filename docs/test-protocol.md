@@ -27,8 +27,8 @@ The aim is to compare software HF modems used with Winlink Express on a repeatab
   - sound devices, Windows sample rates and levels
   - IONOS firmware revision and serial number, and its Ch1/Ch2 IN and OUT gains
   - Winlink Express version
-- **Clocks:** run the `hfbench start`, `mark` and `end` stamps on the Windows machine that writes the Winlink logs, so stamps and log timestamps share one clock.
-- **Two Winlink instances:** whether they run on one machine or two is TBD. If both are on one machine, their logs have to be told apart, for example by callsign or by a separate install directory.
+- **Clocks:** Winlink and ARDOP log in **UTC** to the second, and `hfbench` stamps in UTC. The Windows machine has no Python, so the stamps can come from another machine as long as both clocks use NTP. On 10 Nov 2026 the Mac and the Windows bench machine agreed to within about 0.5 s. Recheck the offset at the start of each session.
+- **Two Winlink instances:** both run on one Windows machine from separate installs, `C:\RMS Express` and `C:\RMS Express 2`. Each install has its own callsign and its own logs, so every session is logged from **both ends**. Because both instances share one clock, the two logs line up to within a few seconds. See [log-formats.md](log-formats.md).
 
 ## 3. Levels and SNR calibration
 
@@ -59,9 +59,25 @@ Record the result. This replaces an external level-meter check of the simulator 
 - Recheck levels at every modem change, because each modem drives the sound device differently. Record the `Lvl=` and crest-factor readings in the run notes.
 - If a run shows a red level, mark it `invalid`.
 
+### Per-direction S:N check (ARDOP)
+
+ARDOP logs the S:N it measured on received leaders, in a 3 kHz noise bandwidth, which is the IONOS reference. Its session statistics give one value per station, so each direction is measured separately. With one IONOS unit in symmetric mode, both directions should read close to the IONOS setting.
+
+- In the pilot, compare the measured S:N for each direction with the setting.
+- If the two directions differ by more than about 2 dB, treat it as a level fault and mark the run `invalid`.
+
+The first bench logs (10 Nov 2026, at about 20 dB S:N) show why this check matters:
+
+- During one 50-minute session, one direction measured 18.6 dB and the other **11.9 dB**.
+- The weak direction stayed at 4PSK.2000, while the strong one ran at 16QAM.2000.
+- Transfers in the weak direction took about twice as long, roughly 720 bit/s against 1,500 bit/s.
+
+The Winlink log alone would have reported this as "the modem is slow one way".
+
 ## 4. Workload
 
 - Use one fixed, incompressible payload. Generate it with `hfbench payload make <path> --bytes N --seed S`, which produces pseudo-random bytes that can be regenerated exactly from the size and seed. The SHA-256 goes in the matrix and on every run-sheet row. Winlink B2F compresses messages, so a compressible payload would make timing depend on the content.
+- **What goes over the air:** Winlink carries an attachment base64-encoded inside the message, and B2F then compresses the whole message. A random-binary attachment therefore still shrinks by about 18%. In the first logs, 51,433 bytes compressed to about 42,200. The size actually sent is the *compressed* size, which the log records on the `FC EM` proposal line. Goodput is computed on that figure. Random content keeps the compressed size essentially constant from run to run.
 - **Run length:** the IONOS manual (§7.1) recommends at least 5–10 minutes per run. That gives adaptive modems time to settle and averages out slow multipath fading. N5TW sized transfers per mode: 120 KB for fast VARA and Pactor cases, 32 KB for slower ones, and 4–10 KB for ARDOP and WINMOR. A single fixed payload makes goodput directly comparable, but no single size suits both VARA at 30 dB and ARDOP at 0 dB.
 - **Recommendation:** split the fixed workload into **N equal messages**, for example 8 × 8 KB of random data. A run that hits the abort rule then still yields "messages delivered" and a partial goodput, instead of nothing. Payload size and message count are TBD.
 
@@ -145,11 +161,11 @@ IONOS accepts the same commands over USB serial and replies `OK` or `?` to each 
 
 | Metric | Definition |
 | --- | --- |
-| **Goodput** | Payload bytes ÷ data-phase time. Reported in **bytes/min** as well, to compare with N5TW. The data phase is defined from the log once the format is known. |
+| **Goodput** | Compressed message bytes (`FC EM` line) × 8 ÷ Winlink's per-message transfer time, which runs from "Sending/Receiving" to "Completed/received". Reported **per direction**, and in **bytes/min** as well to compare with N5TW. Session-level figures, which include the handshake and turnarounds, are reported separately. |
 | **Session time** | Connect to disconnect, including handshake. |
 | **Completion rate** | Completed runs ÷ (completed + dnc) at each point. |
 | **Messages delivered** | Per run, if the workload is split into messages. |
-| **Retries** | Taken from Winlink logs where available. Modem-level retransmits need each modem's own log. |
+| **Retries** | Winlink logs don't record them. For ARDOP, the ARQ session statistics give failed decodes and mode shifts, and the debug log gives a per-frame timeline with ACK/NAK records. Other modems need their own logs. |
 | **Knee SNR** | The lowest S:N where the completion rate is at least 90%. With 3 replicates this means 3 out of 3, so use 5 replicates near the knee. |
 | **Shannon efficiency** | Goodput (bit/s) ÷ C, where C = B·log₂(1 + SNR) and B = 3000 Hz, matching the IONOS reference bandwidth. Results may also be quoted against each modem's occupied bandwidth, labelled as such. |
 
@@ -163,7 +179,7 @@ Real logs contain callsigns, grid squares and subjects. `logs/`, `runs/<campaign
 
 1. Which modems and versions are in the comparison?
 2. What firmware does the IONOS unit run (shown at power-on)? Is its USB port connected to the Windows machine, which would allow serial automation?
-3. Are the two Winlink Express instances on one Windows machine or two?
+3. ~~Are the two Winlink Express instances on one Windows machine or two?~~ One machine, with two installs.
 4. What is the payload: total size, number of messages, and attachment or body? See the recommendation in §4.
 5. Is this for personal evaluation or for publication? The answer sets the required rigour (replicates, reporting of calibration uncertainty).
 6. Are CW-interferer and QRN tests wanted badly enough to build external audio injection?

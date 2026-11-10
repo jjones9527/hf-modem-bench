@@ -19,6 +19,7 @@ import os
 import sys
 from pathlib import Path
 
+from . import logparse as lp
 from . import manifest as mf
 from . import matrix as mx
 from . import payload as pl
@@ -115,6 +116,22 @@ def cmd_manifest(args):
     print(f"wrote {len(man)} attempts to {out}")
 
 
+def cmd_parse(args):
+    sessions = []
+    for p in args.winlink_log:
+        sessions += lp.parse_winlink_log(p)
+    ardop = []
+    for p in args.ardop or []:
+        ardop += lp.parse_ardop_sessions(p)
+    sp, tp = lp.write_csvs(sessions, ardop, args.out)
+    n_tr = sum(len(s.transfers) for s in sessions)
+    print(f"{len(sessions)} sessions, {n_tr} transfers -> {sp}, {tp}")
+    for i, s in enumerate(sessions, start=1):
+        for t in s.transfers:
+            g = f"{t.goodput_bps:7.0f} bit/s" if t.goodput_bps else "   incomplete"
+            print(f"  s{i:<3} {s.transport:<12} {t.direction} {t.mid}  {t.compressed_bytes or '?':>6} B  {g}")
+
+
 def cmd_payload_make(args):
     digest = pl.make_payload(args.path, args.bytes, args.seed)
     print(f"{args.path}: {args.bytes} bytes, seed {args.seed}\n"
@@ -164,6 +181,12 @@ def build_parser() -> argparse.ArgumentParser:
     s = with_dir(sub.add_parser("manifest", help="build manifest.csv from run sheet + events"))
     s.add_argument("-o", "--out")
     s.set_defaults(func=cmd_manifest)
+
+    s = sub.add_parser("parse", help="parse Winlink Express (and ARDOP) logs to sessions/transfers CSV")
+    s.add_argument("winlink_log", nargs="+", help="RMS Express YYYYMMDD.log file(s)")
+    s.add_argument("--ardop", nargs="*", help="ARDOP_WinTNC_ARQSession_YYYYMMDD.log file(s)")
+    s.add_argument("-o", "--out", default=".", help="output directory")
+    s.set_defaults(func=cmd_parse)
 
     pay = sub.add_parser("payload", help="make or hash the test payload").add_subparsers(dest="pcmd", required=True)
     s = pay.add_parser("make")
