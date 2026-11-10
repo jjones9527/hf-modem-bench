@@ -32,6 +32,8 @@ MANIFEST_EXTRA_FIELDS = [
     "outcome",
     "final_attempt",
     "stamp_host",
+    "log_connected_utc",
+    "ionos_ack",
     "marks",
     "notes",
 ]
@@ -88,8 +90,17 @@ def run_state(events: list[dict], run_id: str) -> str:
     return {None: "pending", "start": "running", "mark": "running", "end": "done"}[last]
 
 
+def last_outcome(events: list[dict], run_id: str) -> str | None:
+    """Outcome of the most recent end event for run_id, if any."""
+    out = None
+    for e in events:
+        if e.get("run_id") == run_id and e["event"] == "end":
+            out = e.get("outcome")
+    return out
+
+
 def start_run(events_path: str | Path, run_id: str, *, valid_ids: set[str],
-              retry: bool = False, t: datetime | None = None) -> dict:
+              retry: bool = False, t: datetime | None = None, extra: dict | None = None) -> dict:
     events_path = Path(events_path)
     if run_id not in valid_ids:
         raise ManifestError(f"unknown run id {run_id!r} (not in run sheet)")
@@ -100,7 +111,7 @@ def start_run(events_path: str | Path, run_id: str, *, valid_ids: set[str],
     state = run_state(events, run_id)
     if state == "done" and not retry:
         raise ManifestError(f"{run_id} already has a result; pass --retry to record another attempt")
-    ev = {"event": "start", "run_id": run_id, **_stamp(t or now())}
+    ev = {"event": "start", "run_id": run_id, **(extra or {}), **_stamp(t or now())}
     _append(events_path, ev)
     return ev
 
@@ -177,6 +188,8 @@ def build_manifest(runsheet: list[dict], events: list[dict]) -> list[dict]:
                 "outcome": e["outcome"] if e else "",
                 "final_attempt": "yes" if i == len(lst) else "no",
                 "stamp_host": s["host"],
+                "log_connected_utc": s.get("log_connected_utc", ""),
+                "ionos_ack": s.get("ionos_ack", ""),
                 # seconds after start, so analysis can align marks with the log
                 "marks": " | ".join(
                     f"+{int((datetime.fromisoformat(k['t_utc']) - datetime.fromisoformat(s['t_utc'])).total_seconds())}s "

@@ -66,6 +66,7 @@ RUNSHEET_FIELDS = [
     "payload_file",
     "payload_bytes",
     "payload_sha256",
+    "payload_messages",
     "abort_minutes",
     "abort_retries",
 ]
@@ -101,6 +102,7 @@ class Matrix:
     payload_file: str
     payload_bytes: int
     payload_sha256: str
+    payload_messages: int = 1
     sim_bandwidth_hz: int = 3000
     multipaths: int = 2
     order: str = "blocked-random"
@@ -151,6 +153,7 @@ def load_matrix(path: str | Path) -> Matrix:
         payload_file=_req(p, "file", "payload"),
         payload_bytes=int(_req(p, "bytes", "payload")),
         payload_sha256=_req(p, "sha256", "payload").lower(),
+        payload_messages=int(p.get("messages", 1)),
         sim_bandwidth_hz=int(sim.get("bandwidth_hz", 3000)),
         multipaths=int(sim.get("multipaths", 2)),
         order=c.get("order", "blocked-random"),
@@ -168,6 +171,8 @@ def validate(m: Matrix) -> None:
         raise MatrixError("replicates must be >= 1")
     if m.order not in ("blocked-random", "sequential"):
         raise MatrixError(f"unknown order '{m.order}' (use blocked-random or sequential)")
+    if m.payload_messages < 1:
+        raise MatrixError("payload.messages must be >= 1")
     if len(m.payload_sha256) != 64:
         raise MatrixError("payload.sha256 must be a 64-char hex SHA-256 (use `hfbench payload hash`)")
     if m.sim_bandwidth_hz not in (3000, 6000):
@@ -265,6 +270,7 @@ def build_runs(m: Matrix) -> list[dict]:
             "payload_file": m.payload_file,
             "payload_bytes": m.payload_bytes,
             "payload_sha256": m.payload_sha256,
+            "payload_messages": m.payload_messages,
             "abort_minutes": m.abort_minutes,
             "abort_retries": m.abort_retries,
         })

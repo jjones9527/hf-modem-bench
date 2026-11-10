@@ -17,6 +17,7 @@ bandwidth_hz = 3000
 file = "payload-20k.bin"
 bytes = 20000
 sha256 = "6746bb57c0b14feb72784f4d9bacd640d5cc1c20e02f1348c1b4f405c81dc64c"
+messages = 1                   # messages per run (all directions); TBD
 
 [[modems]]
 name = "VARA HF"

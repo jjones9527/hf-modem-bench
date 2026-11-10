@@ -133,9 +133,36 @@ The sequence resets every add-on explicitly, so nothing carries over from the pr
 
 ## 7. Run procedure
 
+### Semi-automatic (recommended)
+
+Open a Command Prompt **on the Windows bench desktop** and run:
+
+```text
+hfbench run -d runs\<campaign>        (defaults: --port COM3  --winlink-dir "C:\RMS Express")
+```
+
+For each run, `hfbench run` does the following:
+
+1. Sends the run's IONOS commands over COM3 and records every `OK`. It stops if the unit rejects a command.
+2. Asks you to start the Winlink session. Queue the payload and click **Start** on station 1.
+3. Finds the session in station 1's Winlink log and stamps the start and end times **from the log's own UTC timestamps**.
+4. Applies the abort rule:
+   - If no connection is made within `abort_minutes`, the run is recorded as `dnc`.
+   - If a session runs past the limit, it sounds an alert. Disconnect in Winlink, and the run is recorded as `dnc`.
+5. Records `completed` when the session closes with all `payload_messages` delivered, then waits for Enter before the next run. Type `q` to stop.
+
+While a run is waiting, press **`i`** to mark it `invalid` (a bench fault) or **`d`** to mark it `dnc`. Runs marked `invalid` are repeated automatically. A run interrupted by a crash resumes when you start again.
+
+| Other commands | Use |
+| --- | --- |
+| `hfbench ionos probe` | Checks the IONOS answers; sends an invalid command, so it changes nothing |
+| `hfbench ionos send "WGN:20"` | Sends one command by hand |
+| `hfbench ionos apply -d … <run_id>` | Applies one run's settings |
+
+### Manual (no serial, or for debugging)
+
 ```text
 hfbench next  -d runs/<campaign>             # shows the next run and its IONOS commands
-  (set IONOS; check Lvl and that there's no red warning; queue the payload)
 hfbench start -d runs/<campaign> <run_id>    # right before connecting
 hfbench mark  -d runs/<campaign> "WGN:5"     # only for mid-run events
 hfbench end   -d runs/<campaign> completed   # or dnc / invalid, with --notes "..."
@@ -155,9 +182,18 @@ Abort a run after `abort_minutes` (default 30) or `abort_retries` failed connect
 
 Every attempt is kept in the event log (`events.jsonl`, append-only). The manifest has one row per attempt and marks the final one.
 
-### Automation (later phase)
+### Automation status
 
-IONOS accepts the same commands over USB serial and replies `OK` or `?` to each (manual §6). If the simulator's USB port is connected to the Windows machine, `hfbench` could send `ionos_commands` itself, record each acknowledgement in the event log, and send the mid-run SNR step at an exact time. That would remove manual setup errors. It needs `pyserial` and the COM port name.
+| Status | Item |
+| --- | --- |
+| Done | IONOS serial control, log-based stamping, the abort rule and outcomes (`hfbench run`) |
+| Next | A timed mid-run SNR step, for the `snr-step` impairment |
+| Next | Audio calibration and a pre-run level check (play and record a tone with `sounddevice`) |
+| Later | Starting the Winlink session itself, either by scripting the Winlink Express window or with Pat |
+
+Audio and GUI automation have to run in the desktop session. SSH sessions on Windows are session 0, which can't use the sound devices or windows.
+
+**Serial link (IONOS firmware 2.03):** the unit ignores lines ending in a bare CR, although the manual says CR. A line ending in LF or CR+LF works, so `hfbench` sends CR+LF. Replies are `OK` or `?`. The baud rate makes no difference.
 
 ## 8. Metrics
 

@@ -16,12 +16,15 @@ See [docs/test-protocol.md](docs/test-protocol.md) for the test design.
 | --- | --- |
 | Matrix → run sheet, run stamping, manifest, payload tools | ✅ |
 | Winlink session log + ARDOP session-stats parser (`hfbench parse`) | ✅ |
-| Session ↔ run join, both-ends pairing, ARDOP debug timeline | ⏳ next |
+| Semi-automatic bench runner (`hfbench run`): IONOS serial control, log-based stamping, abort rule | ✅ |
+| Session ↔ run join, both-ends pairing, audio calibration, ARDOP debug timeline | ⏳ next |
 | Analysis and reports (CSV, Markdown/HTML, throughput-vs-SNR plots) | ⏳ Phase 2 |
 
 ## Install
 
-Requires Python 3.11 or later. The core tools use only the standard library. matplotlib is needed only for plots.
+Requires Python 3.11 or later. The core tools use only the standard library. matplotlib is needed only for plots, and pyserial for IONOS control.
+
+The Windows bench machine has Python 3.12 (all users, on PATH) with `pyserial`, `sounddevice` and `numpy`. To update `hfbench` there, build a wheel (`pip wheel . -w dist --no-deps`), copy it over, and run `pip install --force-reinstall --no-deps` on it.
 
 ```sh
 python -m venv .venv

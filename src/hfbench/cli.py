@@ -132,6 +132,67 @@ def cmd_parse(args):
             print(f"  s{i:<3} {s.transport:<12} {t.direction} {t.mid}  {t.compressed_bytes or '?':>6} B  {g}")
 
 
+def _keypoller():
+    """Non-blocking single-key reader for Windows consoles and POSIX terminals."""
+    try:
+        import msvcrt
+
+        return lambda: msvcrt.getwch() if msvcrt.kbhit() else None
+    except ImportError:
+        import select
+
+        def poll():
+            r, _, _ = select.select([sys.stdin], [], [], 0)
+            return sys.stdin.readline().strip()[:1] if r else None
+        return poll
+
+
+def cmd_ionos(args):
+    from .ionos import Ionos
+
+    io = Ionos.open(args.port)
+    try:
+        if args.icmd == "probe":
+            print("IONOS answered" if io.probe() else "no valid reply")
+        elif args.icmd == "send":
+            for a in io.apply(" ; ".join(args.commands)):
+                print(f"{a.command} -> {a.reply}")
+        elif args.icmd == "apply":
+            d = _campaign_dir(args)
+            row = next((r for r in mx.read_runsheet(d / RUNSHEET) if r["run_id"] == args.run_id), None)
+            if row is None:
+                sys.exit(f"error: unknown run id {args.run_id}")
+            for a in io.apply(row["ionos_commands"]):
+                print(f"{a.command} -> {a.reply}")
+    finally:
+        io.close()
+
+
+def cmd_run(args):
+    from .bench import BenchRunner, winlink_session_source
+
+    ionos = None
+    if args.port:
+        from .ionos import Ionos
+
+        ionos = Ionos.open(args.port)
+        if not ionos.probe():
+            sys.exit(f"error: no reply from IONOS on {args.port}")
+    key = _keypoller()
+
+    def between():
+        print("\nNext run ready. Press Enter to continue, q then Enter to stop.")
+        return input().strip().lower() != "q"
+
+    runner = BenchRunner(_campaign_dir(args), winlink_session_source(args.winlink_dir),
+                         ionos=ionos, key=key, poll_s=args.poll)
+    try:
+        runner.run(max_runs=args.max_runs, wait_between=between)
+    finally:
+        if ionos is not None:
+            ionos.close()
+
+
 def cmd_payload_make(args):
     digest = pl.make_payload(args.path, args.bytes, args.seed)
     print(f"{args.path}: {args.bytes} bytes, seed {args.seed}\n"
@@ -187,6 +248,26 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--ardop", nargs="*", help="ARDOP_WinTNC_ARQSession_YYYYMMDD.log file(s)")
     s.add_argument("-o", "--out", default=".", help="output directory")
     s.set_defaults(func=cmd_parse)
+
+    io = sub.add_parser("ionos", help="control the IONOS simulator over USB serial").add_subparsers(dest="icmd", required=True)
+    s = io.add_parser("probe", help="check the IONOS answers (changes nothing)")
+    s.add_argument("--port", default="COM3")
+    s.set_defaults(func=cmd_ionos)
+    s = io.add_parser("send", help="send commands, e.g. 'WGN:20' 'OFFSET:0'")
+    s.add_argument("commands", nargs="+")
+    s.add_argument("--port", default="COM3")
+    s.set_defaults(func=cmd_ionos)
+    s = with_dir(io.add_parser("apply", help="apply a run's IONOS settings from the run sheet"))
+    s.add_argument("run_id")
+    s.add_argument("--port", default="COM3")
+    s.set_defaults(func=cmd_ionos)
+
+    s = with_dir(sub.add_parser("run", help="semi-automatic bench run: set IONOS, detect sessions, record outcomes"))
+    s.add_argument("--winlink-dir", default=r"C:\RMS Express", help="station 1 (calling) Winlink install")
+    s.add_argument("--port", default="COM3", help="IONOS serial port; '' to set IONOS by hand")
+    s.add_argument("--poll", type=float, default=2.0, help="log poll interval, seconds")
+    s.add_argument("--max-runs", type=int)
+    s.set_defaults(func=cmd_run)
 
     pay = sub.add_parser("payload", help="make or hash the test payload").add_subparsers(dest="pcmd", required=True)
     s = pay.add_parser("make")
