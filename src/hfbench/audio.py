@@ -392,3 +392,139 @@ def format_result(r: CheckResult) -> str:
     lines += [""]
     lines += [f"* {a}" for a in r.advice]
     return "\n".join(lines)
+
+
+# --- listen: true S:N of real modem traffic ---------------------------------------
+
+def band_power(x: np.ndarray, fs: float, band: tuple[float, float] = BAND) -> float:
+    """Power in `band` of one block, re full-scale sine (0.5), Hann-windowed."""
+    x = np.asarray(x, dtype=np.float64)
+    w = np.hanning(len(x))
+    spec = np.abs(np.fft.rfft((x - x.mean()) * w)) ** 2 / (np.sum(w ** 2) * len(x) / 2)
+    f = np.fft.rfftfreq(len(x), 1.0 / fs)
+    m = (f >= band[0]) & (f <= band[1])
+    return float(np.sum(spec[m])) / 0.5  # mean-square in band, re full-scale sine
+
+
+@dataclass
+class DirectionStats:
+    sender: int
+    receiver: int
+    kind: str                 # "data" (bursts >= 1 s) or "control" (< 1 s)
+    n: int
+    snr_median_db: float
+    snr_q1_db: float
+    snr_q3_db: float
+    offset_db: float | None   # median S:N minus IONOS setting
+
+
+def analyze_listen(series: dict[int, list[tuple[float, float]]],
+                   ptt: dict[int, list[tuple[float, float]]],
+                   setting_snr: float | None = None,
+                   lead_s: float = 0.15, tail_s: float = 0.08, guard_s: float = 0.3,
+                   data_min_s: float = 1.0) -> dict:
+    """series[mic station] = [(unix time of block end, band power), ...]
+    ptt[station] = [(unix start, unix end), ...] transmit intervals.
+    Noise per microphone = median block power while nobody transmits (with a
+    guard band); burst S:N = (burst power - noise) / noise, measured at the
+    *other* station's microphone."""
+    all_tx = sorted(iv for ivs in ptt.values() for iv in ivs)
+
+    def busy(t):
+        return any(a - guard_s <= t <= b + guard_s for a, b in all_tx)
+
+    noise = {}
+    for mic, pts in series.items():
+        quiet = [p for t, p in pts if not busy(t)]
+        noise[mic] = float(np.median(quiet)) if quiet else float("nan")
+
+    stats = []
+    bursts = []
+    for sender, ivs in ptt.items():
+        mic = 3 - sender
+        pts = series.get(mic, [])
+        if not pts:
+            continue
+        ts = np.array([t for t, _ in pts])
+        ps = np.array([p for _, p in pts])
+        for a, b in ivs:
+            m = (ts >= a + lead_s) & (ts <= b - tail_s)
+            if m.sum() < 2:
+                continue
+            sig = float(ps[m].mean()) - noise[mic]
+            snr = 10 * math.log10(sig / noise[mic]) if sig > 0 and noise[mic] > 0 else float("-inf")
+            kind = "data" if b - a >= data_min_s else "control"
+            bursts.append({"sender": sender, "start": a, "seconds": b - a, "kind": kind, "snr_db": snr})
+    for sender in (1, 2):
+        for kind in ("data", "control"):
+            v = sorted(x["snr_db"] for x in bursts if x["sender"] == sender and x["kind"] == kind
+                       and math.isfinite(x["snr_db"]))
+            if not v:
+                continue
+            med = v[len(v) // 2]
+            stats.append(asdict(DirectionStats(sender, 3 - sender, kind, len(v), med, v[len(v) // 4],
+                                               v[(3 * len(v)) // 4],
+                                               None if setting_snr is None else med - setting_snr)))
+    return {"setting_snr": setting_snr,
+            "noise_dbfs_3k": {k: _db(v) for k, v in noise.items()},
+            "directions": stats, "bursts": bursts}
+
+
+def format_listen(r: dict) -> str:
+    lines = [f"IONOS setting: {'WGN ' + format(r['setting_snr'], 'g') + ' dB' if r['setting_snr'] is not None else 'not given'}",
+             "noise floor (3 kHz): " + ", ".join(f"station {k} mic {v:.1f} dBFS" for k, v in sorted(r["noise_dbfs_3k"].items())),
+             "",
+             "direction   frames    n   S:N median   middle half      vs setting",
+             "-" * 68]
+    for d in r["directions"]:
+        off = f"{d['offset_db']:+.1f} dB" if d["offset_db"] is not None else "-"
+        lines.append(f"{d['sender']} -> {d['receiver']}      {d['kind']:<8}{d['n']:>4}   {d['snr_median_db']:>7.1f} dB"
+                     f"   {d['snr_q1_db']:>5.1f} .. {d['snr_q3_db']:<5.1f}   {off:>10}")
+    data = {d["sender"]: d for d in r["directions"] if d["kind"] == "data"}
+    if len(data) == 2:
+        diff = data[1]["snr_median_db"] - data[2]["snr_median_db"]
+        lines += ["", f"data-frame S:N, direction 1->2 minus 2->1: {diff:+.1f} dB "
+                      f"({'symmetric' if abs(diff) <= 2 else 'ASYMMETRIC: recheck levels'})"]
+    return "\n".join(lines)
+
+
+def record_band_power(stations: tuple[Station, Station], seconds: float, *, block: int = 1024,
+                      say=print) -> dict[int, list[tuple[float, float]]]:
+    """Record both microphones for `seconds` (Ctrl+C stops early), keeping only
+    per-block band power with a wall-clock timestamp. Desktop session only."""
+    import queue
+    import time
+
+    import sounddevice as sd
+
+    devs, apis = sd.query_devices(), sd.query_hostapis()
+    rec = {s.number: pick_device(devs, apis, s.capture, "in") for s in stations}
+    q: "queue.Queue[tuple[int, float, np.ndarray]]" = queue.Queue()
+    streams, fs_of = [], {}
+    for st, dev in rec.items():
+        fs = float(sd.query_devices(dev)["default_samplerate"])
+        fs_of[st] = fs
+
+        def cb(indata, frames, t, status, st=st):
+            q.put((st, time.time(), indata[:, 0].copy()))
+        streams.append(sd.InputStream(device=dev, channels=1, samplerate=fs, dtype="float32",
+                                      blocksize=block, callback=cb, extra_settings=_extra(sd, dev)))
+    series: dict[int, list[tuple[float, float]]] = {s.number: [] for s in stations}
+    for s in streams:
+        s.start()
+    t_end = time.time() + seconds
+    say(f"Listening for {seconds / 60:.1f} min (Ctrl+C to stop early)...")
+    try:
+        while time.time() < t_end:
+            try:
+                st, t, x = q.get(timeout=0.5)
+            except queue.Empty:
+                continue
+            series[st].append((t, band_power(x, fs_of[st])))
+    except KeyboardInterrupt:
+        say("stopped")
+    finally:
+        for s in streams:
+            s.stop()
+            s.close()
+    return series

@@ -231,6 +231,36 @@ def cmd_audio(args):
         _noise_summary(audio, res)
         return
 
+    if args.acmd in ("listen", "listen-report"):
+        from . import logparse as lp
+
+        if args.acmd == "listen":
+            stations = (audio.station_from_ardop_ini(1, args.s1), audio.station_from_ardop_ini(2, args.s2))
+            series = audio.record_band_power(stations, args.minutes * 60)
+            t0 = min(t for v in series.values() for t, _ in v) if any(series.values()) else 0
+            t1 = max(t for v in series.values() for t, _ in v) if any(series.values()) else 0
+            ptt = {}
+            for st, d in ((1, args.s1), (2, args.s2)):
+                logs = sorted(Path(d, "Logs").glob("ARDOP_WinTNC_Debug_*.log"))[-2:]
+                ivs = [iv for p in logs for iv in lp.parse_ardop_ptt(p)]
+                ptt[st] = [(a.timestamp(), b.timestamp()) for a, b in ivs
+                           if t0 <= a.timestamp() <= t1]
+            saved = {"setting_snr": args.setting, "series": {str(k): v for k, v in series.items()},
+                     "ptt": {str(k): v for k, v in ptt.items()}}
+            if args.json:
+                Path(args.json).write_text(json.dumps(saved))
+        else:
+            saved = json.loads(Path(args.json_in).read_text())
+        series = {int(k): [tuple(x) for x in v] for k, v in saved["series"].items()}
+        ptt = {int(k): [tuple(x) for x in v] for k, v in saved["ptt"].items()}
+        setting = args.setting if getattr(args, "setting", None) is not None else saved.get("setting_snr")
+        print(f"bursts keyed: station 1 {len(ptt.get(1, []))}, station 2 {len(ptt.get(2, []))}; "
+              f"blocks recorded: {', '.join(f'mic {k} {len(v)}' for k, v in sorted(series.items()))}")
+        print(audio.format_listen(audio.analyze_listen(series, ptt, setting)))
+        if args.acmd == "listen" and args.json:
+            print(f"\nsaved {args.json}")
+        return
+
     if args.acmd == "devices":
         import sounddevice as sd
 
@@ -364,6 +394,17 @@ def build_parser() -> argparse.ArgumentParser:
 
     au = sub.add_parser("audio", help="tone-based level check (run on the Windows desktop)").add_subparsers(dest="acmd", required=True)
     s = au.add_parser("devices", help="list sound devices")
+    s.set_defaults(func=cmd_audio)
+    s = au.add_parser("listen", help="measure true per-direction S:N of real modem traffic (ARDOP)")
+    s.add_argument("--minutes", type=float, default=10.0, help="how long to record (Ctrl+C stops early)")
+    s.add_argument("--setting", type=float, help="IONOS WGN S:N setting during the session, for the offset")
+    s.add_argument("--s1", default=r"C:\RMS Express")
+    s.add_argument("--s2", default=r"C:\RMS Express 2")
+    s.add_argument("--json", help="save the recording summary (band power + PTT) for re-analysis")
+    s.set_defaults(func=cmd_audio)
+    s = au.add_parser("listen-report", help="re-analyze a saved listen --json file")
+    s.add_argument("json_in")
+    s.add_argument("--setting", type=float)
     s.set_defaults(func=cmd_audio)
     s = au.add_parser("report", help="re-analyze a saved --json result (plays nothing)")
     s.add_argument("json_in")

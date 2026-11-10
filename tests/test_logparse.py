@@ -132,3 +132,14 @@ def test_cli_parse(tmp_path, capsys):
     rows = (tmp_path / "transfers.csv").read_text().splitlines()
     assert len(rows) == 11 and rows[0].startswith("session,transport")
     assert "18.6" in (tmp_path / "sessions.csv").read_text()
+
+
+def test_parse_ardop_ptt(tmp_path):
+    p = tmp_path / "ARDOP_WinTNC_Debug_20261110.log"
+    p.write_bytes(b"\xef\xbb\xbf 23:45:49.420 [Main.KeyPTT] True\r\n 23:45:49.420 [PlaySoundStream] DataACK_Q75\r\n"
+                  b" 23:45:49.820 [Main.KeyPTT] False\r\n\x00 23:46:05.468 [Main.KeyPTT] True\r\n")
+    ivs = lp.parse_ardop_ptt(p)
+    assert len(ivs) == 1  # trailing True without False is dropped
+    a, b = ivs[0]
+    assert a == datetime(2026, 11, 10, 23, 45, 49, 420000, tzinfo=timezone.utc)
+    assert (b - a).total_seconds() == pytest.approx(0.4)

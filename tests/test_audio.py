@@ -165,3 +165,55 @@ def test_ionos_gains_allowed_explicitly_but_busy_never():
     assert ser.sent == [b"CH1 OUT:1\r\n"]
     with pytest.raises(IonosError):
         Ionos(ser, allow_gains=True).send("BUSY:")
+
+
+def test_band_power_normalization():
+    t = np.arange(4096) / FS
+    sine = 0.5 * np.sin(2 * np.pi * 1500 * t)          # -6 dBFS
+    assert 10 * np.log10(au.band_power(sine, FS)) == pytest.approx(-6.0, abs=0.3)
+    noise = np.random.default_rng(3).normal(0, 1e-2, 4096)
+    expected = 10 * np.log10(1e-4 * 3000 / (FS / 2) / 0.5)
+    assert 10 * np.log10(au.band_power(noise, FS)) == pytest.approx(expected, abs=0.8)
+
+
+def _listen_case(snr1, snr2, ctrl_boost=3.0):
+    """Two stations alternating 4 s data bursts and 0.4 s ACKs; noise power 1.0."""
+    rng = np.random.default_rng(5)
+    noise = 1.0
+    ptt = {1: [], 2: []}
+    t = 1000.0
+    for k in range(12):
+        s = 1 if k % 2 == 0 else 2
+        ptt[s].append((t, t + 4.0)); t += 4.6
+        ptt[3 - s].append((t, t + 0.4)); t += 1.0
+    series = {1: [], 2: []}
+    block = 1024 / FS
+    tt = 995.0
+    while tt < t + 5:
+        for mic in (1, 2):
+            p = noise * rng.uniform(0.9, 1.1)
+            for snd, ivs in ptt.items():
+                for a, b in ivs:
+                    if a <= tt <= b:
+                        base = snr1 if snd == 1 else snr2
+                        snr = base + (ctrl_boost if b - a < 1 else 0)
+                        p += noise * 10 ** (snr / 10)
+            series[mic].append((tt, p))
+        tt += block
+    return series, ptt
+
+
+def test_listen_per_direction_snr_and_offset():
+    series, ptt = _listen_case(snr1=9.0, snr2=11.0)
+    r = au.analyze_listen(series, ptt, setting_snr=15)
+    d = {(x["sender"], x["kind"]): x for x in r["directions"]}
+    assert d[1, "data"]["snr_median_db"] == pytest.approx(9.0, abs=0.3)
+    assert d[2, "data"]["snr_median_db"] == pytest.approx(11.0, abs=0.3)
+    assert d[1, "control"]["snr_median_db"] == pytest.approx(12.0, abs=0.4)
+    assert d[1, "data"]["offset_db"] == pytest.approx(-6.0, abs=0.3)
+    assert "symmetric" in au.format_listen(r)
+
+
+def test_listen_flags_asymmetry():
+    series, ptt = _listen_case(snr1=5.0, snr2=15.0)
+    assert "ASYMMETRIC" in au.format_listen(au.analyze_listen(series, ptt))

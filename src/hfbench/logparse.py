@@ -21,7 +21,7 @@ from __future__ import annotations
 import csv
 import re
 from dataclasses import dataclass, field, fields, asdict
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 _LINE_SPLIT = re.compile(r"\r\n|\r|\n")
@@ -368,3 +368,38 @@ def redact(text: str, callsign_map: dict[str, str]) -> str:
     for real in sorted(callsign_map, key=len, reverse=True):
         text = re.sub(re.escape(real), callsign_map[real], text, flags=re.I)
     return _GRID.sub("(AA00AA)", text)
+
+
+# --- ARDOP debug log: transmitter keying ------------------------------------------
+
+_PTT = re.compile(r"^(\d\d:\d\d:\d\d\.\d{3}) \[Main\.KeyPTT\] (True|False)")
+_DEBUG_DATE = re.compile(r"(\d{8})")
+
+
+def parse_ardop_ptt(path: str | Path, date: str | None = None) -> list[tuple[datetime, datetime]]:
+    """Transmit intervals (UTC) from an ARDOP_WinTNC_Debug_YYYYMMDD.log.
+    The log holds time of day only; the date comes from the filename unless given."""
+    p = Path(path)
+    if date is None:
+        m = _DEBUG_DATE.search(p.name)
+        if not m:
+            raise ValueError(f"no YYYYMMDD in {p.name}; pass date=")
+        date = m.group(1)
+    day = datetime.strptime(date, "%Y%m%d").replace(tzinfo=timezone.utc)
+    raw = p.read_bytes().replace(b"\x00", b"")
+    if raw.startswith(b"\xef\xbb\xbf"):
+        raw = raw[3:]
+    raw = raw.decode("latin-1")  # the debug log also holds raw payload bytes
+    out, on = [], None
+    for line in _LINE_SPLIT.split(raw):
+        m = _PTT.match(line.strip())
+        if not m:
+            continue
+        h, mi, s = m.group(1).split(":")
+        t = day.replace(hour=int(h), minute=int(mi)) + timedelta(seconds=float(s))
+        if m.group(2) == "True":
+            on = t
+        elif on is not None:
+            out.append((on, t))
+            on = None
+    return out
