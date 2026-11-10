@@ -78,10 +78,10 @@ The Winlink log alone would have reported this as "the modem is slow one way". [
 
 ## 4. Workload
 
-- Use one fixed, incompressible payload. Generate it with `hfbench payload make <path> --bytes N --seed S`, which produces pseudo-random bytes that can be regenerated exactly from the size and seed. The SHA-256 goes in the matrix and on every run-sheet row. Winlink B2F compresses messages, so a compressible payload would make timing depend on the content.
+- **Workload (decided 10 Nov 2026):** **5 messages queued at each station**, 10 per run, each with one 51,200-byte attachment from the fixed set `Text_50KB`, which has 10 unique files. The files are random UTF-8 text, about 6.4 bits per byte, so B2F compresses each to about 82% (about 42.2 KB on the air). Their compression ratios agree to within 0.1%, so content doesn't affect timing. That stability is what matters, more than strict incompressibility. The set hash (`hfbench payload hash Text_50KB`) is in the matrix and on every run-sheet row. Each station always sends the same five files; the matrix comments list them. Never edit or regenerate these files. `hfbench payload make` remains available for making a new binary set if one is ever needed.
 - **What goes over the air:** Winlink carries an attachment base64-encoded inside the message, and B2F then compresses the whole message. A random-binary attachment therefore still shrinks by about 18%. In the first logs, 51,433 bytes compressed to about 42,200. The size actually sent is the *compressed* size, which the log records on the `FC EM` proposal line. Goodput is computed on that figure. Random content keeps the compressed size essentially constant from run to run.
 - **Run length:** the IONOS manual (§7.1) recommends at least 5–10 minutes per run. That gives adaptive modems time to settle and averages out slow multipath fading. N5TW sized transfers per mode: 120 KB for fast VARA and Pactor cases, 32 KB for slower ones, and 4–10 KB for ARDOP and WINMOR. A single fixed payload makes goodput directly comparable, but no single size suits both VARA at 30 dB and ARDOP at 0 dB.
-- **Recommendation:** split the fixed workload into **N equal messages**, for example 8 × 8 KB of random data. A run that hits the abort rule then still yields "messages delivered" and a partial goodput, instead of nothing. Payload size and message count are TBD.
+- **Partial results:** because the workload is split into 10 messages, a run that hits the abort rule still yields the number of messages delivered and a goodput for each completed message.
 
 ## 5. Channel profiles
 
@@ -219,6 +219,6 @@ Real logs contain callsigns, grid squares and subjects. `logs/`, `runs/<campaign
 1. Which modems and versions are in the comparison?
 2. What firmware does the IONOS unit run (shown at power-on)? Is its USB port connected to the Windows machine, which would allow serial automation?
 3. ~~Are the two Winlink Express instances on one Windows machine or two?~~ One machine, with two installs.
-4. What is the payload: total size, number of messages, and attachment or body? See the recommendation in §4.
+4. ~~What is the payload?~~ 5 × 50 KB attachments from each station; see §4.
 5. Is this for personal evaluation or for publication? The answer sets the required rigour (replicates, reporting of calibration uncertainty).
 6. Are CW-interferer and QRN tests wanted badly enough to build external audio injection?

@@ -255,6 +255,13 @@ def cmd_payload_make(args):
 
 
 def cmd_payload_hash(args):
+    if Path(args.path).is_dir():
+        digest, per = pl.sha256_set(args.path)
+        for name, h in per.items():
+            f = Path(args.path) / name
+            print(f"  {h}  {name}  {f.stat().st_size} bytes  zlib {pl.compress_ratio(f):.3f}")
+        print(f"set sha256 = {digest}  ({len(per)} files)")
+        return
     print(f"sha256 = {pl.sha256_file(args.path)}\n"
           f"bytes = {Path(args.path).stat().st_size}\n"
           f"zlib ratio = {pl.compress_ratio(args.path):.3f} (close to 1.0 means incompressible)")

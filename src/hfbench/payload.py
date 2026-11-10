@@ -28,6 +28,16 @@ def sha256_file(path: str | Path) -> str:
     return h.hexdigest()
 
 
+def sha256_set(directory: str | Path) -> tuple[str, dict[str, str]]:
+    """Hash of a payload *set* (a folder of attachment files): SHA-256 over the
+    sorted lines '<sha256>  <name>', the same format sha256sum prints. Adding,
+    removing, renaming or changing any file changes it."""
+    files = sorted(p for p in Path(directory).iterdir() if p.is_file())
+    per = {p.name: sha256_file(p) for p in files}
+    listing = "".join(f"{h}  {n}\n" for n, h in per.items())
+    return hashlib.sha256(listing.encode()).hexdigest(), per
+
+
 def compress_ratio(path: str | Path) -> float:
     """zlib-compressed size / original size. ~1.0 means incompressible."""
     data = Path(path).read_bytes()

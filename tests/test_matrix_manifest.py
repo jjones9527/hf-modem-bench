@@ -87,7 +87,7 @@ def test_snr_by_profile_override():
 
 def test_validation_rejects_bad_hash(tmp_path):
     with pytest.raises(mx.MatrixError):
-        mx.load_matrix(_variant(tmp_path, 'sha256 = "a324', 'sha256 = "zz'))
+        mx.load_matrix(_variant(tmp_path, 'sha256 = "3ec1', 'sha256 = "zz'))
 
 
 T0 = datetime(2026, 11, 10, 18, 0, tzinfo=timezone.utc)
@@ -132,9 +132,18 @@ def test_unknown_run_and_bad_outcome(tmp_path):
 def test_payload_is_reproducible_and_incompressible(tmp_path):
     p = tmp_path / "p.bin"
     h = pl.make_payload(p, 51200, 1)
-    assert h == mx.load_matrix(EXAMPLE).payload_sha256
+    assert h == "a324e9181248799f8023f76ea2277f1d76d731a4302b46ecd26d0c12d927ba0b"
     assert pl.sha256_file(p) == h
     assert pl.compress_ratio(p) > 0.99
+
+
+def test_payload_set_hash(tmp_path):
+    for name, data in (("b.txt", b"two"), ("A.txt", b"one")):
+        (tmp_path / name).write_bytes(data)
+    h1, per = pl.sha256_set(tmp_path)
+    assert list(per) == ["A.txt", "b.txt"]  # deterministic order
+    (tmp_path / "b.txt").write_bytes(b"TWO")
+    assert pl.sha256_set(tmp_path)[0] != h1
 
 
 def test_cli_end_to_end(tmp_path, capsys):

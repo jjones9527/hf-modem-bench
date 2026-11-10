@@ -14,11 +14,15 @@ order_seed = 20261111
 bandwidth_hz = 3000
 
 [payload]
-# Attach this file to each message. Regenerate exactly with:
-#   hfbench payload make payloads/payload-50k.bin --bytes 51200 --seed 1
-file = "payload-50k.bin"
-bytes = 51200
-sha256 = "a324e9181248799f8023f76ea2277f1d76d731a4302b46ecd26d0c12d927ba0b"
+# Payload set: 10 random-text files of 51,200 bytes (Windows Desktop\Text_50KB),
+# one file attached per message. B2F compresses each to about 82% (~42.2 KB on
+# the air), consistently to within 0.1%. Check with: hfbench payload hash <folder>
+# Fixed assignment (sorted names): station 1 sends File-2oE8o, File-A9TS9,
+# File-FJYnL, File-NqdBp, File-YtirF; station 2 sends File-bOgW3, File-gkTVB,
+# File-h71Al, File-ozUgP, File-z7j7V.
+file = "Text_50KB"
+bytes = 51200                  # per file, before compression
+sha256 = "3ec10a0b30de0039bb0b949d7e160a5d4625c03ba2f245a60785d3973e0279f9"   # set hash
 messages = 10                  # per run, both directions: 5 queued at each station
 
 [[modems]]
