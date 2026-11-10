@@ -138,7 +138,9 @@ def tx_offsets(paths: dict[str, dict], setting_snr: float) -> dict[int, float]:
     """Each station's transmit level relative to the IONOS S:N reference:
     measured S:N of its tone at the *other* station minus the IONOS setting.
     0 dB means the IONOS setting is the true S:N for that station's signal.
-    (Valid because the IONOS adds noise at a fixed level; see bench-setup.md.)"""
+    (Valid because the IONOS adds noise at a fixed level; see bench-setup.md.)
+    Device noise adds to the IONOS noise, so at high settings (within ~10 dB
+    of the device noise) this reads low. Measure at a moderate setting (WGN 20)."""
     out = {}
     for i in (1, 2):
         for k in (f"{i}->{3 - i}", f"{i}->{i}"):

@@ -45,7 +45,7 @@ hfbench audio check --loop
 The check:
 
 1. Reads each station's playback and capture devices and `DriveLevel` from `C:\RMS Express\ARDOP_Win TNC.ini` and `C:\RMS Express 2\ARDOP_Win TNC.ini`.
-2. Sets the IONOS to **WGN, S:N 40** over COM3, with offset, fading and FM off. Gains are never touched.
+2. Sets the IONOS to **WGN, S:N 20** over COM3, with offset, fading and FM off. Gains are never touched. At 40 dB the bench's own noise biases the transmit offsets, which is why 20 is the default.
 3. Records both microphones with nothing playing, giving each device's noise floor.
 4. Plays a 1500 Hz tone at −6 dBFS from **station 1's speakers**, recording both microphones, then does the same from **station 2's speakers**.
 5. Prints, for each of the four paths, the tone level (dBFS), the S:N in 3 kHz, the 2nd and 3rd harmonics, the peak level and any clipping. The 3rd harmonic at 4.5 kHz is above the IONOS's 3.3 kHz filter, so if it appears it was created at the receiving input.
@@ -62,7 +62,7 @@ The check:
 2. **Receive mismatch.** Matched microphones make both stations work at the same point. This doesn't change S:N, because the IONOS noise is fixed, but it does avoid clipping. Fix transmit first, then set each microphone so it hears the other station at about **−12 dBFS**.
 3. **CLIPPED paths** are left out of the estimates. A microphone that clips on its *own* transmission is harmless while that station transmits, but shows its gain is too high.
 4. **The estimates' spread** should be below 1 dB. If it's more, check the Y cables and the IONOS mode.
-5. **`--snr 40 20`** also reports each microphone's own noise relative to the IONOS reference. It should be at least 10 dB below the highest S:N you plan to test.
+5. **`--snr 20 40`** also reports each microphone's own noise relative to the IONOS reference. It should be at least 10 dB below the highest S:N you plan to test. Read the transmit offsets from the 20 dB result.
 
 To re-read saved results without playing anything: `hfbench audio report levels.json`.
 

@@ -203,6 +203,10 @@ def _noise_summary(audio, results):
     if len(by) < 2:
         return
     hi, lo = max(by), min(by)
+    low = next(r for r in results if r.ionos_setting.upper() == f"WGN:{lo:g}")
+    if low.tx_ref_db:
+        print(f"transmit vs IONOS reference, from WGN:{lo:g} (least affected by device noise): " +
+              "   ".join(f"station {i} {v:+.1f} dB" for i, v in sorted(low.tx_ref_db.items())))
     for st in (1, 2):
         d = audio.device_noise_db(by[hi][st], by[lo][st], hi, lo)
         txt = f"{-d:.0f} dB below the IONOS reference" if d is not None else "too low to measure"
@@ -368,7 +372,9 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--s1", default=r"C:\RMS Express", help="station 1 install (reads ARDOP_Win TNC.ini)")
     s.add_argument("--s2", default=r"C:\RMS Express 2", help="station 2 install")
     s.add_argument("--port", default="COM3", help="IONOS port; '' to set WGN by hand")
-    s.add_argument("--snr", type=int, nargs="+", default=[40], help="IONOS WGN S:N settings to measure at")
+    s.add_argument("--snr", type=int, nargs="+", default=[20],
+                   help="IONOS WGN S:N settings to measure at (default 20: high settings bias the "
+                        "transmit offsets once device noise is within ~10 dB; add 40 to estimate device noise)")
     s.add_argument("--seconds", type=float, default=3.0)
     s.add_argument("--loop", action="store_true", help="repeat until Ctrl+C, for live adjustment")
     s.add_argument("--json", help="save results to this file")
