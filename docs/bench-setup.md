@@ -87,6 +87,17 @@ To re-read saved results without playing anything: `hfbench audio report levels.
 - The CH2 IN gain is high because the headphone-splitter cables load station 1's output. If the cables are replaced with stereo-to-two-mono breakouts, recalibrate.
 - The common offset of about +3 dB for the test tone doesn't affect symmetry. ARDOP's own S:N reading is used to calibrate the modem.
 
+### First ARDOP check after calibration (10 Nov 2026, 23:41 UTC, IONOS reportedly at WGN 15)
+
+| | Station 1 receiving (data) | Station 2 receiving (ACKs) |
+| --- | --- | --- |
+| ARDOP `Early` S:N, median (middle half) | 8 dB (5–10) | 10 dB (7–11) |
+| Decode quality, median | 74 | 74 |
+
+- **Symmetric.** Before calibration the two directions read 13 dB and at least 20 dB.
+- **About 6 dB below the setting.** ARDOP's signal appears to carry about 9 dB less power than the −6 dBFS test tone. Each modem needs its own offset measured; see "Modem level" below.
+- ARDOP stayed at 4PSK.2000. After about 19 KB, Winlink dropped the session with "Received data stream not correct format". That's a modem or protocol result at marginal quality, not a bench fault.
+
 ### Answered on 10 Nov 2026: the IONOS adds noise at a fixed level
 
 With nothing playing, both microphones' noise rose 19.1–19.2 dB going from WGN 40 to WGN 20. So the IONOS injects noise at a level set by the S:N setting, **regardless of the input signal**. A station's real S:N is therefore the setting plus its transmit offset. That's why matching the transmit levels is what makes the channel symmetric.
@@ -168,6 +179,11 @@ Use the IONOS's own 1500 Hz tone, which reaches both microphones identically. Us
 3. **Check symmetry with ARDOP.** Set WGN to **15 dB**, which is below ARDOP's 20 dB reading ceiling, and run one session in each direction. Then run `hfbench parse` on both stations' logs. Each direction's measured S:N should be within about 2 dB of the other, and of 15 dB. Repeat at 10 dB.
 
 ## Notes
+
+### Modem level vs the test tone
+
+The tone check matches the stations to each other, but a modem's real S:N also depends on its own signal power, which differs from the test tone's. Every modem and drive setting therefore needs an offset, measured with real traffic. The planned `hfbench audio listen` records both microphones during a session and measures each direction's S:N from the frames themselves.
+
 
 ### How much device noise is acceptable [Added]
 

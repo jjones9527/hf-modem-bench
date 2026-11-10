@@ -63,7 +63,7 @@ Record the result. This replaces an external level-meter check of the simulator 
 
 ARDOP logs the S:N it measured on received leaders, in a 3 kHz noise bandwidth, which is the IONOS reference. Its session statistics give one value per station, so each direction is measured separately. With one IONOS unit in symmetric mode, both directions should read close to the IONOS setting.
 
-**ARDOP's S:N reading tops out at about 20 dB**, so this check works only at test points of about 18 dB and below.
+**Use ARDOP's per-frame `Early` S:N from the debug log.** ARDOP logs two S:N estimates for each frame. `Full` is the source of the session-statistics `AvgLeader S:N`. It caps at 20 dB and read a flat 0–2 dB on 10 Nov, when the real S:N was about 9 dB, so don't use it. `Early` caps at 30 dB and tracked conditions, though it scatters by a few dB, so compare medians.
 
 - In the pilot, at those points, compare the measured S:N for each direction with the setting.
 - If the two directions differ by more than about 2 dB, treat it as a level fault and mark the run `invalid`.
