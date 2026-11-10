@@ -3,6 +3,12 @@
 The matrix describes *what* to test; the run sheet is the concrete, ordered
 list of runs the bench operator works through. Run IDs are assigned after
 ordering so the sheet reads top to bottom.
+
+Channel settings are modelled on the Teensy IONOS simulator (firmware 2.03):
+fixed Watterson presets, S:N in the simulator's 3 kHz bandwidth, and WGN-only
+add-ons (offset, flat fade, FM drift). Each run carries the exact IONOS serial
+command sequence that sets it up, so settings are explicit and never inherited
+from the previous run.
 """
 
 from __future__ import annotations
@@ -11,8 +17,33 @@ import csv
 import itertools
 import random
 import tomllib
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field
 from pathlib import Path
+
+# IONOS SIM rev 2.03 presets: name -> (Doppler spread Hz, differential delay ms).
+# Source: IONOS manual rev 2.03, specifications page. MPG/MPM/MPP match CCIR 520-2
+# Good/Moderate/Poor (= ITU-R F.1487 mid-latitude quiet/moderate/disturbed).
+IONOS_PRESETS = {
+    "WGN": (0.0, 0.0),
+    "MPG": (0.1, 0.5),
+    "MPM": (0.5, 1.0),
+    "MPP": (1.0, 2.0),
+    "MPD": (2.0, 4.0),
+}
+MULTIPATH_PRESETS = {"MPG", "MPM", "MPP", "MPD"}
+
+_LOG_RATE = {0, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20}
+_LOG_DEV = {0, 1, 2, 5, 10, 20, 50, 100, 200}
+
+# WGN-only add-ons: command -> validator. All are reset to 0 at the start of
+# every run unless the impairment sets them.
+WGN_ADDONS = {
+    "OFFSET": lambda v: -200 <= v <= 200 and v % 10 == 0,
+    "FADE DEPTH": lambda v: 0 <= v <= 40 and float(v).is_integer(),
+    "FADE FREQ": lambda v: v in _LOG_RATE,
+    "FM DEVIATION": lambda v: v in _LOG_DEV,
+    "FM RATE": lambda v: v in _LOG_RATE,
+}
 
 RUNSHEET_FIELDS = [
     "run_id",
@@ -23,13 +54,15 @@ RUNSHEET_FIELDS = [
     "modem_version",
     "modem_bandwidth_hz",
     "profile",
-    "delay_ms",
     "doppler_hz",
+    "delay_ms",
+    "multipaths",
+    "sim_bandwidth_hz",
     "snr_db",
     "impairment",
-    "impairment_params",
+    "impairment_notes",
+    "ionos_commands",
     "replicate",
-    "channel_seed",
     "payload_file",
     "payload_bytes",
     "payload_sha256",
@@ -50,16 +83,10 @@ class Modem:
 
 
 @dataclass(frozen=True)
-class Profile:
-    name: str
-    delay_ms: float
-    doppler_hz: float
-
-
-@dataclass(frozen=True)
 class Impairment:
     name: str
-    params: str = ""  # free text, e.g. "offset_hz=+30"; recorded verbatim
+    settings: tuple[tuple[str, float], ...] = ()  # IONOS add-on commands
+    notes: str = ""  # free text, e.g. "SNR step 20->5 dB at 3 min via serial"
 
 
 @dataclass
@@ -67,21 +94,21 @@ class Matrix:
     campaign: str
     stage: str
     replicates: int
-    snr_db: list[float]
+    snr_db: list[int]
+    profiles: list[str]
     modems: list[Modem]
-    profiles: list[Profile]
     impairments: list[Impairment]
     payload_file: str
     payload_bytes: int
     payload_sha256: str
+    sim_bandwidth_hz: int = 3000
+    multipaths: int = 2
     order: str = "blocked-random"
     order_seed: int = 0
-    seed_mode: str = "fixed"
-    channel_seed: int | None = None
     abort_minutes: int = 30
     abort_retries: int = 3
     # Optional per-profile SNR override for targeted (knee-refinement) passes.
-    snr_by_profile: dict[str, list[float]] = field(default_factory=dict)
+    snr_by_profile: dict[str, list[int]] = field(default_factory=dict)
 
 
 def _req(table: dict, key: str, where: str):
@@ -90,45 +117,47 @@ def _req(table: dict, key: str, where: str):
     return table[key]
 
 
+def _snr(x) -> int:
+    if not float(x).is_integer():
+        raise MatrixError(f"IONOS S:N is set in 1 dB steps; got {x}")
+    return int(x)
+
+
 def load_matrix(path: str | Path) -> Matrix:
     with open(path, "rb") as f:
         doc = tomllib.load(f)
 
     c = _req(doc, "campaign", "top level")
     p = _req(doc, "payload", "top level")
-    ch = doc.get("channel", {})
+    sim = doc.get("ionos", {})
 
     modems = [
         Modem(_req(m, "name", "modems"), str(_req(m, "version", "modems")), m.get("bandwidth_hz"))
         for m in _req(doc, "modems", "top level")
     ]
-    profiles = [
-        Profile(_req(x, "name", "profiles"), float(x.get("delay_ms", 0)), float(x.get("doppler_hz", 0)))
-        for x in _req(doc, "profiles", "top level")
-    ]
-    impairments = [
-        Impairment(_req(x, "name", "impairments"), str(x.get("params", "")))
-        for x in doc.get("impairments", [{"name": "none"}])
-    ]
+    impairments = []
+    for x in doc.get("impairments", [{"name": "none"}]):
+        settings = tuple((k.upper(), v) for k, v in x.get("settings", {}).items())
+        impairments.append(Impairment(_req(x, "name", "impairments"), settings, str(x.get("notes", ""))))
 
     m = Matrix(
         campaign=_req(c, "name", "campaign"),
         stage=c.get("stage", "coarse"),
         replicates=int(c.get("replicates", 3)),
-        snr_db=[float(s) for s in _req(c, "snr_db", "campaign")],
+        snr_db=[_snr(s) for s in _req(c, "snr_db", "campaign")],
+        profiles=[str(s).upper() for s in _req(c, "profiles", "campaign")],
         modems=modems,
-        profiles=profiles,
         impairments=impairments,
         payload_file=_req(p, "file", "payload"),
         payload_bytes=int(_req(p, "bytes", "payload")),
         payload_sha256=_req(p, "sha256", "payload").lower(),
+        sim_bandwidth_hz=int(sim.get("bandwidth_hz", 3000)),
+        multipaths=int(sim.get("multipaths", 2)),
         order=c.get("order", "blocked-random"),
         order_seed=int(c.get("order_seed", 0)),
-        seed_mode=ch.get("seed_mode", "fixed"),
-        channel_seed=ch.get("seed"),
         abort_minutes=int(c.get("abort_minutes", 30)),
         abort_retries=int(c.get("abort_retries", 3)),
-        snr_by_profile={k: [float(s) for s in v] for k, v in c.get("snr_by_profile", {}).items()},
+        snr_by_profile={k.upper(): [_snr(s) for s in v] for k, v in c.get("snr_by_profile", {}).items()},
     )
     validate(m)
     return m
@@ -139,29 +168,54 @@ def validate(m: Matrix) -> None:
         raise MatrixError("replicates must be >= 1")
     if m.order not in ("blocked-random", "sequential"):
         raise MatrixError(f"unknown order '{m.order}' (use blocked-random or sequential)")
-    if m.seed_mode not in ("fixed", "per-replicate", "none"):
-        raise MatrixError(f"unknown seed_mode '{m.seed_mode}' (use fixed, per-replicate or none)")
-    if m.seed_mode != "none" and m.channel_seed is None:
-        raise MatrixError("channel.seed is required unless seed_mode = 'none'")
     if len(m.payload_sha256) != 64:
         raise MatrixError("payload.sha256 must be a 64-char hex SHA-256 (use `hfbench payload hash`)")
-    for kind, items in (("modem", m.modems), ("profile", m.profiles), ("impairment", m.impairments)):
-        names = [i.name for i in items]
+    if m.sim_bandwidth_hz not in (3000, 6000):
+        raise MatrixError("ionos.bandwidth_hz must be 3000 or 6000")
+    if m.multipaths not in (2, 4):
+        raise MatrixError("ionos.multipaths must be 2 or 4")
+    bad = [p for p in m.profiles if p not in IONOS_PRESETS]
+    if bad:
+        raise MatrixError(f"unknown IONOS profile(s) {bad}; available: {sorted(IONOS_PRESETS)}")
+    for snrs in [m.snr_db, *m.snr_by_profile.values()]:
+        if any(not -40 <= s <= 40 for s in snrs):
+            raise MatrixError("IONOS S:N range is -40 to +40 dB")
+    unknown = set(m.snr_by_profile) - set(m.profiles)
+    if unknown:
+        raise MatrixError(f"snr_by_profile names profiles not in campaign.profiles: {sorted(unknown)}")
+    for kind, names in (("modem", [x.name for x in m.modems]), ("profile", m.profiles),
+                        ("impairment", [x.name for x in m.impairments])):
         if len(set(names)) != len(names):
             raise MatrixError(f"duplicate {kind} names: {names}")
-    unknown = set(m.snr_by_profile) - {p.name for p in m.profiles}
-    if unknown:
-        raise MatrixError(f"snr_by_profile names unknown profiles: {sorted(unknown)}")
+    for imp in m.impairments:
+        for cmd, val in imp.settings:
+            if cmd not in WGN_ADDONS:
+                raise MatrixError(f"impairment {imp.name!r}: unknown IONOS setting {cmd!r}; "
+                                  f"supported: {sorted(WGN_ADDONS)}")
+            if not WGN_ADDONS[cmd](val):
+                raise MatrixError(f"impairment {imp.name!r}: {cmd} value {val} out of IONOS range")
+        if imp.settings and any(p in MULTIPATH_PRESETS for p in m.profiles):
+            # IONOS ignores offset/fade/FM on multipath modes ("no FM or Offset!").
+            raise MatrixError(f"impairment {imp.name!r} uses WGN-only settings but the matrix "
+                              f"includes multipath profiles; put it in a WGN-only matrix")
 
 
-def _seed_for(m: Matrix, replicate: int) -> str:
-    # The same seed is used for every modem at a given point, so modems see
-    # identical fading realisations (if the simulator honours the seed).
-    if m.seed_mode == "none":
-        return ""
-    if m.seed_mode == "fixed":
-        return str(m.channel_seed)
-    return str(int(m.channel_seed) + replicate - 1)
+def _fmt_num(x) -> str:
+    return str(int(x)) if float(x).is_integer() else str(x)
+
+
+def ionos_commands(m: Matrix, profile: str, snr: int, imp: Impairment) -> str:
+    """Serial command sequence (manual: Fig. 10) that fully sets up one run.
+
+    Add-ons are reset explicitly so nothing carries over from the previous run.
+    The mode command goes last because it also sets S:N.
+    """
+    addons = {k: 0 for k in WGN_ADDONS}
+    addons.update(dict(imp.settings))
+    cmds = [f"BANDWIDTH:{m.sim_bandwidth_hz}", f"MULTIPATH:{m.multipaths}"]
+    cmds += [f"{k}:{_fmt_num(v)}" for k, v in addons.items()]
+    cmds.append(f"{profile}:{snr}")
+    return "; ".join(cmds)
 
 
 def build_runs(m: Matrix) -> list[dict]:
@@ -169,7 +223,7 @@ def build_runs(m: Matrix) -> list[dict]:
     points = []
     for modem in m.modems:
         for prof, imp in itertools.product(m.profiles, m.impairments):
-            for snr in m.snr_by_profile.get(prof.name, m.snr_db):
+            for snr in m.snr_by_profile.get(prof, m.snr_db):
                 for rep in range(1, m.replicates + 1):
                     points.append((modem, prof, snr, imp, rep))
 
@@ -189,6 +243,7 @@ def build_runs(m: Matrix) -> list[dict]:
 
     rows = []
     for seq, (modem, prof, snr, imp, rep) in enumerate(points, start=1):
+        doppler, delay = IONOS_PRESETS[prof]
         rows.append({
             "run_id": f"{m.campaign}-{seq:04d}",
             "campaign": m.campaign,
@@ -197,14 +252,16 @@ def build_runs(m: Matrix) -> list[dict]:
             "modem": modem.name,
             "modem_version": modem.version,
             "modem_bandwidth_hz": modem.bandwidth_hz if modem.bandwidth_hz is not None else "",
-            "profile": prof.name,
-            "delay_ms": prof.delay_ms,
-            "doppler_hz": prof.doppler_hz,
-            "snr_db": _fmt_num(snr),
+            "profile": prof,
+            "doppler_hz": doppler,
+            "delay_ms": delay,
+            "multipaths": m.multipaths if prof in MULTIPATH_PRESETS else 1,
+            "sim_bandwidth_hz": m.sim_bandwidth_hz,
+            "snr_db": snr,
             "impairment": imp.name,
-            "impairment_params": imp.params,
+            "impairment_notes": imp.notes,
+            "ionos_commands": ionos_commands(m, prof, snr, imp),
             "replicate": rep,
-            "channel_seed": _seed_for(m, rep),
             "payload_file": m.payload_file,
             "payload_bytes": m.payload_bytes,
             "payload_sha256": m.payload_sha256,
@@ -212,10 +269,6 @@ def build_runs(m: Matrix) -> list[dict]:
             "abort_retries": m.abort_retries,
         })
     return rows
-
-
-def _fmt_num(x: float) -> str:
-    return str(int(x)) if float(x).is_integer() else str(x)
 
 
 def write_runsheet(rows: list[dict], path: str | Path) -> None:

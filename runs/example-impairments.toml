@@ -1,0 +1,61 @@
+# Example impairment pass. IONOS applies OFFSET, FADE and FM only on WGN
+# (they are ignored on multipath presets), so this matrix is WGN-only.
+# Choose snr_db a few dB above each modem's WGN knee from the coarse pass.
+
+[campaign]
+name = "imp01"
+stage = "impairment"
+replicates = 3
+profiles = ["WGN"]
+snr_db = [15]                  # TBD after the coarse pass
+order_seed = 20261111
+
+[ionos]
+bandwidth_hz = 3000
+
+[payload]
+file = "payload-20k.bin"
+bytes = 20000
+sha256 = "6746bb57c0b14feb72784f4d9bacd640d5cc1c20e02f1348c1b4f405c81dc64c"
+
+[[modems]]
+name = "VARA HF"
+version = "TBD"
+bandwidth_hz = 2300
+
+[[modems]]
+name = "ARDOP"
+version = "TBD"
+bandwidth_hz = 2000
+
+[[impairments]]
+name = "none"                  # same-session control
+
+[[impairments]]
+name = "offset+50"
+settings = { OFFSET = 50 }
+
+[[impairments]]
+name = "offset-50"
+settings = { OFFSET = -50 }
+
+[[impairments]]
+name = "offset+20"
+settings = { OFFSET = 20 }
+
+# Slow drift, as from an unstable rig: +/-10 Hz at 0.1 Hz.
+[[impairments]]
+name = "drift10"
+settings = { "FM DEVIATION" = 10, "FM RATE" = 0.1 }
+
+# Flat fading. This is NOT a substitute for the CCIR "Flutter" profile, which
+# IONOS lacks: flat fading has no frequency selectivity or Doppler spread.
+[[impairments]]
+name = "flatfade20@10Hz"
+settings = { "FADE DEPTH" = 20, "FADE FREQ" = 10 }
+
+# The SNR step is done mid-run by sending a new mode command (e.g. WGN:5)
+# over serial or with the knob. Stamp the time with `hfbench mark "WGN:5"`.
+[[impairments]]
+name = "snr-step"
+notes = "start at snr_db, step to snr_db-10 at 3 min"

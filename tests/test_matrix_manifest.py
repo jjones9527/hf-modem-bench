@@ -31,27 +31,63 @@ def test_blocked_random_keeps_modems_contiguous_and_is_deterministic():
     assert first != sorted(first)
 
 
-def test_seed_modes():
-    m = mx.load_matrix(EXAMPLE)
-    assert {r["channel_seed"] for r in mx.build_runs(m)} == {"1"}
-    m.seed_mode = "per-replicate"
-    rows = mx.build_runs(m)
-    assert all(int(r["channel_seed"]) == r["replicate"] for r in rows)
+EXAMPLE_IMP = EXAMPLE.with_name("example-impairments.toml")
+
+
+def test_ionos_commands_reset_addons_and_set_mode_last():
+    rows = mx.build_runs(mx.load_matrix(EXAMPLE))
+    r = next(r for r in rows if r["profile"] == "MPP" and r["snr_db"] == 10)
+    cmds = r["ionos_commands"].split("; ")
+    assert cmds[0] == "BANDWIDTH:3000" and cmds[1] == "MULTIPATH:2"
+    assert "OFFSET:0" in cmds and "FADE DEPTH:0" in cmds
+    assert cmds[-1] == "MPP:10"
+    assert (r["doppler_hz"], r["delay_ms"]) == (1.0, 2.0)
+
+
+def test_impairment_matrix_sets_addons():
+    rows = mx.build_runs(mx.load_matrix(EXAMPLE_IMP))
+    r = next(r for r in rows if r["impairment"] == "drift10")
+    assert "FM DEVIATION:10" in r["ionos_commands"] and "FM RATE:0.1" in r["ionos_commands"]
+    assert r["ionos_commands"].endswith("WGN:15")
+    assert r["multipaths"] == 1
+
+
+def _variant(tmp_path, old, new, src=EXAMPLE):
+    f = tmp_path / "m.toml"
+    text = src.read_text()
+    assert old in text
+    f.write_text(text.replace(old, new))
+    return f
+
+
+@pytest.mark.parametrize("old,new", [
+    ('profiles = ["WGN"]', 'profiles = ["WGN", "MPG"]'),    # WGN-only add-on with multipath
+    ("OFFSET = 50", "OFFSET = 55"),                          # not a 10 Hz step
+    ('"FADE FREQ" = 10', '"FADE FREQ" = 3'),                 # not a log-scale value
+    ("snr_db = [15]", "snr_db = [15.5]"),                    # 1 dB steps only
+    ("snr_db = [15]", "snr_db = [45]"),                      # out of range
+])
+def test_ionos_constraints(tmp_path, old, new):
+    with pytest.raises(mx.MatrixError):
+        mx.load_matrix(_variant(tmp_path, old, new, EXAMPLE_IMP))
+
+
+def test_unknown_profile_rejected(tmp_path):
+    with pytest.raises(mx.MatrixError):
+        mx.load_matrix(_variant(tmp_path, '"MPD"]', '"FLUTTER"]'))
 
 
 def test_snr_by_profile_override():
     m = mx.load_matrix(EXAMPLE)
-    m.snr_by_profile = {"Moderate": [12, 10, 8]}
+    m.snr_by_profile = {"MPM": [12, 10, 8]}
     rows = mx.build_runs(m)
-    assert {r["snr_db"] for r in rows if r["profile"] == "Moderate"} == {"12", "10", "8"}
-    assert {r["snr_db"] for r in rows if r["profile"] == "AWGN"} == {"30", "20", "10", "5", "0"}
+    assert {r["snr_db"] for r in rows if r["profile"] == "MPM"} == {12, 10, 8}
+    assert {r["snr_db"] for r in rows if r["profile"] == "WGN"} == {30, 20, 10, 5, 0}
 
 
 def test_validation_rejects_bad_hash(tmp_path):
-    bad = tmp_path / "m.toml"
-    bad.write_text(EXAMPLE.read_text().replace('sha256 = "6746', 'sha256 = "zz'))
     with pytest.raises(mx.MatrixError):
-        mx.load_matrix(bad)
+        mx.load_matrix(_variant(tmp_path, 'sha256 = "6746', 'sha256 = "zz'))
 
 
 T0 = datetime(2026, 11, 10, 18, 0, tzinfo=timezone.utc)
@@ -67,7 +103,10 @@ def test_start_end_and_manifest(tmp_path):
     mf.start_run(ev, a, valid_ids=ids, t=T0)
     with pytest.raises(mf.ManifestError):  # one run at a time
         mf.start_run(ev, b, valid_ids=ids, t=T0)
+    mf.mark_run(ev, "WGN:5", t=T0 + timedelta(minutes=3))
     mf.end_run(ev, None, "dnc", notes="abort at 30 min", t=T0 + timedelta(minutes=30))
+    with pytest.raises(mf.ManifestError):  # nothing running
+        mf.mark_run(ev, "late")
     with pytest.raises(mf.ManifestError):  # already has a result
         mf.start_run(ev, a, valid_ids=ids, t=T0)
     mf.start_run(ev, a, valid_ids=ids, retry=True, t=T0 + timedelta(minutes=31))
@@ -79,6 +118,7 @@ def test_start_end_and_manifest(tmp_path):
         (a, 1, "dnc", "no"), (a, 2, "completed", "yes"), (b, 1, "", "yes")]
     assert man[0]["duration_s"] == 1800
     assert man[0]["notes"] == "abort at 30 min"
+    assert man[0]["marks"] == "+180s WGN:5" and man[1]["marks"] == ""
 
 
 def test_unknown_run_and_bad_outcome(tmp_path):

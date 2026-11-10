@@ -38,6 +38,7 @@ hfbench sheet runs/coarse01.toml                                       # creates
 export HFBENCH_CAMPAIGN=runs/coarse01
 hfbench next                       # shows the settings for the next run
 hfbench start coarse01-0001        # stamps the start time
+hfbench mark "WGN:5"               # optional: timestamp a mid-run event
 hfbench end completed              # or dnc / invalid, optionally with --notes "..."
 hfbench status
 hfbench manifest                   # creates runs/coarse01/manifest.csv

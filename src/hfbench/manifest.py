@@ -32,6 +32,7 @@ MANIFEST_EXTRA_FIELDS = [
     "outcome",
     "final_attempt",
     "stamp_host",
+    "marks",
     "notes",
 ]
 
@@ -84,7 +85,7 @@ def run_state(events: list[dict], run_id: str) -> str:
     for e in events:
         if e.get("run_id") == run_id:
             last = e["event"]
-    return {None: "pending", "start": "running", "end": "done"}[last]
+    return {None: "pending", "start": "running", "mark": "running", "end": "done"}[last]
 
 
 def start_run(events_path: str | Path, run_id: str, *, valid_ids: set[str],
@@ -122,6 +123,18 @@ def end_run(events_path: str | Path, run_id: str | None, outcome: str, *,
     return ev
 
 
+def mark_run(events_path: str | Path, note: str, *, t: datetime | None = None) -> dict:
+    """Timestamp a mid-run event (e.g. an SNR step) on the run in progress."""
+    events_path = Path(events_path)
+    events = read_events(events_path)
+    running = [r for r in dict.fromkeys(e["run_id"] for e in events) if run_state(events, r) == "running"]
+    if not running:
+        raise ManifestError("no run is in progress")
+    ev = {"event": "mark", "run_id": running[0], "notes": note, **_stamp(t or now())}
+    _append(events_path, ev)
+    return ev
+
+
 def build_manifest(runsheet: list[dict], events: list[dict]) -> list[dict]:
     """One row per attempt (start/end pair). Unstarted runs are omitted;
     a start with no end is reported with an empty outcome."""
@@ -133,11 +146,15 @@ def build_manifest(runsheet: list[dict], events: list[dict]) -> list[dict]:
             raise ManifestError(f"event for unknown run id {rid!r}")
         lst = attempts.setdefault(rid, [])
         if e["event"] == "start":
-            lst.append({"start": e, "end": None})
+            lst.append({"start": e, "end": None, "marks": []})
         elif e["event"] == "end":
             if not lst or lst[-1]["end"] is not None:
                 raise ManifestError(f"end without start for {rid}")
             lst[-1]["end"] = e
+        elif e["event"] == "mark":
+            if not lst or lst[-1]["end"] is not None:
+                raise ManifestError(f"mark outside a running attempt for {rid}")
+            lst[-1]["marks"].append(e)
         else:
             raise ManifestError(f"unknown event type {e['event']!r}")
 
@@ -160,6 +177,10 @@ def build_manifest(runsheet: list[dict], events: list[dict]) -> list[dict]:
                 "outcome": e["outcome"] if e else "",
                 "final_attempt": "yes" if i == len(lst) else "no",
                 "stamp_host": s["host"],
+                # seconds after start, so analysis can align marks with the log
+                "marks": " | ".join(
+                    f"+{int((datetime.fromisoformat(k['t_utc']) - datetime.fromisoformat(s['t_utc'])).total_seconds())}s "
+                    f"{k['notes']}" for k in a["marks"]),
                 "notes": e.get("notes", "") if e else "",
             })
     return rows

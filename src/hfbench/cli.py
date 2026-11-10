@@ -7,6 +7,7 @@ stamps and Winlink log timestamps share one clock):
     hfbench sheet runs/coarse-01.toml            # -> runs/<campaign>/runsheet.csv
     hfbench next  -d runs/<campaign>
     hfbench start -d runs/<campaign> <run_id>
+    hfbench mark  -d runs/<campaign> "WGN:5"     # optional mid-run event
     hfbench end   -d runs/<campaign> completed|dnc|invalid [--notes ...]
     hfbench manifest -d runs/<campaign>          # -> manifest.csv
 """
@@ -38,11 +39,11 @@ def _campaign_dir(args) -> Path:
 
 
 def _describe(r: dict) -> str:
-    imp = r["impairment"] + (f" ({r['impairment_params']})" if r["impairment_params"] else "")
-    seed = r["channel_seed"] or "-"
+    imp = r["impairment"] + (f" ({r['impairment_notes']})" if r["impairment_notes"] else "")
     return (f"{r['run_id']}  {r['modem']} {r['modem_version']} | {r['profile']} "
-            f"({r['delay_ms']} ms / {r['doppler_hz']} Hz) | SNR {r['snr_db']} dB | "
-            f"impairment {imp} | rep {r['replicate']} | seed {seed}")
+            f"({r['doppler_hz']} Hz / {r['delay_ms']} ms) | S:N {r['snr_db']} dB in "
+            f"{r['sim_bandwidth_hz']} Hz | impairment {imp} | rep {r['replicate']}\n"
+            f"  IONOS: {r['ionos_commands']}")
 
 
 def cmd_sheet(args):
@@ -85,6 +86,12 @@ def cmd_end(args):
     d = _campaign_dir(args)
     ev = mf.end_run(d / EVENTS, args.run_id, args.outcome, notes=args.notes or "")
     print(f"ended {ev['run_id']} -> {ev['outcome']} at {ev['t_local']}")
+
+
+def cmd_mark(args):
+    d = _campaign_dir(args)
+    ev = mf.mark_run(d / EVENTS, args.note)
+    print(f"marked {ev['run_id']}: {ev['notes']} at {ev['t_local']}")
 
 
 def cmd_status(args):
@@ -149,6 +156,10 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--run-id", help="defaults to the run in progress")
     s.add_argument("--notes")
     s.set_defaults(func=cmd_end)
+
+    s = with_dir(sub.add_parser("mark", help="timestamp a mid-run event, e.g. an SNR step"))
+    s.add_argument("note")
+    s.set_defaults(func=cmd_mark)
 
     s = with_dir(sub.add_parser("manifest", help="build manifest.csv from run sheet + events"))
     s.add_argument("-o", "--out")
