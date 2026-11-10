@@ -22,7 +22,7 @@ The aim is to compare software HF modems used with Winlink Express on a repeatab
 
 ## 2. Bench setup
 
-- **Wiring:** use one IONOS in a half-duplex, symmetric setup, with modem 1 on Ch1 and modem 2 on Ch2. Fit isolation transformers if any hum or ground-loop noise appears; N5TW used them on every connection. Use 3 kHz bandwidth for all HF testing.
+- **Wiring and levels:** follow [bench-setup.md](bench-setup.md). Use one IONOS in a half-duplex, symmetric setup, with modem 1 on Ch1 and modem 2 on Ch2. Fit isolation transformers if any hum or ground-loop noise appears; N5TW used them on every connection. Use 3 kHz bandwidth for all HF testing.
 - **Record the full chain once per campaign** in `runs/<campaign>/bench.md`:
   - sound devices, Windows sample rates and levels
   - IONOS firmware revision and serial number, and its Ch1/Ch2 IN and OUT gains
@@ -63,16 +63,18 @@ Record the result. This replaces an external level-meter check of the simulator 
 
 ARDOP logs the S:N it measured on received leaders, in a 3 kHz noise bandwidth, which is the IONOS reference. Its session statistics give one value per station, so each direction is measured separately. With one IONOS unit in symmetric mode, both directions should read close to the IONOS setting.
 
-- In the pilot, compare the measured S:N for each direction with the setting.
+**ARDOP's S:N reading tops out at about 20 dB**, so this check works only at test points of about 18 dB and below.
+
+- In the pilot, at those points, compare the measured S:N for each direction with the setting.
 - If the two directions differ by more than about 2 dB, treat it as a level fault and mark the run `invalid`.
 
-The first bench logs (10 Nov 2026, at about 20 dB S:N) show why this check matters:
+The first logs (10 Nov 2026, back to back without IONOS) show why this check matters:
 
-- During one 50-minute session, one direction measured 18.6 dB and the other **11.9 dB**.
-- The weak direction stayed at 4PSK.2000, while the strong one ran at 16QAM.2000.
+- One direction's S:N stepped down from at least 20 dB to about 13 dB between sessions.
+- In that direction the link stayed at 4PSK.2000, while the other direction ran at 16QAM.2000.
 - Transfers in the weak direction took about twice as long, roughly 720 bit/s against 1,500 bit/s.
 
-The Winlink log alone would have reported this as "the modem is slow one way".
+The Winlink log alone would have reported this as "the modem is slow one way". [bench-setup.md](bench-setup.md) gives the level-matching procedure.
 
 ## 4. Workload
 
