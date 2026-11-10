@@ -59,12 +59,33 @@ The check:
    - Large changes: one IONOS `CH IN` step is about 6–8 dB.
    - Fine trim: the Windows speaker level.
    - Set both ARDOP `DriveLevel`s the same as well, because the tone bypasses them.
-2. **Receive mismatch.** Matched microphones make both stations work at the same point. This doesn't change S:N, because the IONOS noise is fixed, but it does avoid clipping. Fix transmit first, then set each microphone so it hears the other station at about **−12 dBFS**.
+2. **Receive mismatch.** Matched microphones make both stations work at the same point. This doesn't change S:N, because the IONOS noise is fixed, but it does avoid clipping. Fix transmit first, then set each microphone so it hears the other station somewhere between **−26 and −8 dBFS**, the same at both stations.
 3. **CLIPPED paths** are left out of the estimates. A microphone that clips on its *own* transmission is harmless while that station transmits, but shows its gain is too high.
 4. **The estimates' spread** should be below 1 dB. If it's more, check the Y cables and the IONOS mode.
 5. **`--snr 20 40`** also reports each microphone's own noise relative to the IONOS reference. It should be at least 10 dB below the highest S:N you plan to test. Read the transmit offsets from the 20 dB result.
 
 To re-read saved results without playing anything: `hfbench audio report levels.json`.
+
+### Calibration record (10 Nov 2026, headphone-splitter cables)
+
+| Setting | Station 1 (IONOS Ch2) | Station 2 (IONOS Ch1) |
+| --- | --- | --- |
+| Windows speaker level, channel | 100%, left only | not changed, right only |
+| Windows microphone level | 75 | 35 |
+| Microphone AGC | **off** | **off** |
+| ARDOP `DriveLevel` | 90 | 90 |
+| IONOS CH IN | CH2 IN = 20 | CH1 IN = 1 |
+
+| Result (WGN 20) | Station 1 | Station 2 |
+| --- | --- | --- |
+| Transmit vs IONOS reference | +2.3 dB | +3.3 dB |
+| Hears the other station at | −20.5 dBFS | −20.9 dBFS |
+| Microphone's own noise | 38 dB below the reference | 38 dB below the reference |
+
+- Mismatch: **transmit 1.1 dB, receive 0.7 dB**. No clipping, and harmonics are −40 dBc or better.
+- **AGC was the hidden cause of the 21 dB microphone mismatch.** It was on for both microphones, adding different amounts of gain.
+- The CH2 IN gain is high because the headphone-splitter cables load station 1's output. If the cables are replaced with stereo-to-two-mono breakouts, recalibrate.
+- The common offset of about +3 dB for the test tone doesn't affect symmetry. ARDOP's own S:N reading is used to calibrate the modem.
 
 ### Answered on 10 Nov 2026: the IONOS adds noise at a fixed level
 

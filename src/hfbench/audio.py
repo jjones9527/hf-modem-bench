@@ -151,7 +151,7 @@ def tx_offsets(paths: dict[str, dict], setting_snr: float) -> dict[int, float]:
 
 
 def advice(m: Mismatch, L: dict[tuple[int, int], float], drive: tuple[int | None, int | None] = (None, None),
-           target_rx_dbfs: float = -12.0, tol_db: float = 1.0, *,
+           rx_window_dbfs: tuple[float, float] = (-26.0, -8.0), tol_db: float = 1.0, *,
            tx_ref: dict[int, float] | None = None, clipped: set[tuple[int, int]] = frozenset()) -> list[str]:
     out = []
     if not m.consistent and (m.n_tx > 1 or m.n_rx > 1):
@@ -185,9 +185,11 @@ def advice(m: Mismatch, L: dict[tuple[int, int], float], drive: tuple[int | None
             out.append(f"Receive levels match ({m.rx_db:+.1f} dB).")
     for j in (1, 2):
         lvl = L.get((3 - j, j))
-        if lvl is not None and (3 - j, j) not in clipped and abs(lvl - target_rx_dbfs) > 3:
-            out.append(f"Station {j} receives the other station at {lvl:.1f} dBFS; aim for about {target_rx_dbfs:.0f} dBFS "
-                       f"once transmit is fixed.")
+        lo, hi = rx_window_dbfs
+        if lvl is not None and (3 - j, j) not in clipped and not lo <= lvl <= hi:
+            why = "too little headroom for fading peaks" if lvl > hi else "low; raise it toward the input's range"
+            out.append(f"Station {j} receives the other station at {lvl:.1f} dBFS ({why}); keep it within "
+                       f"{lo:.0f} to {hi:.0f} dBFS once transmit is fixed.")
     for (i, j) in sorted(clipped):
         who = "its own transmission" if i == j else f"station {i}"
         out.append(f"Station {j}'s microphone clips on {who}: lower its input level"
