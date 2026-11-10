@@ -15,3 +15,4 @@ reports/*
 !reports/.gitkeep
 payloads/*
 !payloads/.gitkeep
+!payloads/Text_50KB/
