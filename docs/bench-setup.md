@@ -7,8 +7,8 @@ Steps marked **[Manual]** are from the *Teensy IONOS manual rev 2.03*. Steps mar
 | | Station 1 (`C:\RMS Express`) | Station 2 (`C:\RMS Express 2`) |
 | --- | --- | --- |
 | Sound device | "USB Audio Device", C-Media, USB VID 0D8C PID **0014** | "C-Media USB Audio Device", USB VID 0D8C PID **0008** |
-| ARDOP `DriveLevel` | **90** | **75** |
-| IONOS channel | Ch1 (assumed; confirm in step 1) | Ch2 |
+| ARDOP `DriveLevel` | 90 | 90 (was 75; matched 10 Nov) |
+| IONOS channel | **Ch2**, measured: changing CH1 IN moved only station 2 | **Ch1** |
 
 The two devices use **different chips**, so the same Windows slider position gives different real levels. Their drive levels also differ by about 1.6 dB. **Don't try to match slider positions.** Match measured levels instead, using a test tone, as described below.
 
