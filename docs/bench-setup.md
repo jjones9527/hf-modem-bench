@@ -54,13 +54,32 @@ The check:
 `--loop` re-measures every few seconds, so you can move one Windows slider at a time and watch the mismatch go to 0. Press Ctrl+C to stop. Add `--json levels.json` to save the numbers for `bench.md`.
 
 **Interpreting the result:**
-- The receive levels should be about **−12 dBFS** at both microphones.
-- At WGN 40, a microphone's **S:N should read close to 40 dB**. If one reads much lower, that device's own noise dominates.
-- An **"estimate spread" above 1 dB** means the IONOS isn't feeding both outputs from the mix as assumed. Check the Y cables.
 
-**The S:N reference question:** `hfbench audio check --snr 40 20` measures at two settings.
-- If the *nothing-playing* floor rises by about 20 dB at WGN 20, the IONOS adds noise even with no signal. In that case its S:N is set against a fixed reference, and transmit matching directly sets symmetry.
-- If the floor doesn't rise, the noise follows the input signal.
+1. **Transmit vs IONOS reference.** This is the key number. It's each station's tone S:N at the other microphone minus the IONOS setting. Bring **both stations to 0 ± 1 dB**, and the IONOS setting is then the real S:N in both directions.
+   - Large changes: one IONOS `CH IN` step is about 6–8 dB.
+   - Fine trim: the Windows speaker level.
+   - Set both ARDOP `DriveLevel`s the same as well, because the tone bypasses them.
+2. **Receive mismatch.** Matched microphones make both stations work at the same point. This doesn't change S:N, because the IONOS noise is fixed, but it does avoid clipping. Fix transmit first, then set each microphone so it hears the other station at about **−12 dBFS**.
+3. **CLIPPED paths** are left out of the estimates. A microphone that clips on its *own* transmission is harmless while that station transmits, but shows its gain is too high.
+4. **The estimates' spread** should be below 1 dB. If it's more, check the Y cables and the IONOS mode.
+5. **`--snr 40 20`** also reports each microphone's own noise relative to the IONOS reference. It should be at least 10 dB below the highest S:N you plan to test.
+
+To re-read saved results without playing anything: `hfbench audio report levels.json`.
+
+### Answered on 10 Nov 2026: the IONOS adds noise at a fixed level
+
+With nothing playing, both microphones' noise rose 19.1–19.2 dB going from WGN 40 to WGN 20. So the IONOS injects noise at a level set by the S:N setting, **regardless of the input signal**. A station's real S:N is therefore the setting plus its transmit offset. That's why matching the transmit levels is what makes the channel symmetric.
+
+### First tone check (10 Nov 2026, before any adjustment)
+
+| | Station 1 | Station 2 |
+| --- | --- | --- |
+| Transmit vs IONOS reference | **−24.8 dB** (real S:N about 25 dB below the setting) | +2.7 dB |
+| Microphone sensitivity | — | **21 dB higher** than station 1, and clips on its own transmission |
+| Microphone's own noise | 46 dB below the reference | 47 dB below the reference |
+
+- Neither device is noisy. Station 2's "higher noise floor" was its 21 dB higher microphone gain.
+- The three independent estimates agreed to within 0.1–0.5 dB.
 
 ## Step 0: Windows settings for both USB devices [C-Media] [Added]
 
@@ -133,14 +152,9 @@ Use the IONOS's own 1500 Hz tone, which reaches both microphones identically. Us
 
 A device's own S:N, from step 2.6, should be at least **10 dB above the highest test S:N**. At that margin the device shifts the effective S:N by less than 0.5 dB, so a 30 dB test point needs about 40 dB. If a device can't reach that, lower the top test point or report it as a bench limit.
 
-### Open question: what IONOS measures S:N against
+### What IONOS measures S:N against
 
-The manual doesn't say whether S:N is set relative to the measured input or to a fixed internal reference. After step 4:
-
-1. Lower one station's Windows speaker level by about 6 dB.
-2. Repeat the 15 dB check.
-
-**If that direction's measured S:N drops by about 6 dB**, IONOS uses a fixed reference and step 3's match directly sets symmetry. **If it doesn't drop**, IONOS tracks the input level, and step 3 matters only for headroom.
+Answered: the IONOS uses a fixed noise reference. See the tone-check section above.
 
 ### Ground loops [Manual Fig. 7 note; N5TW]
 

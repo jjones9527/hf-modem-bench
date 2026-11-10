@@ -194,6 +194,21 @@ def cmd_run(args):
             ionos.close()
 
 
+def _noise_summary(audio, results):
+    """Each microphone's own noise, if two IONOS S:N settings were measured."""
+    by = {}
+    for r in results:
+        if r.ionos_setting.upper().startswith("WGN:"):
+            by[float(r.ionos_setting.split(":")[1])] = r.floor_dbfs_3k
+    if len(by) < 2:
+        return
+    hi, lo = max(by), min(by)
+    for st in (1, 2):
+        d = audio.device_noise_db(by[hi][st], by[lo][st], hi, lo)
+        txt = f"{-d:.0f} dB below the IONOS reference" if d is not None else "too low to measure"
+        print(f"station {st} microphone's own noise: {txt}")
+
+
 IONOS_RESET = "BANDWIDTH:3000; MULTIPATH:2; OFFSET:0; FADE DEPTH:0; FADE FREQ:0; FM DEVIATION:0; FM RATE:0"
 
 
@@ -201,6 +216,16 @@ def cmd_audio(args):
     import json
 
     from . import audio
+
+    if args.acmd == "report":
+        from dataclasses import asdict as _asdict
+        saved = json.loads(Path(args.json_in).read_text())
+        res = [audio.evaluate(r["ionos_setting"], r["floor_dbfs_3k"], r["paths"], r.get("devices"))
+               for r in saved]
+        for r in res:
+            print(audio.format_result(r) + "\n")
+        _noise_summary(audio, res)
+        return
 
     if args.acmd == "devices":
         import sounddevice as sd
@@ -242,6 +267,7 @@ def cmd_audio(args):
     finally:
         if io is not None:
             io.close()
+    _noise_summary(audio, results)
     if args.json:
         from dataclasses import asdict
         Path(args.json).write_text(json.dumps([asdict(r) for r in results], indent=2, default=str))
@@ -334,6 +360,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     au = sub.add_parser("audio", help="tone-based level check (run on the Windows desktop)").add_subparsers(dest="acmd", required=True)
     s = au.add_parser("devices", help="list sound devices")
+    s.set_defaults(func=cmd_audio)
+    s = au.add_parser("report", help="re-analyze a saved --json result (plays nothing)")
+    s.add_argument("json_in")
     s.set_defaults(func=cmd_audio)
     s = au.add_parser("check", help="measure transmit/receive mismatch, S:N and distortion per path")
     s.add_argument("--s1", default=r"C:\RMS Express", help="station 1 install (reads ARDOP_Win TNC.ini)")

@@ -77,12 +77,38 @@ def test_mismatch_flags_inconsistent_mixing():
     assert "Y cables" in au.advice(m, L)[0]
 
 
+def test_mismatch_ignores_clipped_path_and_uses_floors():
+    # the 10 Nov 2026 bench at WGN 40: 2->2 clipped at +2 dBFS
+    L = {(1, 1): -37.8, (1, 2): -16.9, (2, 1): -10.5, (2, 2): 2.0}
+    m = au.mismatch(L, clipped={(2, 2)}, floors={1: -53.3, 2: -32.3})
+    assert (m.n_tx, m.n_rx) == (1, 2)
+    assert m.tx_db == pytest.approx(-27.3, abs=0.05)
+    assert m.rx_db == pytest.approx(-20.95, abs=0.05) and m.consistent
+
+
+def test_tx_offsets_against_ionos_reference():
+    paths = {"1->2": {"snr_db": 15.2, "clipped": False}, "1->1": {"snr_db": 15.3, "clipped": False},
+             "2->1": {"snr_db": 42.7, "clipped": False}, "2->2": {"snr_db": 44.7, "clipped": True}}
+    ref = au.tx_offsets(paths, 40)
+    assert ref == {1: pytest.approx(-24.8), 2: pytest.approx(2.7)}
+    adv = " ".join(au.advice(au.mismatch({(1, 1): 0, (1, 2): 0, (2, 1): 0, (2, 2): 0}),
+                             {(1, 1): 0, (1, 2): 0, (2, 1): 0, (2, 2): 0}, tx_ref=ref))
+    assert "Raise station 1's level into the IONOS by 24.8 dB" in adv
+    assert "Lower station 2's level into the IONOS by 2.7 dB" in adv
+
+
+def test_device_noise_from_two_settings():
+    # floor rose 19.1 dB from WGN 40 to 20: device noise ~6.4 dB under IONOS noise at 40 -> ~46 dB under ref
+    assert au.device_noise_db(-53.3, -34.2, 40, 20) == pytest.approx(-46.4, abs=0.2)
+    assert au.device_noise_db(-53.3, -33.3, 40, 20) is None   # exactly 20 dB: no device noise visible
+
+
 def test_advice_wording_and_drive_level():
     L = levels(t1=2.0, t2=0.0, r1=0.0, r2=0.0, c=-12.0 - 1.0)
     adv = " ".join(au.advice(au.mismatch(L), L, drive=(90, 75)))
     assert "station 1 reaches the IONOS 2.0 dB hotter" in adv
     assert "Receive levels match" in adv
-    assert "DriveLevel differs (90 vs 75)" in adv and "+1.6 dB" in adv
+    assert "DriveLevel differs (90 vs 75, +1.6 dB)" in adv
 
 
 def test_station_from_ardop_ini(tmp_path):

@@ -107,51 +107,107 @@ def noise_floor_dbfs_3k(x: np.ndarray, fs: float) -> float:
 
 @dataclass
 class Mismatch:
-    tx_db: float              # station 1 minus station 2, into the IONOS
+    tx_db: float              # station 1 minus station 2, into the IONOS (nan if unknown)
     rx_db: float              # station 1 minus station 2, at the microphones
-    tx_spread_db: float       # disagreement between the two tx estimates
+    tx_spread_db: float       # max disagreement between the available estimates
     rx_spread_db: float
     consistent: bool
+    n_tx: int = 0             # number of estimates used
+    n_rx: int = 0
 
 
-def mismatch(L: dict[tuple[int, int], float], tol_db: float = 1.0) -> Mismatch:
-    """L[(i, j)]: tone level in dBFS when station i plays and station j records."""
-    tx_a, tx_b = L[1, 1] - L[2, 1], L[1, 2] - L[2, 2]
-    rx_a, rx_b = L[1, 1] - L[1, 2], L[2, 1] - L[2, 2]
-    tx_s, rx_s = abs(tx_a - tx_b), abs(rx_a - rx_b)
-    return Mismatch((tx_a + tx_b) / 2, (rx_a + rx_b) / 2, tx_s, rx_s, max(tx_s, rx_s) <= tol_db)
+def mismatch(L: dict[tuple[int, int], float], tol_db: float = 1.0, *,
+             clipped: set[tuple[int, int]] = frozenset(),
+             floors: dict[int, float] | None = None) -> Mismatch:
+    """L[(i, j)]: tone level in dBFS when station i plays and station j records.
+    Clipped paths are left out. With the IONOS noise dominating, both
+    microphones hear the same noise, so floor1 - floor2 is another receive
+    estimate."""
+    ok = lambda *ks: all(k not in clipped for k in ks)
+    tx = [L[1, j] - L[2, j] for j in (1, 2) if ok((1, j), (2, j))]
+    rx = [L[i, 1] - L[i, 2] for i in (1, 2) if ok((i, 1), (i, 2))]
+    if floors:
+        rx.append(floors[1] - floors[2])
+    mean = lambda v: sum(v) / len(v) if v else float("nan")
+    spread = lambda v: (max(v) - min(v)) if len(v) > 1 else 0.0
+    return Mismatch(mean(tx), mean(rx), spread(tx), spread(rx),
+                    bool(tx) and bool(rx) and max(spread(tx), spread(rx)) <= tol_db, len(tx), len(rx))
+
+
+def tx_offsets(paths: dict[str, dict], setting_snr: float) -> dict[int, float]:
+    """Each station's transmit level relative to the IONOS S:N reference:
+    measured S:N of its tone at the *other* station minus the IONOS setting.
+    0 dB means the IONOS setting is the true S:N for that station's signal.
+    (Valid because the IONOS adds noise at a fixed level; see bench-setup.md.)"""
+    out = {}
+    for i in (1, 2):
+        for k in (f"{i}->{3 - i}", f"{i}->{i}"):
+            if k in paths and not paths[k]["clipped"]:
+                out[i] = paths[k]["snr_db"] - setting_snr
+                break
+    return out
 
 
 def advice(m: Mismatch, L: dict[tuple[int, int], float], drive: tuple[int | None, int | None] = (None, None),
-           target_rx_dbfs: float = -12.0, tol_db: float = 0.5) -> list[str]:
+           target_rx_dbfs: float = -12.0, tol_db: float = 1.0, *,
+           tx_ref: dict[int, float] | None = None, clipped: set[tuple[int, int]] = frozenset()) -> list[str]:
     out = []
-    if not m.consistent:
-        out.append(f"The two estimates disagree by up to {max(m.tx_spread_db, m.rx_spread_db):.1f} dB: "
+    if not m.consistent and (m.n_tx > 1 or m.n_rx > 1):
+        out.append(f"Estimates disagree by up to {max(m.tx_spread_db, m.rx_spread_db):.1f} dB: "
                    "the IONOS may not be mixing both inputs to both outputs. Check the Y cables "
                    "(they must be L/R splitters) and the IONOS mode before trusting the numbers below.")
-    if abs(m.tx_db) > tol_db:
-        loud, quiet = (1, 2) if m.tx_db > 0 else (2, 1)
-        out.append(f"Transmit: station {loud} reaches the IONOS {abs(m.tx_db):.1f} dB hotter than station {quiet}. "
-                   f"Lower station {loud}'s Windows speaker level (or raise station {quiet}'s) by {abs(m.tx_db):.1f} dB.")
-    else:
-        out.append(f"Transmit levels match ({m.tx_db:+.1f} dB).")
-    if abs(m.rx_db) > tol_db:
-        loud, quiet = (1, 2) if m.rx_db > 0 else (2, 1)
-        out.append(f"Receive: station {loud}'s microphone reads {abs(m.rx_db):.1f} dB hotter than station {quiet}'s. "
-                   f"Lower station {loud}'s Windows microphone level (or raise station {quiet}'s) by {abs(m.rx_db):.1f} dB.")
-    else:
-        out.append(f"Receive levels match ({m.rx_db:+.1f} dB).")
+    # 1. transmit: against the IONOS reference if known, else relative
+    if tx_ref:
+        for i, off in sorted(tx_ref.items()):
+            if abs(off) <= tol_db:
+                out.append(f"Transmit, station {i}: at the IONOS reference ({off:+.1f} dB). Leave it.")
+            else:
+                verb = "Raise" if off < 0 else "Lower"
+                out.append(f"Transmit, station {i}: {abs(off):.1f} dB {'below' if off < 0 else 'above'} the IONOS reference, "
+                           f"so its real S:N is {off:+.1f} dB off the setting. {verb} station {i}'s level into the IONOS "
+                           f"by {abs(off):.1f} dB (Windows speaker level; for more than ~6 dB use one IONOS CH IN step).")
+    elif not math.isnan(m.tx_db):
+        if abs(m.tx_db) > tol_db:
+            loud, quiet = (1, 2) if m.tx_db > 0 else (2, 1)
+            out.append(f"Transmit: station {loud} reaches the IONOS {abs(m.tx_db):.1f} dB hotter than station {quiet}.")
+        else:
+            out.append(f"Transmit levels match ({m.tx_db:+.1f} dB).")
+    # 2. receive
+    if not math.isnan(m.rx_db):
+        if abs(m.rx_db) > tol_db:
+            loud, quiet = (1, 2) if m.rx_db > 0 else (2, 1)
+            out.append(f"Receive: station {loud}'s microphone is {abs(m.rx_db):.1f} dB more sensitive than station {quiet}'s. "
+                       f"Bring them together (IONOS CH OUT steps for large changes, Windows microphone level to trim). "
+                       f"Fix transmit first: raising a weak transmitter raises what the other microphone receives.")
+        else:
+            out.append(f"Receive levels match ({m.rx_db:+.1f} dB).")
     for j in (1, 2):
-        lvl = L[3 - j, j]
-        if abs(lvl - target_rx_dbfs) > 3:
+        lvl = L.get((3 - j, j))
+        if lvl is not None and (3 - j, j) not in clipped and abs(lvl - target_rx_dbfs) > 3:
             out.append(f"Station {j} receives the other station at {lvl:.1f} dBFS; aim for about {target_rx_dbfs:.0f} dBFS "
-                       f"(adjust IONOS CH{j} OUT in steps, then trim with the Windows microphone level).")
+                       f"once transmit is fixed.")
+    for (i, j) in sorted(clipped):
+        who = "its own transmission" if i == j else f"station {i}"
+        out.append(f"Station {j}'s microphone clips on {who}: lower its input level"
+                   f"{' (harmless while it transmits, but a sign its gain is too high)' if i == j else ''}.")
     d1, d2 = drive
     if d1 and d2 and d1 != d2:
         extra = 20 * math.log10(d1 / d2)
-        out.append(f"ARDOP DriveLevel differs ({d1} vs {d2}): that adds {extra:+.1f} dB to the transmit mismatch "
-                   f"for real ARDOP traffic ({m.tx_db + extra:+.1f} dB in total). Set both DriveLevels the same.")
+        out.append(f"ARDOP DriveLevel differs ({d1} vs {d2}, {extra:+.1f} dB): the tone bypasses it, so real ARDOP "
+                   f"traffic adds that to the transmit difference. Set both DriveLevels the same.")
     return out
+
+
+def device_noise_db(floor_hi_snr: float, floor_lo_snr: float, snr_hi: float, snr_lo: float) -> float | None:
+    """A microphone's own noise relative to the IONOS reference signal, in dB
+    (negative = below), from noise floors measured at two IONOS S:N settings.
+    The IONOS noise scales with the setting and the device noise doesn't."""
+    expect = 10 ** ((snr_hi - snr_lo) / 10)          # IONOS noise ratio
+    got = 10 ** ((floor_lo_snr - floor_hi_snr) / 10)
+    if got >= expect or got <= 1:
+        return None                                   # device noise not measurable
+    d_over_i = (expect - got) / (got - 1)             # device / IONOS noise at snr_hi
+    return 10 * math.log10(d_over_i) - snr_hi
 
 
 # --- station configuration from ARDOP_Win TNC.ini ------------------------------
@@ -203,6 +259,7 @@ class CheckResult:
     mismatch: dict
     advice: list[str]
     devices: dict = field(default_factory=dict)
+    tx_ref_db: dict = field(default_factory=dict)
 
 
 def _sine(fs: float, seconds: float, hz: float, dbfs: float, channels: int) -> np.ndarray:
@@ -290,9 +347,23 @@ def run_check(stations: tuple[Station, Station], *, seconds: float = 3.0, tone_h
             L[s.number, j] = st.tone_dbfs
             paths[f"{s.number}->{j}"] = asdict(st)
 
-    m = mismatch(L)
-    adv = advice(m, L, (stations[0].drive_level, stations[1].drive_level))
-    return CheckResult(ionos_setting, floor, paths, asdict(m), adv, names)
+    return evaluate(ionos_setting, floor, paths, names,
+                    (stations[0].drive_level, stations[1].drive_level))
+
+
+def evaluate(ionos_setting: str, floor: dict, paths: dict, names: dict | None = None,
+             drive: tuple[int | None, int | None] = (None, None)) -> CheckResult:
+    """Derive mismatch, reference offsets and advice from measured paths.
+    Also used to re-analyze saved results (hfbench audio report)."""
+    floor = {int(k): v for k, v in floor.items()}
+    L = {(int(k[0]), int(k[-1])): v["tone_dbfs"] for k, v in paths.items()}
+    clipped = {(int(k[0]), int(k[-1])) for k, v in paths.items() if v["clipped"]}
+    m = mismatch(L, clipped=clipped, floors=floor)
+    ref = {}
+    if ionos_setting.upper().startswith("WGN:"):
+        ref = tx_offsets(paths, float(ionos_setting.split(":")[1]))
+    adv = advice(m, L, drive, tx_ref=ref, clipped=clipped)
+    return CheckResult(ionos_setting, floor, paths, asdict(m), adv, names or {}, ref)
 
 
 def format_result(r: CheckResult) -> str:
@@ -310,7 +381,10 @@ def format_result(r: CheckResult) -> str:
               f"  station 2 mic {r.floor_dbfs_3k[2]:.1f} dBFS",
               f"transmit mismatch (st1 - st2): {r.mismatch['tx_db']:+.1f} dB   "
               f"receive mismatch (st1 - st2): {r.mismatch['rx_db']:+.1f} dB   "
-              f"(estimate spread {max(r.mismatch['tx_spread_db'], r.mismatch['rx_spread_db']):.1f} dB)",
-              ""]
+              f"(spread {max(r.mismatch['tx_spread_db'], r.mismatch['rx_spread_db']):.1f} dB; clipped paths excluded)"]
+    if r.tx_ref_db:
+        lines.append("transmit vs IONOS reference (0 = real S:N equals the setting):  " +
+                     "   ".join(f"station {i} {v:+.1f} dB" for i, v in sorted(r.tx_ref_db.items())))
+    lines += [""]
     lines += [f"* {a}" for a in r.advice]
     return "\n".join(lines)
