@@ -188,7 +188,8 @@ Every attempt is kept in the event log (`events.jsonl`, append-only). The manife
 | --- | --- |
 | Done | IONOS serial control, log-based stamping, the abort rule and outcomes (`hfbench run`) |
 | Next | A timed mid-run SNR step, for the `snr-step` impairment |
-| Next | Audio calibration and a pre-run level check (play and record a tone with `sounddevice`) |
+| Done | Tone-based level check (`hfbench audio check`); see bench-setup.md |
+| Next | Running the tone check automatically before each run in `hfbench run` |
 | Later | Starting the Winlink session itself, either by scripting the Winlink Express window or with Pat |
 
 Audio and GUI automation have to run in the desktop session. SSH sessions on Windows are session 0, which can't use the sound devices or windows.

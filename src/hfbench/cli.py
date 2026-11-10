@@ -151,6 +151,7 @@ def cmd_ionos(args):
     from .ionos import Ionos
 
     io = Ionos.open(args.port)
+    io.allow_gains = getattr(args, "allow_gains", False)
     try:
         if args.icmd == "probe":
             print("IONOS answered" if io.probe() else "no valid reply")
@@ -191,6 +192,60 @@ def cmd_run(args):
     finally:
         if ionos is not None:
             ionos.close()
+
+
+IONOS_RESET = "BANDWIDTH:3000; MULTIPATH:2; OFFSET:0; FADE DEPTH:0; FADE FREQ:0; FM DEVIATION:0; FM RATE:0"
+
+
+def cmd_audio(args):
+    import json
+
+    from . import audio
+
+    if args.acmd == "devices":
+        import sounddevice as sd
+
+        apis = sd.query_hostapis()
+        for i, d in enumerate(sd.query_devices()):
+            print(f"{i:3d}  in={d['max_input_channels']} out={d['max_output_channels']}  "
+                  f"{d['default_samplerate']:>7.0f} Hz  {apis[d['hostapi']]['name']:<22} {d['name']}")
+        return
+
+    stations = (audio.station_from_ardop_ini(1, args.s1), audio.station_from_ardop_ini(2, args.s2))
+    for s in stations:
+        print(f"station {s.number}: play '{s.playback}', record '{s.capture}', DriveLevel {s.drive_level}")
+    io = None
+    if args.port:
+        from .ionos import Ionos
+
+        io = Ionos.open(args.port)
+    results = []
+    try:
+        while True:
+            for snr in args.snr:
+                setting = f"WGN:{snr}"
+                if io is not None:
+                    io.apply(f"{IONOS_RESET}; {setting}")
+                    print(f"\nIONOS set to WGN, S:N {snr} dB (add-ons off)")
+                else:
+                    print(f"\nSet the IONOS to WGN, S:N {snr} dB by hand (no --port given).")
+                r = audio.run_check(stations, seconds=args.seconds, ionos_setting=setting if io else "")
+                print(audio.format_result(r))
+                results.append(r)
+            if not args.loop:
+                break
+            print("\n--- adjust levels now; re-measuring in 3 s (Ctrl+C to stop) ---")
+            import time
+            time.sleep(3)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        if io is not None:
+            io.close()
+    if args.json:
+        from dataclasses import asdict
+        Path(args.json).write_text(json.dumps([asdict(r) for r in results], indent=2, default=str))
+        print(f"\nsaved {args.json}")
 
 
 def cmd_payload_make(args):
@@ -256,6 +311,7 @@ def build_parser() -> argparse.ArgumentParser:
     s = io.add_parser("send", help="send commands, e.g. 'WGN:20' 'OFFSET:0'")
     s.add_argument("commands", nargs="+")
     s.add_argument("--port", default="COM3")
+    s.add_argument("--allow-gains", action="store_true", help="permit CH1/CH2 IN/OUT gain commands")
     s.set_defaults(func=cmd_ionos)
     s = with_dir(io.add_parser("apply", help="apply a run's IONOS settings from the run sheet"))
     s.add_argument("run_id")
@@ -268,6 +324,19 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--poll", type=float, default=2.0, help="log poll interval, seconds")
     s.add_argument("--max-runs", type=int)
     s.set_defaults(func=cmd_run)
+
+    au = sub.add_parser("audio", help="tone-based level check (run on the Windows desktop)").add_subparsers(dest="acmd", required=True)
+    s = au.add_parser("devices", help="list sound devices")
+    s.set_defaults(func=cmd_audio)
+    s = au.add_parser("check", help="measure transmit/receive mismatch, S:N and distortion per path")
+    s.add_argument("--s1", default=r"C:\RMS Express", help="station 1 install (reads ARDOP_Win TNC.ini)")
+    s.add_argument("--s2", default=r"C:\RMS Express 2", help="station 2 install")
+    s.add_argument("--port", default="COM3", help="IONOS port; '' to set WGN by hand")
+    s.add_argument("--snr", type=int, nargs="+", default=[40], help="IONOS WGN S:N settings to measure at")
+    s.add_argument("--seconds", type=float, default=3.0)
+    s.add_argument("--loop", action="store_true", help="repeat until Ctrl+C, for live adjustment")
+    s.add_argument("--json", help="save results to this file")
+    s.set_defaults(func=cmd_audio)
 
     pay = sub.add_parser("payload", help="make or hash the test payload").add_subparsers(dest="pcmd", required=True)
     s = pay.add_parser("make")

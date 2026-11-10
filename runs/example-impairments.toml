@@ -14,10 +14,12 @@ order_seed = 20261111
 bandwidth_hz = 3000
 
 [payload]
-file = "payload-20k.bin"
-bytes = 20000
-sha256 = "6746bb57c0b14feb72784f4d9bacd640d5cc1c20e02f1348c1b4f405c81dc64c"
-messages = 1                   # messages per run (all directions); TBD
+# Attach this file to each message. Regenerate exactly with:
+#   hfbench payload make payloads/payload-50k.bin --bytes 51200 --seed 1
+file = "payload-50k.bin"
+bytes = 51200
+sha256 = "a324e9181248799f8023f76ea2277f1d76d731a4302b46ecd26d0c12d927ba0b"
+messages = 10                  # per run, both directions: 5 queued at each station
 
 [[modems]]
 name = "VARA HF"

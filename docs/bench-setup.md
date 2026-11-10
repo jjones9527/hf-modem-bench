@@ -30,6 +30,38 @@ Station 2 Speakers ──► Line In  ch2 ┘   (one Watterson     └ Line Out 
 
 Both inputs are mixed into one channel model, which feeds both outputs. The channel is symmetric only if both stations reach the mixer at the **same level** [Manual §4.1 step 5]. Both stations should also receive at the **same digital level**.
 
+## The tone check (`hfbench audio check`)
+
+Steps 2 and 3 below can be done by hand in Audacity, but `hfbench audio check` does both together and reports the result in dB. Do step 0 (Windows settings) first.
+
+1. Close both Winlink Express sessions so neither ARDOP is transmitting.
+2. Open a **Command Prompt on the Windows desktop**. Over SSH there's no audio.
+3. Run:
+
+```text
+hfbench audio check --loop
+```
+
+The check:
+
+1. Reads each station's playback and capture devices and `DriveLevel` from `C:\RMS Express\ARDOP_Win TNC.ini` and `C:\RMS Express 2\ARDOP_Win TNC.ini`.
+2. Sets the IONOS to **WGN, S:N 40** over COM3, with offset, fading and FM off. Gains are never touched.
+3. Records both microphones with nothing playing, giving each device's noise floor.
+4. Plays a 1500 Hz tone at −6 dBFS from **station 1's speakers**, recording both microphones, then does the same from **station 2's speakers**.
+5. Prints, for each of the four paths, the tone level (dBFS), the S:N in 3 kHz, the 2nd and 3rd harmonics, the peak level and any clipping. The 3rd harmonic at 4.5 kHz is above the IONOS's 3.3 kHz filter, so if it appears it was created at the receiving input.
+6. Prints the **transmit mismatch** (into the IONOS) and the **receive mismatch** (at the microphones) separately, in dB. It says which station to turn down or up, and on which slider (speaker or microphone).
+
+`--loop` re-measures every few seconds, so you can move one Windows slider at a time and watch the mismatch go to 0. Press Ctrl+C to stop. Add `--json levels.json` to save the numbers for `bench.md`.
+
+**Interpreting the result:**
+- The receive levels should be about **−12 dBFS** at both microphones.
+- At WGN 40, a microphone's **S:N should read close to 40 dB**. If one reads much lower, that device's own noise dominates.
+- An **"estimate spread" above 1 dB** means the IONOS isn't feeding both outputs from the mix as assumed. Check the Y cables.
+
+**The S:N reference question:** `hfbench audio check --snr 40 20` measures at two settings.
+- If the *nothing-playing* floor rises by about 20 dB at WGN 20, the IONOS adds noise even with no signal. In that case its S:N is set against a fixed reference, and transmit matching directly sets symmetry.
+- If the floor doesn't rise, the noise follows the input signal.
+
 ## Step 0: Windows settings for both USB devices [C-Media] [Added]
 
 Open **Control Panel → Sound**, or run `mmsys.cpl`. Do the following for **both** USB devices.
@@ -59,7 +91,7 @@ Windows sometimes resets microphone levels on its own, so **recheck the levels a
    - **Input side:** play the tone from station 1 only. Setting `CH2 IN` to 0 should **not** change the `Lvl` reading, and setting `CH1 IN` to 0 should drop it to zero. If that doesn't happen, the input Y cable is a headphone splitter.
    - **Output side:** with the IONOS tone on, set `CH2 OUT` to 0. Station 2's microphone should go silent while station 1's doesn't change.
 
-## Step 2: Match the receive levels (IONOS → microphones) [Manual §3.2, §4.1 step 4] [Added]
+## Step 2 (by hand): match the receive levels (IONOS → microphones) [Manual §3.2, §4.1 step 4] [Added]
 
 Use the IONOS's own 1500 Hz tone, which reaches both microphones identically. Use **Audacity** on Windows (free) as the meter, because it reads in dBFS and can select the recording device.
 
@@ -74,7 +106,7 @@ Use the IONOS's own 1500 Hz tone, which reaches both microphones identically. Us
    - With the IONOS at +40 dB S:N, the result should be close to 40 dB.
    - If one device reads much lower, say 25–30 dB, then that device's input noise dominates. This is the "noisy device". Try a different USB port, a powered hub or a ferrite, and recheck. Its result sets the highest S:N you can test honestly; see the note below.
 
-## Step 3: Match the transmit levels (speakers → IONOS) [Manual §4.1 steps 1–3, 5; N5TW] [Added]
+## Step 3 (by hand): match the transmit levels (speakers → IONOS) [Manual §4.1 steps 1–3, 5; N5TW] [Added]
 
 1. In Audacity, **generate** a 1500 Hz sine at amplitude 0.5 (−6 dBFS) lasting 30 s (*Generate → Tone*). Alternatively, play `tone_1500Hz_-6dBFS.wav`.
 2. Set Audacity's playback device to **station 1's speakers** and play the tone in a loop.
