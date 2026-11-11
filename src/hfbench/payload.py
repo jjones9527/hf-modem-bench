@@ -32,7 +32,8 @@ def sha256_set(directory: str | Path) -> tuple[str, dict[str, str]]:
     """Hash of a payload *set* (a folder of attachment files): SHA-256 over the
     sorted lines '<sha256>  <name>', the same format sha256sum prints. Adding,
     removing, renaming or changing any file changes it."""
-    files = sorted(p for p in Path(directory).iterdir() if p.is_file())
+    # sort by exact name (code-point order): WindowsPath sorting is case-insensitive
+    files = sorted((p for p in Path(directory).iterdir() if p.is_file()), key=lambda p: p.name)
     per = {p.name: sha256_file(p) for p in files}
     listing = "".join(f"{h}  {n}\n" for n, h in per.items())
     return hashlib.sha256(listing.encode()).hexdigest(), per

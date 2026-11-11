@@ -119,7 +119,8 @@ def run_messages(run_id: str, sender: str, recipient: str, files: list[Path], *,
 
 def split_payload_set(directory: str | Path, per_station: int = 5) -> tuple[list[Path], list[Path]]:
     """Fixed assignment: sorted names; first half station 1, second half station 2."""
-    files = sorted(p for p in Path(directory).iterdir() if p.is_file())
+    # exact-name order on every OS (WindowsPath sorts case-insensitively)
+    files = sorted((p for p in Path(directory).iterdir() if p.is_file()), key=lambda p: p.name)
     if len(files) < 2 * per_station:
         raise ValueError(f"need {2 * per_station} files in {directory}, found {len(files)}")
     return files[:per_station], files[per_station:2 * per_station]
