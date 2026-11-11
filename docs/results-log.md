@@ -131,12 +131,12 @@ pilot01-0002 and -0003, and file 1 failed.
 
 | mode (direction) | messages attempted | delivered | corrupted (link error) |
 |---|---|---|---|
-| 16QAM.2000 (1→2) | 12 | 9 | 3 |
+| 16QAM.2000 (1→2) | 13 | 10 | 3 |
 | 8PSK.2000 (2→1) | 13 | 13 | 0 |
 
 Each corrupted message arrived in full and every ARDOP frame passed before
 Winlink rejected it. A 16-bit frame CRC failing to catch errors would explain
-far fewer than 3 events in about 12 messages, even with about 45% of frames
+far fewer than 3 events in 13 messages, even with about 45% of frames
 rejected. That points to ARDOP's ARQ or frame reassembly, for example a
 repeated or reused frame being accepted, rather than to channel errors that get
 past the CRC. This is only a hypothesis; the debug logs around each event are in
