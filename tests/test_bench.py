@@ -241,7 +241,9 @@ def test_winlink_automation_prepare_and_partials(tmp_path):
     inst1, inst2 = tmp_path / "RMS Express", tmp_path / "RMS Express 2"
     for inst, call in ((inst1, "VA3ZTF"), (inst2, "VE3XZQ")):
         (inst / call / "Messages").mkdir(parents=True)
+        (inst / call / "Data").mkdir()
         (inst / call / "Partials").mkdir()
+        (inst / "Global Folders" / "Messages").mkdir(parents=True)   # real installs have this too
     (inst1 / "VA3ZTF" / "Partials" / "OLD.bin").write_bytes(b"x")
     camp = tmp_path / "camp"
     mg.build_campaign_templates(Path(__file__).resolve().parents[1] / "payloads" / "Text_50KB",

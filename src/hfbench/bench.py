@@ -236,7 +236,11 @@ class AutomationError(RuntimeError):
 
 def install_callsign(install_dir: str | Path) -> str:
     """The callsign folder of a Winlink Express install (the one holding Messages)."""
-    calls = [p.name for p in Path(install_dir).iterdir() if p.is_dir() and (p / "Messages").is_dir()]
+    import re
+    callsign = re.compile(r"^[A-Z0-9]{1,3}[0-9][A-Z0-9]{0,4}(-\d{1,2})?$", re.I)
+    # 'Global Folders' also has a Messages subfolder; a station folder has Data + Messages
+    calls = [p.name for p in Path(install_dir).iterdir()
+             if p.is_dir() and callsign.match(p.name) and (p / "Messages").is_dir() and (p / "Data").is_dir()]
     if len(calls) != 1:
         raise AutomationError(f"expected one callsign folder in {install_dir}, found {calls}")
     return calls[0]
