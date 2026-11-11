@@ -79,7 +79,8 @@ def test_cli_messages_build(tmp_path, capsys):
 
 def test_split_is_case_sensitive_on_every_os(tmp_path, monkeypatch):
     # emulate Windows: case-insensitive Path ordering must not change the split
-    for n in ("b.txt", "A.txt", "C.txt", "a.txt"):
+    # names chosen not to collide on case-insensitive file systems
+    for n in ("b.txt", "A.txt", "d.txt", "C.txt"):
         (tmp_path / n).write_text(n)
     s1, s2 = mg.split_payload_set(tmp_path, per_station=2)
-    assert [p.name for p in s1 + s2] == ["A.txt", "C.txt", "a.txt", "b.txt"]
+    assert [p.name for p in s1 + s2] == ["A.txt", "C.txt", "b.txt", "d.txt"]   # not A, b, C, d
