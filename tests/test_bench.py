@@ -219,17 +219,20 @@ def test_runner_stops_when_prepare_fails(tmp_path):
 
 class FakeUI:
     def __init__(self, call):
-        self.call, self.outbox, self.imported = call, 0, []
+        self.call, self.outbox, self.imported = call, [], []
 
     def folder_counts(self):
-        return {"Outbox": self.outbox}
+        return {"Outbox": len(self.outbox)}
+
+    def folder_mids(self, name):
+        return list(self.outbox)
 
     def import_xml(self, path):
         import xml.etree.ElementTree as ET
-        n = len(ET.parse(path).getroot().findall("message_list/message"))
+        ids = [m.find("id").text for m in ET.parse(path).getroot().findall("message_list/message")]
         self.imported.append(path)
-        self.outbox += n
-        return f"Number of messages imported = {n}"
+        self.outbox += ids
+        return f"Number of messages imported = {len(ids)}"
 
     def start(self, expect_target):
         self.started = expect_target
@@ -253,9 +256,16 @@ def test_winlink_automation_prepare_and_partials(tmp_path):
                            ui_factory=lambda call: uis.setdefault(call, FakeUI(call)))
     info = wa.prepare({"run_id": "c-0001"})
     assert len(info["mids"]) == 10 and len(set(info["mids"])) == 10
-    assert uis["VA3ZTF"].outbox == 5 and uis["VE3XZQ"].outbox == 5
+    assert len(uis["VA3ZTF"].outbox) == 5 and len(uis["VE3XZQ"].outbox) == 5
     assert (camp / "quarantine" / "c-0001" / "station1" / "OLD.bin").exists()
+    # resumable: re-preparing the same run keeps the queued messages, imports nothing
+    again = wa.prepare({"run_id": "c-0001"})
+    assert again["mids"] == info["mids"] and len(uis["VA3ZTF"].imported) == 1
+    # partial failure: station 2's queue lost -> only station 2 is re-imported with the same MIDs
+    uis["VE3XZQ"].outbox = []
+    again = wa.prepare({"run_id": "c-0001"})
+    assert again["mids"] == info["mids"] and len(uis["VE3XZQ"].imported) == 2 and len(uis["VA3ZTF"].imported) == 1
     wa.start()
     assert uis["VE3XZQ"].started == "VA3ZTF"           # station 2 calls station 1
-    with pytest.raises(Exception, match="Outbox has 5"):
+    with pytest.raises(Exception, match="not from this run"):
         wa.prepare({"run_id": "c-0002"})                # previous run's messages still queued

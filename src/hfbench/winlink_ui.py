@@ -130,18 +130,53 @@ class WinlinkUI:
             pass
         time.sleep(1.0)
 
+    def folder_mids(self, name: str) -> list[str]:
+        """Message IDs listed in a folder (selects the folder)."""
+        self.select_folder(name)
+        mids = []
+        grid = self.main().TableControl(AutomationId="grdMessageList")
+        for r in grid.GetChildren():
+            if not (r.Name or "").startswith("Row "):
+                continue
+            for c in r.GetChildren():
+                if (c.Name or "").startswith("Message ID"):
+                    try:
+                        v = c.GetValuePattern().Value
+                    except Exception:
+                        v = ""
+                    if v:
+                        mids.append(v)
+        return mids
+
     # -- import --------------------------------------------------------------------
+    def _own_dialog(self, automation_id: str):
+        """A dialog with this AutomationId belonging to *this* instance's process."""
+        pid = self.main().ProcessId
+        for w in self.auto.GetRootControl().GetChildren():
+            if w.AutomationId == automation_id and w.ProcessId == pid:
+                return w
+        return None
+
     def import_xml(self, path: str) -> str:
-        """Import messages via Message > Import messages; returns the summary text."""
+        """Import messages via Message > Import messages; returns the summary text.
+        Waits for the menu call to finish: a blocked call (about 60 s) delays
+        any later UI call, even in the other Winlink instance."""
         main = self.main()
-        dlg = self.auto.WindowControl(AutomationId="DialogImportMessagesFileName", searchDepth=1)
-        if not dlg.Exists(0.5):
-            self._menu(main, "Message", "Import messages")
-            if not dlg.Exists(30):
-                raise RuntimeError("import dialog did not appear")
+        menu_thread = None
+        dlg = self._own_dialog("DialogImportMessagesFileName")
+        if dlg is None:
+            menu_thread = self._menu(main, "Message", "Import messages")
+            t0 = time.time()
+            while dlg is None and time.time() - t0 < 120:
+                time.sleep(1)
+                dlg = self._own_dialog("DialogImportMessagesFileName")
+            if dlg is None:
+                raise RuntimeError("import dialog did not appear within 120 s")
         dlg.EditControl(AutomationId="txtFileName").GetValuePattern().SetValue(path)
         self._thread(lambda: dlg.ButtonControl(AutomationId="btnImport").GetInvokePattern().Invoke())
         texts = self._close_info_boxes(main) + self._close_info_boxes(main, wait=0.5)
+        if menu_thread is not None:
+            menu_thread.join(90)
         summary = " ".join(texts)
         m = re.search(r"Number of messages imported = (\d+)", summary)
         if not m:

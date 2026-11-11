@@ -285,27 +285,44 @@ class WinlinkAutomation:
         return n
 
     def prepare(self, row: dict) -> dict:
+        """Queue this run's messages at both stations. Resumable: messages already
+        in an Outbox from *this* run's import file are kept; anything else in an
+        Outbox stops the run, so the workload is always exact."""
+        import xml.etree.ElementTree as ET
+
         run_id = row["run_id"]
+        paths = {st: self.dir / "messages" / "runs" / f"{run_id}-station{st}.xml" for st in (1, 2)}
+        planned = {}
         for st in (1, 2):
-            out = self.ui[st].folder_counts().get("Outbox", 0)
-            if out:
-                raise AutomationError(f"station {st} ({self.calls[st]}) Outbox has {out} message(s); "
-                                      f"clear it before this run so the workload is exact")
-        moved = self._quarantine_partials(run_id)
-        if moved:
-            self.say(f"Moved {moved} stale partial file(s) to quarantine/{run_id}")
-        all_mids = []
+            if paths[st].exists():
+                planned[st] = [m.find("id").text for m in
+                               ET.parse(paths[st]).getroot().findall("message_list/message")]
+        todo = []
         for st in (1, 2):
-            xml, mids = self.mg.instantiate(self.templates[st], run_id)
-            path = self.dir / "messages" / "runs" / f"{run_id}-station{st}.xml"
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_bytes(xml)
-            self.ui[st].import_xml(str(path.resolve()))
-            got = self.ui[st].folder_counts().get("Outbox", 0)
-            if got != len(mids):
-                raise AutomationError(f"station {st} Outbox has {got} messages after import, expected {len(mids)}")
-            all_mids += mids
-        self.say(f"Queued {len(all_mids)} messages ({len(all_mids) // 2} per station)")
+            have = self.ui[st].folder_mids("Outbox")
+            if have and sorted(have) == sorted(planned.get(st, [])):
+                self.say(f"station {st}: this run's {len(have)} messages already queued")
+            elif have:
+                raise AutomationError(f"station {st} ({self.calls[st]}) Outbox has {len(have)} message(s) "
+                                      f"not from this run's import; clear it so the workload is exact")
+            else:
+                todo.append(st)
+        if todo:
+            moved = self._quarantine_partials(run_id)
+            if moved:
+                self.say(f"Moved {moved} stale partial file(s) to quarantine/{run_id}")
+        for st in todo:
+            if st not in planned:
+                xml, planned[st] = self.mg.instantiate(self.templates[st], run_id)
+                paths[st].parent.mkdir(parents=True, exist_ok=True)
+                paths[st].write_bytes(xml)
+            self.ui[st].import_xml(str(paths[st].resolve()))
+            got = self.ui[st].folder_mids("Outbox")
+            if sorted(got) != sorted(planned[st]):
+                raise AutomationError(f"station {st} Outbox after import has {len(got)} messages, "
+                                      f"expected this run's {len(planned[st])}")
+        all_mids = planned[1] + planned[2]
+        self.say(f"Queued {len(all_mids)} messages ({len(planned[1])} + {len(planned[2])})")
         return {"mids": all_mids}
 
     def start(self) -> None:
