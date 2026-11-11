@@ -89,22 +89,29 @@ To re-read saved results without playing anything: `hfbench audio report levels.
 
 ### ARDOP checks after calibration (10–11 Nov 2026)
 
-**True S:N from `hfbench audio listen` (11 Nov, 00:00 UTC, WGN 20):**
+**True S:N from `hfbench audio listen`, WGN 20 (11 Nov 2026).** The 00:16 run is the main result: it was a full session, with one 50 KB message each way.
 
-| Direction | Frames | n | True S:N | Offset from setting |
-| --- | --- | --- | --- | --- |
-| 1 → 2 | data | 2 | 20.9 dB | +0.9 dB |
-| 1 → 2 | control | 27 | 19.7 dB | −0.3 dB |
-| 2 → 1 | data | 1 | 19.8 dB | −0.2 dB |
-| 2 → 1 | control | 28 | 18.9 dB | −1.1 dB |
+| Run | Direction | Frames | n | True S:N | Offset from setting |
+| --- | --- | --- | --- | --- | --- |
+| 00:16 | 1 → 2 | data | 88 | 14.1 dB | **−5.9 dB** |
+| 00:16 | 1 → 2 | control | 80 | 19.2 dB | −0.8 dB |
+| 00:16 | 2 → 1 | data | 66 | 14.2 dB | **−5.8 dB** |
+| 00:16 | 2 → 1 | control | 106 | 18.9 dB | −1.1 dB |
+| 00:00 | 1 → 2 | data, 4PSK.500 only | 2 | 20.9 dB | +0.9 dB |
+| 00:00 | 2 → 1 | data | 1 | 19.8 dB | −0.2 dB |
 
-- **For ARDOP, the real S:N equals the IONOS setting to within about 1 dB, in both directions.** The bench is calibrated and symmetric.
-- The noise floors matched the tone check to within 0.1 dB.
+**What this shows:**
+- **The bench is symmetric.** The two directions' data frames agree within 0.1 dB, and their control frames within 0.3 dB.
+- **The offset depends on the frame type.** ARDOP's 2000 Hz data frames (4PSK, 8PSK and 16QAM) arrive about **6 dB below the IONOS setting**, while control frames and the narrow 4PSK.500 frames arrive at about the setting. All of it at DriveLevel 90. A likely reason is that the multi-carrier wide frames have higher peaks, so ARDOP lowers their average power. The 6 dB itself is measured.
+- **The 00:00 run had only 3 data frames**, all narrow 4PSK.500. The conclusion I drew from it, "real S:N equals the setting within 1 dB", holds for those frames only.
 
-**ARDOP's own S:N estimates are biased low and shouldn't be used as a measurement.**
-- At a true 20 dB, ARDOP's per-frame `Early` estimate read about 10–12 dB.
-- The `Full` estimate read 1–2 dB.
-- My earlier inference that "ARDOP is about 6 dB below the setting", drawn from the WGN 15 session, was wrong for this reason. That session was really at about 15 dB, where ARDOP ran 4PSK.2000 at decode quality about 74.
+**ARDOP's own `Early` S:N estimate** read about 10–12 dB at a true 14 dB (data frames) or 19 dB (control frames). Use it only to compare the two directions. The `Full` estimate read 1–2 dB, which is meaningless.
+
+**Goodput at WGN 20 (11 Nov 00:16) differed by direction even though the S:N was symmetric:**
+- **Station 2 → 1:** stayed at 8PSK.2000, decode quality about 72, 2 NAKs, **1,058–1,121 bit/s**.
+- **Station 1 → 2:** shifted up to 16QAM.2000 after two acknowledgements at quality 76. Quality was then about 38, with **38 NAKs** and no shift back down, giving **658–693 bit/s**.
+
+ARDOP's adaptation depends on its path: a small random difference near a shift threshold can change goodput by about 40%. That's why the protocol uses replicates and reports the spread.
 
 **Winlink failures seen:**
 - **10 Nov 23:41, WGN 15:** a message with two attachments was dropped after about 19 KB with "Received data stream not correct format, ByteIndex=19420".

@@ -63,7 +63,7 @@ Record the result. This replaces an external level-meter check of the simulator 
 
 ARDOP logs the S:N it measured on received leaders, in a 3 kHz noise bandwidth, which is the IONOS reference. Its session statistics give one value per station, so each direction is measured separately. With one IONOS unit in symmetric mode, both directions should read close to the IONOS setting.
 
-**Use ARDOP's per-frame `Early` S:N from the debug log.** ARDOP logs two S:N estimates for each frame. `Full` is the source of the session-statistics `AvgLeader S:N`. It caps at 20 dB and read a flat 0–2 dB on 10 Nov, when the real S:N was about 9 dB, so don't use it. `Early` caps at 30 dB but reads about 8–10 dB **low**: about 10–12 dB at a true 20 dB, per `hfbench audio listen`. Use it only to compare directions, never as the S:N value. Measure the true S:N with `hfbench audio listen`.
+**Measure the true S:N with `hfbench audio listen`, not with the modem's own estimate.** ARDOP's `Full` estimate is meaningless (1–2 dB). Its `Early` estimate reads several dB low and scatters. On 11 Nov at WGN 20, ARDOP's 2000 Hz data frames measured 14 dB, about 6 dB under the setting, while its control frames measured about 19 dB.
 
 - In the pilot, at those points, compare the measured S:N for each direction with the setting.
 - If the two directions differ by more than about 2 dB, treat it as a level fault and mark the run `invalid`.
@@ -206,6 +206,14 @@ Every attempt is kept in the event log (`events.jsonl`, append-only). The manife
 Audio and GUI automation have to run in the desktop session. SSH sessions on Windows are session 0, which can't use the sound devices or windows.
 
 **Serial link (IONOS firmware 2.03):** the unit ignores lines ending in a bare CR, although the manual says CR. A line ending in LF or CR+LF works, so `hfbench` sends CR+LF. Replies are `OK` or `?`. The baud rate makes no difference.
+
+### S:N axis for the report (to decide)
+
+Each modem puts out a different average power at a given drive level. On this bench ARDOP's 2000 Hz data frames are 6 dB below the IONOS setting.
+- **Option A, the IONOS setting**, with each modem's drive set to the same *peak* level. This mirrors a transmitter limited by peak power: a modem with high peaks pays for them in S:N. It's the convention in N5TW's published curves.
+- **Option B, measured S:N**, the modem's average signal-to-noise from `hfbench audio listen`.
+
+Recommendation: plot against **A**, and report each modem's measured offset (B − A) in a table. That needs a rule for setting each modem's drive, which is still to be agreed.
 
 ## 8. Metrics
 
