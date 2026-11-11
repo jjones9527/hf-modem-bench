@@ -16,7 +16,9 @@ See [docs/test-protocol.md](docs/test-protocol.md) for the test design.
 | --- | --- |
 | Matrix → run sheet, run stamping, manifest, payload tools | ✅ |
 | Winlink session log + ARDOP session-stats parser (`hfbench parse`) | ✅ |
-| Semi-automatic bench runner (`hfbench run`): IONOS serial control, log-based stamping, abort rule | ✅ |
+| Bench runner (`hfbench run`): IONOS serial control, log-based stamping, abort rule | ✅ |
+| Winlink Express automation (`--automate`): message import from build-once templates, Start/Abort | ✅ (pilot pending) |
+| Tone check and true-S:N measurement (`hfbench audio check / listen`) | ✅ |
 | Session ↔ run join, both-ends pairing, audio calibration, ARDOP debug timeline | ⏳ next |
 | Analysis and reports (CSV, Markdown/HTML, throughput-vs-SNR plots) | ⏳ Phase 2 |
 

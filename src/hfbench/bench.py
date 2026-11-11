@@ -63,6 +63,7 @@ class BenchRunner:
     campaign_dir: Path
     sessions: Callable[[], list[lp.Session]]        # station 1 Winlink log
     ionos: object | None = None                       # hfbench.ionos.Ionos or None (manual)
+    automation: object | None = None                  # WinlinkAutomation or None (operator queues + starts)
     clock: Callable[[], datetime] = lambda: datetime.now(timezone.utc)
     sleep: Callable[[float], None] = lambda s: __import__("time").sleep(s)
     key: Callable[[], str | None] = lambda: None
@@ -109,6 +110,17 @@ class BenchRunner:
         elif self.ionos is None:
             self.say(f"Set IONOS by hand: {row['ionos_commands']}")
 
+        mids: list[str] = []
+        if self.automation is not None and not resumed:
+            try:
+                mids = self.automation.prepare(row)["mids"]
+            except Exception as e:
+                self.say(f"*** Automation could not prepare {rid}: {e}\n*** Stopping; fix and rerun.")
+                return None
+            if len(mids) != expected:
+                self.say(f"Note: run sheet expects {expected} messages, queued {len(mids)}; using {len(mids)}.")
+            expected = len(mids)
+
         armed = self.clock()
         started_at: datetime | None = None
         if resumed:
@@ -116,6 +128,12 @@ class BenchRunner:
             started_at = datetime.fromisoformat(start_ev["t_utc"])
             armed = started_at
             self.say("Resuming a run that was in progress.")
+        elif self.automation is not None:
+            try:
+                self.automation.start()
+            except Exception as e:
+                self.say(f"*** Could not start the session: {e}\n*** Start it by hand, or press i/d.")
+            self.say(f"Session started automatically (expecting {expected} messages). Keys: i=invalid, d=did not complete.")
         else:
             self.say(f"Ready. Start the Winlink session now (expecting {expected} message(s)). "
                      f"Keys: i=invalid, d=did not complete.")
@@ -136,7 +154,7 @@ class BenchRunner:
                 if session is not None and started_at is None:
                     started_at = session.connected_utc
                     mf.start_run(self.events_path, rid, valid_ids=ids, retry=True, t=started_at,
-                                 extra={"ionos_ack": ack_text,
+                                 extra={"ionos_ack": ack_text, "mids": " ".join(mids),
                                         "log_connected_utc": session.connected_utc.isoformat()})
                     self.say(f"Session detected: {session.transport} with {session.peer} "
                              f"at {started_at:%H:%M:%S}Z")
@@ -160,6 +178,11 @@ class BenchRunner:
                 last_alert = now
                 self.say(f"\a*** ABORT RULE: {abort} exceeded. Disconnect in Winlink, "
                          f"or press d. ***")
+                if self.automation is not None:
+                    try:
+                        self.automation.abort()
+                    except Exception as e:
+                        self.say(f"(automatic abort failed: {e})")
                 if session is None:  # never connected: no session to wait for
                     mf.start_run(self.events_path, rid, valid_ids=ids, retry=True, t=armed,
                                  extra={"ionos_ack": ack_text})
@@ -169,8 +192,9 @@ class BenchRunner:
 
             if session is not None and session.closed:
                 end = session.disconnected_utc or session.end_of_session_utc or now
-                done = [t for t in session.transfers if t.completed]
-                incomplete = [t for t in session.transfers if not t.completed]
+                mine = [t for t in session.transfers if not mids or t.mid in mids]
+                done = [t for t in mine if t.completed]
+                incomplete = [t for t in mine if not t.completed]
                 over_time = end - started_at > abort
                 ok = len(done) >= expected and not incomplete and not over_time
                 outcome = "completed" if ok else "dnc"
@@ -202,3 +226,86 @@ class BenchRunner:
                 break
             results.append(r)
         return results
+
+
+# --- Winlink Express automation (Windows desktop session) ------------------------
+
+class AutomationError(RuntimeError):
+    pass
+
+
+def install_callsign(install_dir: str | Path) -> str:
+    """The callsign folder of a Winlink Express install (the one holding Messages)."""
+    calls = [p.name for p in Path(install_dir).iterdir() if p.is_dir() and (p / "Messages").is_dir()]
+    if len(calls) != 1:
+        raise AutomationError(f"expected one callsign folder in {install_dir}, found {calls}")
+    return calls[0]
+
+
+class WinlinkAutomation:
+    """Queues each run's messages by import and starts/aborts the P2P session.
+
+    Templates are built once per campaign (`hfbench messages build`) and only
+    the Message-IDs, dates and run ID change per run."""
+
+    def __init__(self, campaign_dir: str | Path, installs: tuple[str, str] = (r"C:\RMS Express", r"C:\RMS Express 2"),
+                 caller: int = 2, say: Callable[[str], None] = print, ui_factory=None):
+        from . import messages as mg
+
+        self.mg = mg
+        self.dir = Path(campaign_dir)
+        self.installs = installs
+        self.calls = {1: install_callsign(installs[0]), 2: install_callsign(installs[1])}
+        self.caller = caller
+        self.say = say
+        self.templates = {}
+        for st in (1, 2):
+            p = self.dir / "messages" / f"station{st}.template.xml"
+            if not p.exists():
+                raise AutomationError(f"{p} missing: run `hfbench messages build` first")
+            self.templates[st] = p.read_text(encoding="utf-8")
+        if ui_factory is None:
+            from .winlink_ui import WinlinkUI
+            ui_factory = lambda call: WinlinkUI(call, log=say)
+        self.ui = {st: ui_factory(self.calls[st]) for st in (1, 2)}
+
+    def _quarantine_partials(self, run_id: str) -> int:
+        n = 0
+        for inst, st in zip(self.installs, (1, 2)):
+            for f in Path(inst, self.calls[st], "Partials").glob("*"):
+                if f.is_file():
+                    q = self.dir / "quarantine" / run_id / f"station{st}"
+                    q.mkdir(parents=True, exist_ok=True)
+                    f.replace(q / f.name)
+                    n += 1
+        return n
+
+    def prepare(self, row: dict) -> dict:
+        run_id = row["run_id"]
+        for st in (1, 2):
+            out = self.ui[st].folder_counts().get("Outbox", 0)
+            if out:
+                raise AutomationError(f"station {st} ({self.calls[st]}) Outbox has {out} message(s); "
+                                      f"clear it before this run so the workload is exact")
+        moved = self._quarantine_partials(run_id)
+        if moved:
+            self.say(f"Moved {moved} stale partial file(s) to quarantine/{run_id}")
+        all_mids = []
+        for st in (1, 2):
+            xml, mids = self.mg.instantiate(self.templates[st], run_id)
+            path = self.dir / "messages" / "runs" / f"{run_id}-station{st}.xml"
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(xml)
+            self.ui[st].import_xml(str(path.resolve()))
+            got = self.ui[st].folder_counts().get("Outbox", 0)
+            if got != len(mids):
+                raise AutomationError(f"station {st} Outbox has {got} messages after import, expected {len(mids)}")
+            all_mids += mids
+        self.say(f"Queued {len(all_mids)} messages ({len(all_mids) // 2} per station)")
+        return {"mids": all_mids}
+
+    def start(self) -> None:
+        self.ui[self.caller].start(expect_target=self.calls[3 - self.caller])
+
+    def abort(self) -> None:
+        self.ui[self.caller].abort()

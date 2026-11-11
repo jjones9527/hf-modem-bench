@@ -153,3 +153,107 @@ def test_latest_winlink_logs(tmp_path):
         (logs / n).write_text("")
     assert [p.name for p in latest_winlink_logs(tmp_path / "RMS Express")] == [
         "RMS Express 20261110.log", "RMS Express 20261111.log"]
+
+
+class FakeAutomation:
+    def __init__(self, mids):
+        self.mids, self.calls = mids, []
+
+    def prepare(self, row):
+        self.calls.append(("prepare", row["run_id"]))
+        return {"mids": list(self.mids)}
+
+    def start(self):
+        self.calls.append(("start",))
+
+    def abort(self):
+        self.calls.append(("abort",))
+
+
+SESSION6_MIDS = ["E9RH8Y3I15P8", "VFWD5OS02JX5", "WCR5C7KDEGEL", "8NM9TJ8L9L68",
+                 "S8PRSB66GTK1", "QTOVU1YQY0UP", "F0O215LY9V02", "V8VCK0HNF0XO"]
+
+
+def test_runner_with_automation_counts_only_run_mids(tmp_path):
+    d, rows = _campaign(tmp_path, abort_minutes=60, payload_messages=10)
+    rp = Replay(FX / "winlink_ardop_p2p_20261110.log", T(17, 49))
+    fa = FakeAutomation(SESSION6_MIDS)
+    r = BenchRunner(d, rp.sessions, automation=fa, clock=rp.clock, sleep=rp.sleep,
+                    say=rp.said.append, poll_s=10).run_one(rows[0])
+    assert fa.calls[:2] == [("prepare", rows[0]["run_id"]), ("start",)]
+    assert r.outcome == "completed"          # expected = 8 queued MIDs, not the sheet's 10
+    man = mf.build_manifest(mx.read_runsheet(d / "runsheet.csv"), mf.read_events(d / "events.jsonl"))
+    assert man[0]["mids"].split() == SESSION6_MIDS
+
+
+def test_runner_missing_mid_is_dnc(tmp_path):
+    d, rows = _campaign(tmp_path, abort_minutes=60)
+    rp = Replay(FX / "winlink_ardop_p2p_20261110.log", T(17, 49))
+    fa = FakeAutomation(SESSION6_MIDS + ["NEVERSENT001"])
+    r = BenchRunner(d, rp.sessions, automation=fa, clock=rp.clock, sleep=rp.sleep,
+                    say=rp.said.append, poll_s=10).run_one(rows[0])
+    assert (r.outcome, r.note) == ("dnc", "8/9 messages")
+
+
+def test_runner_auto_aborts_over_time(tmp_path):
+    d, rows = _campaign(tmp_path, abort_minutes=30)
+    rp = Replay(FX / "winlink_ardop_p2p_20261110.log", T(17, 49))
+    fa = FakeAutomation(SESSION6_MIDS)
+    r = BenchRunner(d, rp.sessions, automation=fa, clock=rp.clock, sleep=rp.sleep,
+                    say=rp.said.append, poll_s=10).run_one(rows[0])
+    assert ("abort",) in fa.calls and r.outcome == "dnc"
+
+
+def test_runner_stops_when_prepare_fails(tmp_path):
+    d, rows = _campaign(tmp_path)
+
+    class Bad(FakeAutomation):
+        def prepare(self, row):
+            raise RuntimeError("station 1 Outbox has 1 message(s)")
+    rp = Replay(FX / "winlink_ardop_p2p_20261110.log", T(17, 49))
+    r = BenchRunner(d, rp.sessions, automation=Bad([]), clock=rp.clock, sleep=rp.sleep,
+                    say=rp.said.append, poll_s=10).run_one(rows[0])
+    assert r is None and any("Outbox has 1" in s for s in rp.said)
+    assert mf.read_events(d / "events.jsonl") == []      # nothing recorded
+
+
+class FakeUI:
+    def __init__(self, call):
+        self.call, self.outbox, self.imported = call, 0, []
+
+    def folder_counts(self):
+        return {"Outbox": self.outbox}
+
+    def import_xml(self, path):
+        import xml.etree.ElementTree as ET
+        n = len(ET.parse(path).getroot().findall("message_list/message"))
+        self.imported.append(path)
+        self.outbox += n
+        return f"Number of messages imported = {n}"
+
+    def start(self, expect_target):
+        self.started = expect_target
+
+
+def test_winlink_automation_prepare_and_partials(tmp_path):
+    from hfbench import messages as mg
+    from hfbench.bench import WinlinkAutomation
+    inst1, inst2 = tmp_path / "RMS Express", tmp_path / "RMS Express 2"
+    for inst, call in ((inst1, "VA3ZTF"), (inst2, "VE3XZQ")):
+        (inst / call / "Messages").mkdir(parents=True)
+        (inst / call / "Partials").mkdir()
+    (inst1 / "VA3ZTF" / "Partials" / "OLD.bin").write_bytes(b"x")
+    camp = tmp_path / "camp"
+    mg.build_campaign_templates(Path(__file__).resolve().parents[1] / "payloads" / "Text_50KB",
+                                ("VA3ZTF", "VE3XZQ"), camp / "messages")
+    uis = {}
+    wa = WinlinkAutomation(camp, installs=(str(inst1), str(inst2)), say=lambda s: None,
+                           ui_factory=lambda call: uis.setdefault(call, FakeUI(call)))
+    info = wa.prepare({"run_id": "c-0001"})
+    assert len(info["mids"]) == 10 and len(set(info["mids"])) == 10
+    assert uis["VA3ZTF"].outbox == 5 and uis["VE3XZQ"].outbox == 5
+    assert (camp / "quarantine" / "c-0001" / "station1" / "OLD.bin").exists()
+    wa.start()
+    assert uis["VE3XZQ"].started == "VA3ZTF"           # station 2 calls station 1
+    with pytest.raises(Exception, match="Outbox has 5"):
+        wa.prepare({"run_id": "c-0002"})                # previous run's messages still queued

@@ -133,6 +133,35 @@ The sequence resets every add-on explicitly, so nothing carries over from the pr
 
 ## 7. Run procedure
 
+### Fully automated (Winlink Express driven by hfbench)
+
+Once per campaign, on the Windows bench machine:
+
+```text
+hfbench sheet runs\<campaign>.toml
+hfbench messages build -d runs\<campaign> --payloads <folder with Text_50KB> --s1-call VA3ZTF --s2-call VE3XZQ
+```
+
+`messages build` writes `messages\station1.template.xml` and `station2.template.xml`. Each holds that station's five messages with their attachments already encoded. Per run, only the Message-IDs, the date and the run ID in the subject change, so every run's messages are byte-identical in size. Fresh IDs are needed because a receiving station rejects IDs it has already seen.
+
+Then, with both Winlink Express instances open and **both Peer-to-Peer Session windows open and listening**, with station 2's set to call VA3ZTF, run this in a desktop Command Prompt:
+
+```text
+hfbench run -d runs\<campaign> --automate --auto-continue 60
+```
+
+For each run, the runner:
+1. Refuses to continue if either Outbox isn't empty.
+2. Moves stale `Partials` to `quarantine\<run>`.
+3. Imports both stations' messages for the run.
+4. Sets the IONOS.
+5. Presses **Start** in station 2's session window.
+6. Detects the session from the log.
+7. Presses **Abort** past the abort time.
+8. Records the outcome from the run's own 10 Message-IDs.
+
+Keep the mouse and keyboard off the Winlink windows while it runs. Press `q` during the pause between runs to stop.
+
 ### Semi-automatic (recommended)
 
 Open a Command Prompt **on the Windows bench desktop** and run:

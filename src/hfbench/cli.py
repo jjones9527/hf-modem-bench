@@ -169,8 +169,19 @@ def cmd_ionos(args):
         io.close()
 
 
+def cmd_messages(args):
+    from . import messages as mg
+
+    d = _campaign_dir(args)
+    paths = mg.build_campaign_templates(args.payloads, (args.s1_call, args.s2_call), d / "messages", args.per_station)
+    s1, s2 = mg.split_payload_set(args.payloads, args.per_station)
+    for st, files in ((1, s1), (2, s2)):
+        print(f"station {st}: {paths[st]}  ({', '.join(f.name for f in files)})")
+    print(f"payload set sha256 = {pl.sha256_set(args.payloads)[0]}")
+
+
 def cmd_run(args):
-    from .bench import BenchRunner, winlink_session_source
+    from .bench import BenchRunner, WinlinkAutomation, winlink_session_source
 
     ionos = None
     if args.port:
@@ -180,13 +191,26 @@ def cmd_run(args):
         if not ionos.probe():
             sys.exit(f"error: no reply from IONOS on {args.port}")
     key = _keypoller()
+    d = _campaign_dir(args)
+    automation = None
+    if args.automate:
+        automation = WinlinkAutomation(d, installs=(args.winlink_dir, args.winlink_dir2))
 
     def between():
+        if args.auto_continue is not None:
+            import time
+            print(f"\nNext run in {args.auto_continue:.0f} s (press q to stop)...")
+            t_end = time.time() + args.auto_continue
+            while time.time() < t_end:
+                if (key() or "").lower() == "q":
+                    return False
+                time.sleep(0.5)
+            return True
         print("\nNext run ready. Press Enter to continue, q then Enter to stop.")
         return input().strip().lower() != "q"
 
-    runner = BenchRunner(_campaign_dir(args), winlink_session_source(args.winlink_dir),
-                         ionos=ionos, key=key, poll_s=args.poll)
+    runner = BenchRunner(d, winlink_session_source(args.winlink_dir),
+                         ionos=ionos, automation=automation, key=key, poll_s=args.poll)
     try:
         runner.run(max_runs=args.max_runs, wait_between=between)
     finally:
@@ -390,7 +414,19 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--port", default="COM3", help="IONOS serial port; '' to set IONOS by hand")
     s.add_argument("--poll", type=float, default=2.0, help="log poll interval, seconds")
     s.add_argument("--max-runs", type=int)
+    s.add_argument("--automate", action="store_true",
+                   help="queue messages by import and start/abort sessions in Winlink Express (desktop session)")
+    s.add_argument("--winlink-dir2", default=r"C:\RMS Express 2", help="station 2 Winlink install")
+    s.add_argument("--auto-continue", type=float, metavar="SECONDS",
+                   help="start the next run after this pause instead of waiting for Enter")
     s.set_defaults(func=cmd_run)
+
+    s = with_dir(sub.add_parser("messages", help="build the campaign's message templates (once)"))
+    s.add_argument("--payloads", default="payloads/Text_50KB")
+    s.add_argument("--s1-call", required=True, help="station 1 callsign (sends the first half of the set)")
+    s.add_argument("--s2-call", required=True)
+    s.add_argument("--per-station", type=int, default=5)
+    s.set_defaults(func=cmd_messages)
 
     au = sub.add_parser("audio", help="tone-based level check (run on the Windows desktop)").add_subparsers(dest="acmd", required=True)
     s = au.add_parser("devices", help="list sound devices")

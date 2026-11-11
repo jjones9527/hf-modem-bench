@@ -123,3 +123,74 @@ def split_payload_set(directory: str | Path, per_station: int = 5) -> tuple[list
     if len(files) < 2 * per_station:
         raise ValueError(f"need {2 * per_station} files in {directory}, found {len(files)}")
     return files[:per_station], files[per_station:2 * per_station]
+
+
+# --- campaign templates: build once, instantiate per run --------------------------
+#
+# A template is a complete import XML whose run-specific fields are placeholders.
+# Instantiating substitutes only the Message-IDs, dates and run ID, so every
+# run's messages are byte-identical apart from those fields. Run IDs in a
+# campaign have a fixed width, so message sizes are identical too.
+
+PH_RUN = "@@RUNID@@"
+PH_NOW_RFC = "@@DATE_RFC@@"
+PH_NOW_TIME = "@@TIME@@"
+PH_CANCEL = "@@CANCEL@@"
+PH_EXPORT = "@@EXPORT_TS@@"
+
+
+def _ph_mid(i: int) -> str:
+    return f"@@MID{i:02d}@@"   # 12 chars, same length as a real MID
+
+
+def build_template(sender: str, recipient: str, files: list[Path], *,
+                   rng: random.Random | None = None) -> str:
+    """Import XML for one station's messages with placeholders for per-run fields."""
+    rng = rng or random.Random(0)          # deterministic MIME boundaries
+    fixed = datetime(2000, 1, 1, tzinfo=timezone.utc)
+    n = len(files)
+    msgs = [OutMessage(_ph_mid(i), sender, recipient, f"hfbench {PH_RUN} {i}/{n}", f, fixed)
+            for i, f in enumerate(files, start=1)]
+    xml = build_import_xml(msgs, sender, rng=rng, now=fixed).decode("utf-8")
+    xml = xml.replace(fixed.strftime("%a, %d %b %Y %H:%M:%S +0000"), PH_NOW_RFC)
+    xml = xml.replace((fixed + timedelta(days=21)).strftime("%Y/%m/%d %H:%M"), PH_CANCEL)
+    xml = xml.replace(fixed.strftime("%Y/%m/%d %H:%M"), PH_NOW_TIME)
+    xml = xml.replace(fixed.strftime("%Y%m%d%H%M%S"), PH_EXPORT)
+    return xml
+
+
+def instantiate(template: str, run_id: str, *, now: datetime | None = None,
+                rng: random.Random | None = None) -> tuple[bytes, list[str]]:
+    """Fill a template for one run. Returns (import XML bytes, message IDs)."""
+    rng = rng or random.SystemRandom()
+    now = (now or datetime.now(timezone.utc)).replace(microsecond=0)
+    out = template
+    mids = []
+    i = 1
+    while _ph_mid(i) in out:
+        mid = new_mid(rng)
+        mids.append(mid)
+        out = out.replace(_ph_mid(i), mid)
+        i += 1
+    for ph, val in ((PH_RUN, run_id), (PH_NOW_RFC, now.strftime("%a, %d %b %Y %H:%M:%S +0000")),
+                    (PH_CANCEL, (now + timedelta(days=21)).strftime("%Y/%m/%d %H:%M")),
+                    (PH_NOW_TIME, now.strftime("%Y/%m/%d %H:%M")),
+                    (PH_EXPORT, now.strftime("%Y%m%d%H%M%S"))):
+        out = out.replace(ph, val)
+    if "@@" in out:
+        raise ValueError("unfilled placeholder left in template")
+    return out.encode("utf-8"), mids
+
+
+def build_campaign_templates(payload_dir: str | Path, calls: tuple[str, str], out_dir: str | Path,
+                             per_station: int = 5) -> dict[int, Path]:
+    """Write messages/station1.template.xml and station2.template.xml (built once)."""
+    s1, s2 = split_payload_set(payload_dir, per_station)
+    out = Path(out_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    paths = {}
+    for st, files, me, other in ((1, s1, calls[0], calls[1]), (2, s2, calls[1], calls[0])):
+        p = out / f"station{st}.template.xml"
+        p.write_text(build_template(me, other, files), encoding="utf-8")
+        paths[st] = p
+    return paths

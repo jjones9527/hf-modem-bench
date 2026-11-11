@@ -1,133 +1,203 @@
-"""Winlink Express window automation (Windows desktop session only; needs
-the `uiautomation` package). Verified on Winlink Express 1.8.6.0, 11 Nov 2026.
-Menu actions that open a modal dialog block for about 60 s before returning a
-harmless COMError; they run in a thread. Usage (run as a script):
-  ui_tool.py LOG CALL select-folder "Sent Items"
-  ui_tool.py LOG CALL export PATH          (exports the selected row 0)
-  ui_tool.py LOG CALL import PATH
-  ui_tool.py LOG CALL folders              (folder names + counts)
+"""Winlink Express window automation (Windows desktop session only).
+
+Needs the `uiautomation` package. Verified against Winlink Express 1.8.6.0 on
+10-11 Nov 2026 (folders, export, import, P2P session window).
+
+Notes from the bench:
+- Menus are opened with the LegacyIAccessible default action; WinForms
+  MenuStrip items don't support Expand.
+- An action that opens a modal dialog blocks its UIA call until the dialog
+  closes (about 60 s, then a harmless COMError), so such calls run in a thread.
+- Selecting a folder needs LegacyIAccessible Select + DoDefaultAction;
+  SelectionItem.Select alone doesn't refresh the message list.
+- The session window's channel bar: the first edit box holds the callsign to
+  call. The status bar reads 'In: a/b  Out: c/d  BPM: n' and
+  'Connected - In sending state' / 'Disconnected/Listening'.
+
+Run as a script for one-off actions:
+  python -m hfbench.winlink_ui LOG CALL folders | select-folder NAME | export PATH | import PATH
 """
-import os, sys, threading, time
-import uiautomation as auto
 
-log = open(sys.argv[1], "a", encoding="utf-8")
-def say(*a):
-    log.write(" ".join(str(x) for x in a) + "\n"); log.flush()
+from __future__ import annotations
 
-CALL, ACTION, ARGS = sys.argv[2], sys.argv[3], sys.argv[4:]
+import re
+import sys
+import threading
+import time
+from dataclasses import dataclass
 
-def find_main():
-    for w in auto.GetRootControl().GetChildren():
-        n = w.Name or ""
-        if w.ControlTypeName == "WindowControl" and "Winlink Express" in n and f"- {CALL}" in n:
-            return w
-    raise SystemExit(f"main window for {CALL} not found")
 
-def folders(main):
-    out = []
-    for lst in ("lstFixedFolders",):
-        for it in main.ListControl(AutomationId=lst).GetChildren():
-            out.append(it.Name)
-    return out
+def _auto():
+    import uiautomation as auto  # imported lazily: Windows only
+    return auto
 
-def grid_rows(main, n=6):
-    rows = []
-    grid = main.TableControl(AutomationId="grdMessageList")
-    for r in grid.GetChildren():
-        if not (r.Name or "").startswith("Row "):
-            continue
-        cells = {}
-        for c in r.GetChildren():
-            key = (c.Name or "").rsplit(" Row ", 1)[0]
-            try:
-                cells[key] = c.GetValuePattern().Value
-            except Exception:
-                pass
-        rows.append({k: cells.get(k) for k in ("Date/Time", "Message ID", "Size", "Sender", "Recipient", "Subject")})
-        if len(rows) >= n:
-            break
-    return rows
 
-def select_folder(main, name):
-    item = next(i for i in main.ListControl(AutomationId="lstFixedFolders").GetChildren() if (i.Name or "").startswith(name))
-    acc = item.GetLegacyIAccessiblePattern()
-    acc.Select(1 | 2)          # SELFLAG_TAKEFOCUS | SELFLAG_TAKESELECTION
-    time.sleep(0.3)
-    try:
-        acc.DoDefaultAction()
-    except Exception as e:
-        say("default action:", type(e).__name__)
-    time.sleep(1.5)
-    say("grid after selecting", repr(name), ":", grid_rows(main, 3))
+@dataclass
+class SessionStatus:
+    connected: bool
+    state: str          # e.g. 'Connected - In sending state', 'Disconnected/Listening'
+    counters: str       # 'In: a/b  Out: c/d  BPM: n'
+    can_start: bool
+    can_abort: bool
+    target: str
 
-def in_thread(fn):
-    def run():
-        with auto.UIAutomationInitializerInThread():
-            try:
-                fn()
-            except Exception as e:
-                say("threaded call returned:", type(e).__name__, str(e)[:80])
-    t = threading.Thread(target=run, daemon=True); t.start(); return t
 
-def menu(main, top, item_name):
-    m = main.MenuItemControl(Name=top, searchDepth=3)
-    m.GetLegacyIAccessiblePattern().DoDefaultAction()
-    time.sleep(1.0)
-    for w in [main] + [x for x in auto.GetRootControl().GetChildren() if x.ProcessId == main.ProcessId]:
-        c = w.MenuItemControl(Name=item_name, searchDepth=6)
-        if c.Exists(0.5):
-            return in_thread(lambda: c.GetLegacyIAccessiblePattern().DoDefaultAction())
-    raise SystemExit(f"menu item {item_name!r} not found")
+class WinlinkUI:
+    """Controls one Winlink Express instance, identified by its callsign."""
 
-def other_windows(main):
-    return [w for w in auto.GetRootControl().GetChildren()
-            if w.ProcessId == main.ProcessId and "Winlink Express" not in (w.Name or "")
-            and "Peer-to-Peer" not in (w.Name or "")]
+    def __init__(self, call: str, log=print):
+        self.call = call
+        self.log = log
+        self.auto = _auto()
 
-def texts(w):
-    return [c.Name for c, d in auto.WalkControl(w, maxDepth=4) if c.ControlTypeName == "TextControl" and c.Name]
+    # -- windows -----------------------------------------------------------------
+    def main(self):
+        for w in self.auto.GetRootControl().GetChildren():
+            n = w.Name or ""
+            if w.ControlTypeName == "WindowControl" and "Winlink Express" in n and f"- {self.call}" in n:
+                return w
+        raise RuntimeError(f"Winlink Express main window for {self.call} not found")
 
-def press_ok_boxes(main, wait=4):
-    time.sleep(wait)
-    for w in other_windows(main):
-        say("dialog:", repr(w.Name), "texts:", texts(w))
-        for b in ("OK", "Yes"):
-            btn = w.ButtonControl(Name=b, searchDepth=3)
-            if btn.Exists(0.3):
-                in_thread(lambda: btn.GetInvokePattern().Invoke()); say("pressed", b); time.sleep(1); break
+    def session_window(self):
+        for w in self.auto.GetRootControl().GetChildren():
+            n = w.Name or ""
+            if "Peer-to-Peer Session" in n and n.rstrip().endswith(f"- {self.call}"):
+                return w
+        raise RuntimeError(f"no Peer-to-Peer Session window open for {self.call}")
 
-main = find_main()
-say(f"== {ACTION} {ARGS} on {main.Name!r}")
-if ACTION == "folders":
-    say(folders(main))
-elif ACTION == "select-folder":
-    select_folder(main, ARGS[0])
-elif ACTION == "export":
-    path = ARGS[0]
-    grid = main.TableControl(AutomationId="grdMessageList")
-    row0 = next(r for r in grid.GetChildren() if r.Name == "Row 0")
-    row0.GetLegacyIAccessiblePattern().Select(2)
-    time.sleep(0.8)
-    t = menu(main, "Message", "Export selected messages")
-    dlg = auto.WindowControl(AutomationId="DialogExportMessagesFileName", searchDepth=1)
-    if not dlg.Exists(10):
-        raise SystemExit("export dialog did not appear")
-    say("dialog:", texts(dlg))
-    dlg.EditControl(AutomationId="txtFileName").GetValuePattern().SetValue(path)
-    in_thread(lambda: dlg.ButtonControl(AutomationId="btnExport").GetInvokePattern().Invoke())
-    press_ok_boxes(main)
-elif ACTION == "import":
-    path = ARGS[0]
-    dlg = auto.WindowControl(AutomationId="DialogImportMessagesFileName", searchDepth=1)
-    if not dlg.Exists(1):
-        menu(main, "Message", "Import messages")
-        if not dlg.Exists(90):
-            raise SystemExit("import dialog did not appear")
-    dlg.EditControl(AutomationId="txtFileName").GetValuePattern().SetValue(path)
-    say("path set:", dlg.EditControl(AutomationId="txtFileName").GetValuePattern().Value)
-    in_thread(lambda: dlg.ButtonControl(AutomationId="btnImport").GetInvokePattern().Invoke())
-    press_ok_boxes(main)
-    press_ok_boxes(main, wait=1)
-    select_folder(main, "Outbox")
-say("folders now:", folders(main))
-log.close()
+    def _thread(self, fn):
+        auto = self.auto
+
+        def run():
+            with auto.UIAutomationInitializerInThread():
+                try:
+                    fn()
+                except Exception as e:  # blocked-modal COMError is expected
+                    self.log(f"  (ui call returned {type(e).__name__})")
+        t = threading.Thread(target=run, daemon=True)
+        t.start()
+        return t
+
+    def _menu(self, main, top: str, item: str):
+        main.MenuItemControl(Name=top, searchDepth=3).GetLegacyIAccessiblePattern().DoDefaultAction()
+        time.sleep(1.0)
+        for w in [main] + [x for x in self.auto.GetRootControl().GetChildren() if x.ProcessId == main.ProcessId]:
+            c = w.MenuItemControl(Name=item, searchDepth=6)
+            if c.Exists(0.5):
+                return self._thread(lambda: c.GetLegacyIAccessiblePattern().DoDefaultAction())
+        raise RuntimeError(f"menu item {item!r} not found")
+
+    def _dialogs(self, main):
+        return [w for w in self.auto.GetRootControl().GetChildren()
+                if w.ProcessId == main.ProcessId and "Winlink Express" not in (w.Name or "")
+                and "Peer-to-Peer" not in (w.Name or "")]
+
+    def _texts(self, w):
+        return [c.Name for c, d in self.auto.WalkControl(w, maxDepth=4)
+                if c.ControlTypeName == "TextControl" and c.Name]
+
+    def _close_info_boxes(self, main, wait: float = 3.0) -> list[str]:
+        """Press OK on any message boxes; return their texts."""
+        time.sleep(wait)
+        seen = []
+        for w in self._dialogs(main):
+            seen += self._texts(w)
+            ok = w.ButtonControl(Name="OK", searchDepth=3)
+            if ok.Exists(0.3):
+                self._thread(lambda: ok.GetInvokePattern().Invoke())
+                time.sleep(1)
+        return seen
+
+    # -- folders -----------------------------------------------------------------
+    def folder_counts(self) -> dict[str, int]:
+        out = {}
+        for it in self.main().ListControl(AutomationId="lstFixedFolders").GetChildren():
+            m = re.match(r"(.+?)\s+\((\d+)", it.Name or "")
+            if m:
+                out[m.group(1).strip()] = int(m.group(2))
+        return out
+
+    def select_folder(self, name: str) -> None:
+        main = self.main()
+        item = next(i for i in main.ListControl(AutomationId="lstFixedFolders").GetChildren()
+                    if (i.Name or "").startswith(name))
+        acc = item.GetLegacyIAccessiblePattern()
+        acc.Select(1 | 2)
+        time.sleep(0.3)
+        try:
+            acc.DoDefaultAction()
+        except Exception:
+            pass
+        time.sleep(1.0)
+
+    # -- import --------------------------------------------------------------------
+    def import_xml(self, path: str) -> str:
+        """Import messages via Message > Import messages; returns the summary text."""
+        main = self.main()
+        dlg = self.auto.WindowControl(AutomationId="DialogImportMessagesFileName", searchDepth=1)
+        if not dlg.Exists(0.5):
+            self._menu(main, "Message", "Import messages")
+            if not dlg.Exists(30):
+                raise RuntimeError("import dialog did not appear")
+        dlg.EditControl(AutomationId="txtFileName").GetValuePattern().SetValue(path)
+        self._thread(lambda: dlg.ButtonControl(AutomationId="btnImport").GetInvokePattern().Invoke())
+        texts = self._close_info_boxes(main) + self._close_info_boxes(main, wait=0.5)
+        summary = " ".join(texts)
+        m = re.search(r"Number of messages imported = (\d+)", summary)
+        if not m:
+            raise RuntimeError(f"import result not recognised: {summary[:200]!r}")
+        return summary
+
+    # -- P2P session -----------------------------------------------------------------
+    def status(self) -> SessionStatus:
+        w = self.session_window()
+        bar_texts = [c.Name for c in w.StatusBarControl(AutomationId="barStatus").GetChildren()
+                     if c.ControlTypeName == "TextControl" and c.Name]
+        counters = next((t for t in bar_texts if t.startswith("In:")), "")
+        state = next((t for t in bar_texts if "Connected" in t or "Disconnected" in t or "Listening" in t), "")
+        edits = [c for c in w.MenuBarControl(AutomationId="mnuChannel").GetChildren()
+                 if c.ControlTypeName == "EditControl"]
+        edits.sort(key=lambda c: c.BoundingRectangle.left)
+        target = edits[0].GetValuePattern().Value if edits else ""
+        mi = lambda n: w.MenuItemControl(Name=n, searchDepth=3)
+        return SessionStatus(state.startswith("Connected"), state, counters,
+                             mi("Start").IsEnabled, mi("Abort").IsEnabled, target)
+
+    def start(self, expect_target: str) -> None:
+        st = self.status()
+        if st.target.strip().upper() != expect_target.upper():
+            raise RuntimeError(f"session window for {self.call} would call {st.target!r}, expected {expect_target!r}")
+        if not st.can_start:
+            raise RuntimeError(f"Start is not enabled in {self.call}'s session window ({st.state!r})")
+        w = self.session_window()
+        self._thread(lambda: w.MenuItemControl(Name="Start", searchDepth=3).GetLegacyIAccessiblePattern().DoDefaultAction())
+        self.log(f"Start pressed in {self.call}'s session window (calling {expect_target})")
+
+    def abort(self) -> None:
+        w = self.session_window()
+        item = w.MenuItemControl(Name="Abort", searchDepth=3)
+        if item.IsEnabled:
+            self._thread(lambda: item.GetLegacyIAccessiblePattern().DoDefaultAction())
+            self.log(f"Abort pressed in {self.call}'s session window")
+
+
+def _main(argv: list[str]) -> None:
+    logf = open(argv[0], "a", encoding="utf-8")
+    say = lambda *a: (logf.write(" ".join(str(x) for x in a) + "\n"), logf.flush())
+    ui = WinlinkUI(argv[1], log=say)
+    action, args = argv[2], argv[3:]
+    if action == "folders":
+        say(ui.folder_counts())
+    elif action == "select-folder":
+        ui.select_folder(args[0])
+    elif action == "import":
+        say(ui.import_xml(args[0]))
+    elif action == "status":
+        say(ui.status())
+    else:
+        raise SystemExit(f"unknown action {action}")
+    say("folders:", ui.folder_counts())
+
+
+if __name__ == "__main__":
+    _main(sys.argv[1:])

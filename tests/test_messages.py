@@ -42,3 +42,26 @@ def test_import_xml_roundtrip():
 
 def test_new_mids_are_unique():
     assert len({mg.new_mid() for _ in range(2000)}) == 2000
+
+
+def test_templates_instantiate_identically_except_run_fields(tmp_path):
+    paths = mg.build_campaign_templates(PAYLOADS, ("VA3ZTF", "VE3XZQ"), tmp_path)
+    t1 = paths[1].read_text()
+    assert t1.count("@@MID") == 10 and len(set(__import__("re").findall(r"@@MID\d\d@@", t1))) == 5  # id + Message-ID header
+    assert "@@RUNID@@" in t1
+    a, mids_a = mg.instantiate(t1, "coarse01-0001", now=NOW, rng=random.Random(1))
+    b, mids_b = mg.instantiate(t1, "coarse01-0002", now=NOW, rng=random.Random(2))
+    assert len(a) == len(b)                       # byte-identical size across runs
+    assert set(mids_a).isdisjoint(mids_b)
+    root = ET.fromstring(a)
+    items = root.findall("message_list/message")
+    assert [i.find("id").text for i in items] == mids_a
+    assert items[2].find("subject").text == "hfbench coarse01-0001 3/5"
+    msg = email.message_from_string(items[0].find("mime").text)
+    assert msg["Message-ID"] == mids_a[0] and msg["Date"] == "Wed, 11 Nov 2026 01:43:00 +0000"
+    att = [p for p in msg.walk() if p.get_filename()][0]
+    assert att.get_payload(decode=True) == (PAYLOADS / "File-2oE8o.txt").read_bytes()
+    # station 2 template sends the other five files to station 1
+    msg2 = email.message_from_string(ET.fromstring(mg.instantiate(paths[2].read_text(), "x", now=NOW)[0])
+                                     .find("message_list/message/mime").text)
+    assert msg2["From"] == "VE3XZQ@winlink.org" and msg2["To"] == "VA3ZTF@winlink.org"

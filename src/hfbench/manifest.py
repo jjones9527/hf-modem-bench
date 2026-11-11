@@ -34,6 +34,7 @@ MANIFEST_EXTRA_FIELDS = [
     "stamp_host",
     "log_connected_utc",
     "ionos_ack",
+    "mids",
     "marks",
     "notes",
 ]
@@ -190,6 +191,7 @@ def build_manifest(runsheet: list[dict], events: list[dict]) -> list[dict]:
                 "stamp_host": s["host"],
                 "log_connected_utc": s.get("log_connected_utc", ""),
                 "ionos_ack": s.get("ionos_ack", ""),
+                "mids": s.get("mids", ""),
                 # seconds after start, so analysis can align marks with the log
                 "marks": " | ".join(
                     f"+{int((datetime.fromisoformat(k['t_utc']) - datetime.fromisoformat(s['t_utc'])).total_seconds())}s "
