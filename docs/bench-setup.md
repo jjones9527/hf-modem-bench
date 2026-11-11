@@ -87,16 +87,30 @@ To re-read saved results without playing anything: `hfbench audio report levels.
 - The CH2 IN gain is high because the headphone-splitter cables load station 1's output. If the cables are replaced with stereo-to-two-mono breakouts, recalibrate.
 - The common offset of about +3 dB for the test tone doesn't affect symmetry. ARDOP's own S:N reading is used to calibrate the modem.
 
-### First ARDOP check after calibration (10 Nov 2026, 23:41 UTC, IONOS reportedly at WGN 15)
+### ARDOP checks after calibration (10–11 Nov 2026)
 
-| | Station 1 receiving (data) | Station 2 receiving (ACKs) |
-| --- | --- | --- |
-| ARDOP `Early` S:N, median (middle half) | 8 dB (5–10) | 10 dB (7–11) |
-| Decode quality, median | 74 | 74 |
+**True S:N from `hfbench audio listen` (11 Nov, 00:00 UTC, WGN 20):**
 
-- **Symmetric.** Before calibration the two directions read 13 dB and at least 20 dB.
-- **About 6 dB below the setting.** ARDOP's signal appears to carry about 9 dB less power than the −6 dBFS test tone. Each modem needs its own offset measured; see "Modem level" below.
-- ARDOP stayed at 4PSK.2000. After about 19 KB, Winlink dropped the session with "Received data stream not correct format". That's a modem or protocol result at marginal quality, not a bench fault.
+| Direction | Frames | n | True S:N | Offset from setting |
+| --- | --- | --- | --- | --- |
+| 1 → 2 | data | 2 | 20.9 dB | +0.9 dB |
+| 1 → 2 | control | 27 | 19.7 dB | −0.3 dB |
+| 2 → 1 | data | 1 | 19.8 dB | −0.2 dB |
+| 2 → 1 | control | 28 | 18.9 dB | −1.1 dB |
+
+- **For ARDOP, the real S:N equals the IONOS setting to within about 1 dB, in both directions.** The bench is calibrated and symmetric.
+- The noise floors matched the tone check to within 0.1 dB.
+
+**ARDOP's own S:N estimates are biased low and shouldn't be used as a measurement.**
+- At a true 20 dB, ARDOP's per-frame `Early` estimate read about 10–12 dB.
+- The `Full` estimate read 1–2 dB.
+- My earlier inference that "ARDOP is about 6 dB below the setting", drawn from the WGN 15 session, was wrong for this reason. That session was really at about 15 dB, where ARDOP ran 4PSK.2000 at decode quality about 74.
+
+**Winlink failures seen:**
+- **10 Nov 23:41, WGN 15:** a message with two attachments was dropped after about 19 KB with "Received data stream not correct format, ByteIndex=19420".
+- **11 Nov 00:00, WGN 20:** the next session hit the **same error and the same byte index** 9 s after connecting, although only 134 bytes had been sent. The radio link was clean. Station 2's Winlink then never handed its message to its TNC, and the session timed out.
+
+Leftover state from the earlier failure is the likely cause. **Restart both Winlink Express instances, with their TNCs, after any link error.**
 
 ### Answered on 10 Nov 2026: the IONOS adds noise at a fixed level
 
@@ -182,7 +196,7 @@ Use the IONOS's own 1500 Hz tone, which reaches both microphones identically. Us
 
 ### Modem level vs the test tone
 
-The tone check matches the stations to each other, but a modem's real S:N also depends on its own signal power, which differs from the test tone's. Every modem and drive setting therefore needs an offset, measured with real traffic. The planned `hfbench audio listen` records both microphones during a session and measures each direction's S:N from the frames themselves.
+The tone check matches the stations to each other, but a modem's real S:N also depends on its own signal power, which differs from the test tone's. Every modem and drive setting therefore needs an offset, measured with real traffic. `hfbench audio listen` records both microphones during a session and measures each direction's S:N from the frames themselves. For ARDOP at DriveLevel 90 the offset is about 0 dB; see the table below.
 
 
 ### How much device noise is acceptable [Added]

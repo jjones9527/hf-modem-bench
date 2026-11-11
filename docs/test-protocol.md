@@ -63,7 +63,7 @@ Record the result. This replaces an external level-meter check of the simulator 
 
 ARDOP logs the S:N it measured on received leaders, in a 3 kHz noise bandwidth, which is the IONOS reference. Its session statistics give one value per station, so each direction is measured separately. With one IONOS unit in symmetric mode, both directions should read close to the IONOS setting.
 
-**Use ARDOP's per-frame `Early` S:N from the debug log.** ARDOP logs two S:N estimates for each frame. `Full` is the source of the session-statistics `AvgLeader S:N`. It caps at 20 dB and read a flat 0–2 dB on 10 Nov, when the real S:N was about 9 dB, so don't use it. `Early` caps at 30 dB and tracked conditions, though it scatters by a few dB, so compare medians.
+**Use ARDOP's per-frame `Early` S:N from the debug log.** ARDOP logs two S:N estimates for each frame. `Full` is the source of the session-statistics `AvgLeader S:N`. It caps at 20 dB and read a flat 0–2 dB on 10 Nov, when the real S:N was about 9 dB, so don't use it. `Early` caps at 30 dB but reads about 8–10 dB **low**: about 10–12 dB at a true 20 dB, per `hfbench audio listen`. Use it only to compare directions, never as the S:N value. Measure the true S:N with `hfbench audio listen`.
 
 - In the pilot, at those points, compare the measured S:N for each direction with the setting.
 - If the two directions differ by more than about 2 dB, treat it as a level fault and mark the run `invalid`.
@@ -167,6 +167,10 @@ hfbench start -d runs/<campaign> <run_id>    # right before connecting
 hfbench mark  -d runs/<campaign> "WGN:5"     # only for mid-run events
 hfbench end   -d runs/<campaign> completed   # or dnc / invalid, with --notes "..."
 ```
+
+### After a link error
+
+Close and restart **both** Winlink Express instances, including their TNC windows, before the next run. On 11 Nov a session started straight after a "Received data stream not correct format" failure hit the same error at the same byte index within 9 s.
 
 ### Abort rule
 
