@@ -65,3 +65,13 @@ def test_templates_instantiate_identically_except_run_fields(tmp_path):
     msg2 = email.message_from_string(ET.fromstring(mg.instantiate(paths[2].read_text(), "x", now=NOW)[0])
                                      .find("message_list/message/mime").text)
     assert msg2["From"] == "VE3XZQ@winlink.org" and msg2["To"] == "VA3ZTF@winlink.org"
+
+
+def test_cli_messages_build(tmp_path, capsys):
+    from hfbench.cli import main
+    from hfbench import matrix as mx
+    camp = tmp_path / "c"
+    mx.write_runsheet([], camp / "runsheet.csv")
+    main(["messages", "build", "-d", str(camp), "--payloads", str(PAYLOADS), "--s1-call", "VA3ZTF", "--s2-call", "VE3XZQ"])
+    assert (camp / "messages" / "station1.template.xml").exists()
+    assert "3ec10a0b30de" in capsys.readouterr().out

@@ -422,6 +422,7 @@ def build_parser() -> argparse.ArgumentParser:
     s.set_defaults(func=cmd_run)
 
     s = with_dir(sub.add_parser("messages", help="build the campaign's message templates (once)"))
+    s.add_argument("action", choices=["build"])
     s.add_argument("--payloads", default="payloads/Text_50KB")
     s.add_argument("--s1-call", required=True, help="station 1 callsign (sends the first half of the set)")
     s.add_argument("--s2-call", required=True)
