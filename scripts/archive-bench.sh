@@ -24,7 +24,7 @@ win() { ssh -o ConnectTimeout=10 "$HFBENCH_HOST" "$@" 2>/dev/null; }
 for c in $(win 'cd %USERPROFILE%\hfbench\runs && for /d %d in (*) do @if exist %d\runsheet.csv echo %d' | tr -d '\r'); do
   mkdir -p "$A/$c"
   win "cd %USERPROFILE%\\hfbench && hfbench manifest -d runs\\$c" >/dev/null || true
-  scp -q "$HFBENCH_HOST:hfbench/runs/$c/*.csv" "$HFBENCH_HOST:hfbench/runs/$c/*.jsonl" \
+  scp -q "$HFBENCH_HOST:hfbench/runs/$c/*.csv" "$HFBENCH_HOST:hfbench/runs/$c/*.jsonl" "$HFBENCH_HOST:hfbench/runs/$c/*.json" \
          "$HFBENCH_HOST:hfbench/runs/$c/console-*.txt" "$A/$c/" 2>/dev/null || true
   echo "campaign $c: $(ls "$A/$c" | wc -l | tr -d ' ') files"
 done

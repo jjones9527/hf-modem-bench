@@ -144,12 +144,45 @@ the archive.
 
 ---
 
+## swap02: IONOS channels swapped
+
+Started 11 Nov 2026 at 23:40. The cables are as in swap01. In Windows, each
+USB device now outputs on the other side:
+
+| | station 1 (Sabrent, "USB Audio Device") | station 2 (Syba, "C-Media USB Audio Device") |
+|---|---|---|
+| Windows playback balance | L 0 / R 100 | L 90 / R 0 |
+| IONOS channel | CH1 | CH2 |
+| IONOS CH IN | 50 | 2 |
+
+The first tone check after the swap, with the gains simply exchanged
+(CH1 IN 20, CH2 IN 1), had both stations about 6 dB low: transmit −4.9 / −3.1 dB
+against the reference, and a receive level of −28 dBFS. Raising each gain one
+step (20 → 50, 1 → 2) restored them:
+
+| tone check at WGN 20 | station 1 vs reference | station 2 vs reference | transmit mismatch | receive mismatch | receive level |
+|---|---|---|---|---|---|
+| pilot01 / swap01 | +1.6 dB | +2.7 dB | −1.1 dB | −0.7 dB | about −21 dBFS |
+| swap02 | +2.8 dB | +2.6 dB | +0.3 dB | −0.7 dB | about −21 dBFS |
+
+The saved tone check is `runs/swap02/levels-tonecheck.json` in the archive.
+
+Swapping the channels needed one more gain step on both channels, so the
+IONOS's left and right inputs aren't interchangeable at the same gain setting.
+Record this as part of the bench setup.
+
+Question: does the 16QAM direction follow the IONOS channel (it would become
+station 2 → 1) or the USB adapter (it would stay station 1 → 2)?
+
+| run | start | outcome | delivered | 2→1 goodput | 1→2 goodput | ended by |
+|---|---|---|---|---|---|---|
+| 0001 | | | | | | |
+| 0002 | | | | | | |
+
+---
+
 ## Planned next
 
-- **swap02, the IONOS channel swap.** Swap each USB device's left and right
-  balance in Windows, swap the CH1 IN and CH2 IN gains (1 ↔ 20), run the tone
-  check, then 2 runs. This tells us whether the 16QAM direction follows the
-  IONOS channel or the adapter.
 - **WGN 25 and WGN 15** (about 19 and 9 dB true S:N): is 16QAM clean above the
   threshold, and what does ARDOP do below it?
 - Possibly a receive-level check: raise both microphones by about 6 dB and keep
