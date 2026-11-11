@@ -23,7 +23,7 @@ This records the bench as it stood for the report. Items marked **(auto)** were 
 | Windows name | "USB Audio Device" | "C-Media USB Audio Device" |
 | USB ID | 0D8C:0014 (C-Media) | 0D8C:0008 (C-Media) |
 | Driver | Microsoft class driver `wdma_usb.inf` 10.0.19041.2604 | same |
-| Make and model of the adapter | One is a **Sabrent**, the other generic; which is which is **TBC**. The Sabrent is probably 0D8C:0014, station 1. | |
+| Make of the adapter | **Sabrent** (model **TBC**) | **Syba** (model **TBC**) |
 | Shared-mode format | 48 kHz (WASAPI default) | 48 kHz |
 | Microphone AGC | Off (since 10 Nov) | Off |
 | Output channel used | Left only (Windows balance) | Right only |
