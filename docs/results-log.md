@@ -109,8 +109,38 @@ cables?
 
 | run | start | outcome | delivered | 2→1 goodput | 1→2 goodput | ended by |
 |---|---|---|---|---|---|---|
-| 0001 | | | | | | |
-| 0002 | | | | | | |
+| 0001 | 22:17:56 | dnc | 7/10, 56.8 min | 1,136–1,273 bit/s (4 msgs) | 655–677 bit/s (3 msgs) | station 2: *Link Error – Checksum error. Failed to assemble correct binary image* (23:13:40), receiving station 1's file **1/5** |
+| 0002 | not run | | | | | the runner refused to start because station 1's Outbox still held 2 messages from 0001 |
+
+Before 0001, the runner found and quarantined one stale `Partials\*.bin` left
+over from the pilot01-0003 failure.
+
+Station 1 shifted up from 8PSK to 16QAM at 22:23:56 and again at 22:40:50, after a
+shift down. Station 2 stayed at 8PSK. Station 1's files were sent in the order
+4, 2, 3, 1. Files 4, 2 and 3 were delivered, including the file 2/5 that failed in
+pilot01-0002 and -0003, and file 1 failed.
+
+**Findings:**
+1. The cables don't decide the direction. With the cables swapped, station
+   1 → 2 still shifted up to 16QAM and station 2 → 1 still stayed at 8PSK. What
+   remains is the USB adapter or the IONOS channel (left or right).
+2. The corruption doesn't depend on the file. A third file-level corruption
+   happened at 16QAM, on a different file (1/5). File 2/5 was delivered this time.
+
+**Running totals at WGN 20, 11 Nov** (pilot01 + swap01):
+
+| mode (direction) | messages attempted | delivered | corrupted (link error) |
+|---|---|---|---|
+| 16QAM.2000 (1→2) | 12 | 9 | 3 |
+| 8PSK.2000 (2→1) | 13 | 13 | 0 |
+
+Each corrupted message arrived in full and every ARDOP frame passed before
+Winlink rejected it. A 16-bit frame CRC failing to catch errors would explain
+far fewer than 3 events in about 12 messages, even with about 45% of frames
+rejected. That points to ARDOP's ARQ or frame reassembly, for example a
+repeated or reused frame being accepted, rather than to channel errors that get
+past the CRC. This is only a hypothesis; the debug logs around each event are in
+the archive.
 
 ---
 
