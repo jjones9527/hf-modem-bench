@@ -1,6 +1,6 @@
 # Test environment
 
-This records the bench as it stood for the report. Items marked **(auto)** were read from the bench machine on 11 Nov 2026 with read-only queries; **(TBC)** items are still to be confirmed. Callsigns, the computer name and serial numbers are left out on purpose.
+This records the bench as it stood for the report. Items marked **(auto)** were read from the bench machine on 11 Nov 2026 with read-only queries; **(TBC)** items are still to be confirmed. The report will be published. The stations are **VA3ZTF** (station 1) and **VE3XZQ** (station 2), and the owner is happy for them to appear. The computer name and serial numbers are left out.
 
 ## Host computer (auto)
 
@@ -23,13 +23,13 @@ This records the bench as it stood for the report. Items marked **(auto)** were 
 | Windows name | "USB Audio Device" | "C-Media USB Audio Device" |
 | USB ID | 0D8C:0014 (C-Media) | 0D8C:0008 (C-Media) |
 | Driver | Microsoft class driver `wdma_usb.inf` 10.0.19041.2604 | same |
-| Make and model of the adapter | **TBC** | **TBC** |
+| Make and model of the adapter | One is a **Sabrent**, the other generic; which is which is **TBC**. The Sabrent is probably 0D8C:0014, station 1. | |
 | Shared-mode format | 48 kHz (WASAPI default) | 48 kHz |
 | Microphone AGC | Off (since 10 Nov) | Off |
 | Output channel used | Left only (Windows balance) | Right only |
 | IONOS channel | Ch2 | Ch1 |
 
-**Cabling:** two 3.5 mm stereo *headphone-style* Y splitters. Each joins both stations to one IONOS jack, input or output, with every plug and jack stereo. There are no isolation transformers (**TBC**). The cabling's effects are described in [bench-setup.md](bench-setup.md).
+**Cabling:** two 3.5 mm stereo *headphone-style* Y splitters. Each joins both stations to one IONOS jack, input or output, with every plug and jack stereo. There are **no isolation transformers**. The cabling's effects are described in [bench-setup.md](bench-setup.md).
 
 ## Channel simulator
 
@@ -39,7 +39,7 @@ This records the bench as it stood for the report. Items marked **(auto)** were 
 | Firmware | **TBC** (the manual covers rev 2.03; the version shows on the power-on screen) |
 | Control | USB serial on COM3 (USB ID 16C0:0483). Lines end in LF or CR+LF. |
 | Mode | Half duplex, symmetric, one unit; 3 kHz bandwidth; 2-path for the MP* presets |
-| Gains (saved to EEPROM) | CH1 IN 1, CH2 IN 20, CH OUT at defaults (**TBC**) |
+| Gains (saved to EEPROM) | CH1 IN 1, CH2 IN 20. CH1 and CH2 OUT were never changed, so presumably the default of 1 (**TBC**). |
 
 ## Software (auto)
 
@@ -47,10 +47,10 @@ This records the bench as it stood for the report. Items marked **(auto)** were 
 | --- | --- | --- |
 | Winlink Express | 1.8.6.0 | Two installs: `C:\RMS Express` (station 1) and `C:\RMS Express 2` (station 2) |
 | ARDOP_Win TNC | 1.0.2.9 | Bundled with Winlink Express, one per install. Settings below. |
-| VARA HF | 4.09.0001 | Two installs: `C:\VARA` and `C:\VARA 2`. Registration and bandwidth **TBC**; no settings file yet. |
+| VARA HF | 4.09.0001 | Two installs: `C:\VARA` and `C:\VARA 2`. **Not yet registered.** One key exists, for VA3ZTF; whether it may be used on the VE3XZQ instance is **TBC**. Bandwidth **TBC**. |
 | VARA FM | 4.04.0001 | Installed; not part of the HF comparison |
-| Data2G | 0.4.2 | Two installs: `C:\Program Files\Data2G` and `Data2G 2`. Connected through its VARA-compatible TNC. |
-| Mercury HF modem | 1.9.23 (Rhizomatica) | Two installs: `C:\Program Files\MercuryHF` and `MercuryHF 2`. How it connects to Winlink is **TBC**. |
+| Data2G | 0.4.2 | Two installs: `C:\Program Files\Data2G` and `Data2G 2`. Connected through its VARA-compatible TNC, so **Winlink logs it as "VARA HF"**. |
+| Mercury HF modem | 1.9.23 (Rhizomatica) | Two installs: `C:\Program Files\MercuryHF` and `MercuryHF 2`. Connected through its VARA-compatible interface, so **Winlink logs it as "VARA HF"**. |
 | Python | 3.12.10 | With hfbench 0.1.0, sounddevice 0.5.6, numpy 2.5.4, pyserial 3.5 |
 
 ### ARDOP_Win TNC settings (identical on both stations)
@@ -80,6 +80,10 @@ The tone check and the true-S:N measurement are in [bench-setup.md](bench-setup.
 - Each microphone's own noise is 38 dB below the IONOS reference.
 
 ## Notes for the report
+
+- **VARA HF registration decides whether its results are fair.** Unregistered VARA HF is speed-limited; users report it stays at speed level 3–4. A comparison is only valid with registered VARA at **both** ends. Registration is keyed to a callsign. Whether a key issued for VA3ZTF may be used on the second instance (VE3XZQ), or whether a bench licence is available, is a question for the VARA author. **Don't publish VARA results until this is settled.** Data2G and Mercury are separate programs and aren't affected.
+- **Three modems appear as "VARA HF" in Winlink logs** (VARA, Data2G and Mercury). The modem for each run comes from the run sheet and manifest, never from the log. `hfbench run` should also record which program held the TNC port when the session started; see test-protocol §7.
+- **TNC port clash.** VARA-compatible TNCs use TCP 8300 and 8301 by default, but station 2's ARDOP TNC is configured on **8300**. Give each station's VARA-type modem its own ports (for example 8300/8301 for station 1 and 8400/8401 for station 2). Close the ARDOP TNCs before running a VARA-type session.
 
 - **USB selective suspend is on.** Windows can briefly power down idle USB devices, and USB audio dongles are known to drop out or click when that happens. Consider turning it off for the campaign: Power Options → USB settings. Record the choice either way.
 - **Windows Time is stopped.** Every log and timestamp comes from this one machine, so the logs line up with each other regardless. The UTC timestamps can still drift from true UTC; it was about 0.5 s on 10 Nov.

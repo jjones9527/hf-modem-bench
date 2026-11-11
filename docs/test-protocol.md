@@ -159,6 +159,13 @@ While a run is waiting, press **`i`** to mark it `invalid` (a bench fault) or **
 | `hfbench ionos send "WGN:20"` | Sends one command by hand |
 | `hfbench ionos apply -d … <run_id>` | Applies one run's settings |
 
+### Which modem ran
+
+VARA HF, Data2G and Mercury all connect to Winlink Express through the VARA interface, so the Winlink log calls all three "VARA HF P2P". The modem is therefore taken from the run sheet. Before a campaign block, also:
+- **Start only that modem's TNCs.** Never leave two VARA-type modems running at once.
+- **Check the TNC version** shown on screen against the run sheet.
+- **Give each station's modem its own TCP ports.** Station 2's ARDOP TNC already uses 8300, the VARA default.
+
 ### Manual (no serial, or for debugging)
 
 ```text
@@ -220,9 +227,9 @@ Real logs contain callsigns, grid squares and subjects. `logs/`, `runs/<campaign
 
 ## Open questions
 
-1. Which modems and versions are in the comparison?
+1. Which modems and versions are in the comparison? Installed: ARDOP 1.0.2.9, VARA HF 4.09 (not yet registered; see [test-environment.md](test-environment.md)), Data2G 0.4.2 and Mercury 1.9.23.
 2. What firmware does the IONOS unit run (shown at power-on)? Is its USB port connected to the Windows machine, which would allow serial automation?
 3. ~~Are the two Winlink Express instances on one Windows machine or two?~~ One machine, with two installs.
 4. ~~What is the payload?~~ 5 × 50 KB attachments from each station; see §4.
-5. Is this for personal evaluation or for publication? The answer sets the required rigour (replicates, reporting of calibration uncertainty).
+5. ~~Personal or published?~~ **Published.** Callsigns VA3ZTF and VE3XZQ may appear. Report replicates, spread and calibration in full.
 6. Are CW-interferer and QRN tests wanted badly enough to build external audio injection?
