@@ -14,6 +14,7 @@ This records the bench as it stood for the report. Items marked **(auto)** were 
 | Time zone | Eastern. All bench logs are in UTC. |
 | Power plan | Balanced |
 | USB selective suspend | **Enabled** on AC and battery. See notes. |
+| Display off / sleep / hibernate (AC) | **Never** (set 12 Nov 2026, from 10 min / 30 min / never), so unattended runs can be watched and the machine can't sleep mid-run |
 | Windows Time service | **Stopped**. See notes. |
 
 ## Audio interfaces (auto, except where noted)
