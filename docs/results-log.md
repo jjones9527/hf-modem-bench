@@ -459,6 +459,33 @@ never from the IONOS front panel.
 
 ---
 
+## cal7: levels lowered for IONOS headroom (12 Nov 2026)
+
+Both Windows playback levels were lowered, with **no IONOS front-panel
+change**, until the tone sat at the IONOS reference:
+
+| item | value |
+|---|---|
+| tone check, WGN 20 | transmit **−0.2 / −0.4 dB** against the reference; mismatch **+0.1 dB**; receive mismatch +0.7 dB; receive level about −23.5 dBFS |
+| tone check, WGN 40 | tone S:N 32.3–32.5 dB: the bench's own noise floor is 32 dB below the reference |
+| ARDOP data S:N (expected) | about the setting − 8 dB (from pilot01: data = setting + transmit offset − 8). So WGN 22 ≈ 14 dB and WGN 28 ≈ 20 dB, with a ceiling around 24 dB set by the bench floor |
+
+16QAM pre-check (cal7, WGN 40, 2 repeats × 2 levels):
+
+| path | MER dB | low / high carriers | tilt dB |
+|---|---|---|---|
+| Syba → Syba | 19.1–21.8 | 23.0 / 20.5 at full level | 0.1 |
+| Syba → Sabrent | 15.5–18.9 | falls (22 / 17) | 0.1 |
+| Sabrent → Syba | 17.4–22.1 | varies | 8.3 |
+| Sabrent → Sabrent | 14.7–20.8 | falls | 8.4 |
+
+At full level, Syba → Syba improved from about 20 dB (cal6) to about 21.7 dB.
+cal6's hot levels were probably already costing some quality. **Pass.**
+
+Campaigns: `cal7wgn22` (started 16:33), then `cal7wgn28`.
+
+---
+
 ## Planned next
 
 - **Replace the Sabrent** with a second adapter of the Syba's model, since a
