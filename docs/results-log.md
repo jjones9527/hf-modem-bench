@@ -176,8 +176,37 @@ station 2 → 1) or the USB adapter (it would stay station 1 → 2)?
 
 | run | start | outcome | delivered | 2→1 goodput | 1→2 goodput | ended by |
 |---|---|---|---|---|---|---|
-| 0001 | | | | | | |
-| 0002 | | | | | | |
+| 0001 | 23:42:42 | dnc | 1/10, 14.5 min | 1,111 bit/s (1 msg) | none | station 2: *Link Error – Checksum error. Failed to assemble correct binary image* (23:56:10), on station 1's **first** message (G2W86PLFK7LA), sent at 16QAM |
+| 0002 | not run | | | | | the runner refused to start because station 1's Outbox still held 5 messages from 0001 |
+
+Before 0001, the runner quarantined one stale `Partials\*.bin` from swap01.
+
+ARDOP: station 1 shifted 4PSK.500 → … → 8PSK.2000 → 16QAM.2000 as before. The
+receiver's average quality at 8PSK was 72–73 before the shift, and 38 at 16QAM.
+It got 50 data ACKs and 27 NAKs. Station 2 reached 8PSK.2000 and stayed there
+(average quality 68–69, 60 ACKs and 2 NAKs).
+
+**Findings:**
+1. The IONOS channel doesn't decide the direction. With the channels swapped,
+   station 1 → 2 still shifted up to 16QAM. Together with swap01, the cables and
+   the IONOS channels are ruled out. The ARDOP settings are identical on both
+   stations: a sorted diff of the two `ARDOP_Win TNC.ini` files shows only the
+   callsign, the sound devices, the TCP port and the window position. What's
+   left is the audio hardware path, the Sabrent DAC → (IONOS) → Syba ADC versus
+   the reverse.
+2. That path is the *cleaner* one: the receiver reports about 72–74 quality at
+   8PSK, against 68–71 in the other direction. That's what pushes ARDOP over its
+   threshold for shifting up to 16QAM. The hardware only decides which
+   direction crosses the threshold. The slowdown and the corruption come from
+   ARDOP's behaviour at 16QAM near 14 dB true S:N.
+3. A fourth corruption, this time on the first 16QAM message.
+
+**Running totals at WGN 20, 11 Nov** (pilot01 + swap01 + swap02):
+
+| mode | messages attempted | delivered | corrupted (link error) |
+|---|---|---|---|
+| 16QAM.2000 | 14 | 10 | 4 |
+| 8PSK.2000 | 14 | 14 | 0 |
 
 ---
 
