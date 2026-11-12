@@ -26,8 +26,14 @@ This records the bench as it stood for the report. Items marked **(auto)** were 
 | Make of the adapter | **Sabrent** (model **TBC**) | **Syba** (model **TBC**) |
 | Shared-mode format | 48 kHz (WASAPI default) | 48 kHz |
 | Microphone AGC | Off (since 10 Nov) | Off |
-| Output channel used | Left only (Windows balance) | Right only |
-| IONOS channel | Ch2 | Ch1 |
+| Output channel used | Right only (Windows balance L 0 / R 100) since swap02; left only before | Left only (L 90 / R 0) since swap02; right only before |
+| IONOS channel | Ch1 since swap02; Ch2 before | Ch2 since swap02; Ch1 before |
+
+The two columns are the **adapters**. From wgn25a (12 Nov) on, the ARDOP
+instances were swapped: station 1 (VA3ZTF) uses the Syba and station 2
+(VE3XZQ) the Sabrent. [results-log.md](results-log.md) has the bench state
+for each campaign. The Sabrent was moved to a different USB port on the Mac
+mini itself, not through a hub, on 12 Nov after the qam01 test.
 
 **Cabling:** two 3.5 mm stereo *headphone-style* Y splitters. Each joins both stations to one IONOS jack, input or output, with every plug and jack stereo. There are **no isolation transformers**. The cabling's effects are described in [bench-setup.md](bench-setup.md).
 
@@ -36,10 +42,10 @@ This records the bench as it stood for the report. Items marked **(auto)** were 
 | Item | Value |
 | --- | --- |
 | Unit | Teensy IONOS HF/VHF-UHF simulator (KN6KB / KA6IQA), Teensy 4.0 |
-| Firmware | **TBC** (the manual covers rev 2.03; the version shows on the power-on screen) |
+| Firmware | **2.03** (read from the unit, 12 Nov 2026) |
 | Control | USB serial on COM3 (USB ID 16C0:0483). Lines end in LF or CR+LF. |
 | Mode | Half duplex, symmetric, one unit; 3 kHz bandwidth; 2-path for the MP* presets |
-| Gains (saved to EEPROM) | CH1 IN 1, CH2 IN 20. CH1 and CH2 OUT were never changed, so presumably the default of 1 (**TBC**). |
+| Gains (saved to EEPROM) | Since 11 Nov (swap02): **CH1 IN 50** (Sabrent), **CH2 IN 2** (Syba). Before that: CH1 IN 1, CH2 IN 20. CH1 and CH2 OUT were never changed, so presumably the default of 1 (**TBC**). |
 
 ## Software (auto)
 
@@ -76,7 +82,7 @@ The payload set `Text_50KB` is 10 files of 51,200 bytes (set SHA-256 `3ec10a0bâ€
 
 The tone check and the true-S:N measurement are in [bench-setup.md](bench-setup.md). In summary:
 - The transmit levels match within 1.1 dB and the receive levels within 0.7 dB.
-- For ARDOP, the real S:N equals the IONOS setting within about 1 dB in both directions.
+- For ARDOP's 2000 Hz data frames, the real S:N is about 6 dB below the IONOS setting (about 14 dB at WGN 20), and the two directions are within 0.2 dB of each other. Control frames are about 1â€“2 dB below the setting.
 - Each microphone's own noise is 38 dB below the IONOS reference.
 
 ## Notes for the report
