@@ -98,10 +98,31 @@ class WinlinkUI:
                 return self._thread(lambda: c.GetLegacyIAccessiblePattern().DoDefaultAction())
         raise RuntimeError(f"menu item {item!r} not found")
 
+    def _child_windows(self, main):
+        """Dialogs owned by the main window can appear as its children (seen in an
+        instance started by the recovery) rather than as top-level windows."""
+        out = []
+        try:
+            for c in main.GetChildren():
+                try:
+                    if c.ControlTypeName == "WindowControl":
+                        out.append(c)
+                except Exception:
+                    continue
+        except Exception:
+            pass
+        return out
+
     def _dialogs(self, main):
-        return [w for w in self.auto.GetRootControl().GetChildren()
-                if w.ProcessId == main.ProcessId and "Winlink Express" not in (w.Name or "")
-                and "Peer-to-Peer" not in (w.Name or "")]
+        out = []
+        for w in list(self.auto.GetRootControl().GetChildren()) + self._child_windows(main):
+            try:
+                n = w.Name or ""
+                if w.ProcessId == main.ProcessId and "Winlink Express" not in n and "Peer-to-Peer" not in n:
+                    out.append(w)
+            except Exception:
+                continue
+        return out
 
     def _texts(self, w):
         return [c.Name for c, d in self.auto.WalkControl(w, maxDepth=4)
@@ -162,10 +183,16 @@ class WinlinkUI:
     # -- import --------------------------------------------------------------------
     def _own_dialog(self, automation_id: str):
         """A dialog with this AutomationId belonging to *this* instance's process."""
-        pid = self.main().ProcessId
-        for w in self.auto.GetRootControl().GetChildren():
-            if w.AutomationId == automation_id and w.ProcessId == pid:
-                return w
+        main = self.main()
+        pid = main.ProcessId
+        # A dialog is usually a top-level window, but in an instance started by the
+        # recovery (via a scheduled task) it appears as a child of the main window.
+        for w in list(self.auto.GetRootControl().GetChildren()) + list(main.GetChildren()):
+            try:
+                if w.AutomationId == automation_id and w.ProcessId == pid:
+                    return w
+            except Exception:
+                continue
         return None
 
     def import_xml(self, path: str) -> str:
@@ -250,7 +277,10 @@ class WinlinkUI:
         """Answer confirmation boxes of this instance with Yes/OK; return their texts."""
         time.sleep(wait)
         seen = []
-        for w, n, _ in self._top_windows():
+        extra = []
+        if self.has_main_window():
+            extra = [(c, c.Name or "", "WindowControl") for c in self._child_windows(self.main())]
+        for w, n, _ in self._top_windows() + extra:
             try:
                 if w.ProcessId != pid or "Winlink Express" in n or "Peer-to-Peer" in n:
                     continue

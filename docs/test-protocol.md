@@ -307,6 +307,9 @@ alone with `scripts/windows/hfbench_ui_do.ps1` and then as a whole. Results:
   task's child processes.
 - Fixed during the trial: a window that is closing can refuse UI Automation access,
   so the window search now skips windows it can't read.
+- Found at the first import after a recovery restart (oneway28r, 22:38): in a
+  restarted instance, Winlink's dialogs (Import, message boxes) appear as children
+  of the main window, not as top-level windows. Dialog searches now look in both.
 
 ## 8. Metrics
 
