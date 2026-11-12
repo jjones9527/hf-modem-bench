@@ -230,8 +230,57 @@ goes.
 
 | run | start | outcome | delivered | 2→1 goodput | 1→2 goodput | modes | ended by |
 |---|---|---|---|---|---|---|---|
-| 0001 | | | | | | | |
-| 0002 | | | | | | | |
+| 0001 | 11:14:36 | completed | 10/10, 43.3 min | 1,477–1,534 bit/s | 1,302–1,407 bit/s | both 16QAM.2000 from the first message | normal end |
+| 0002 | 12:02:32 | dnc | 6/10, 30.6 min | 1,409–1,519 bit/s (3 msgs) | 1,225–1,399 bit/s (3 msgs) | both 16QAM.2000 | station 1: *Link Error – Checksum error. Failed to assemble correct binary image* (12:33:07), receiving station 2's 4th message (DBUE4FWNCUQH) |
+
+The failed message: station 2's TNC sent 42 data frames and each was ACKed on the
+first try (0 NAKs, no repeats). Station 1's TNC decoded all 42 as PASS, at a
+quality of 22–25. The reassembled B2F message still failed Winlink's checksum.
+Across the whole of 0002, station 2 as sender got 183 ACKs and **0 NAKs**, and
+station 1 as sender got 140 ACKs and 1 NAK.
+
+**16QAM receive quality by hardware path** (median of PASS frames from the
+receiver's debug log, with the 10th–90th percentile range):
+
+| run | S:N setting | path | receiver | 16QAM quality | frame FAILs |
+|---|---|---|---|---|---|
+| pilot01-0001 | WGN 20 | Sabrent → Syba | station 2 | 31 (29–33), 209 frames | many (201 NAKs) |
+| wgn25a-0001 | WGN 25 | Sabrent → Syba | station 1 | **24 (22–27)**, 217 frames | 0 |
+| wgn25a-0001 | WGN 25 | Syba → Sabrent | station 2 | **53 (47–56)**, 216 frames | 0 |
+| wgn25a-0002 | WGN 25 | Sabrent → Syba | station 1 | 24 (21–27), 171 frames | 0 |
+| wgn25a-0002 | WGN 25 | Syba → Sabrent | station 2 | 53 (45–56), 126 frames | 0 |
+
+The Windows device formats are identical: both adapters render in stereo and
+capture in mono, at 48 kHz, 16-bit.
+
+**Findings:**
+1. **All five corrupted messages so far went through the Sabrent → Syba path.**
+   That was station 1 → 2 until the device swap, and station 2 → 1 after it. The
+   problem follows the audio hardware, not the station, its settings, the cables
+   or the IONOS channel.
+2. **16QAM quality on that path doesn't depend on the noise.** It reads about 24
+   at WGN 25 and about 31 at WGN 20, against about 53 for the reverse path at
+   WGN 25. Something other than the IONOS noise degrades 16QAM on this path:
+   amplitude or phase distortion, or timing, in the Sabrent's output or the
+   Syba's input. 8PSK has a constant amplitude, which is consistent with it not
+   being affected.
+3. **Corruption also happens without any rejected frames.** The failed message
+   in 0002 had 42 of 42 frames pass on the first try, so retransmission handling
+   can't be the only cause. The hypothesis now: on this path, ARDOP's 16QAM
+   decoder sometimes outputs wrong data that still passes its frame check.
+   That's more likely when the decoded quality is this low.
+4. At WGN 25 the Syba → Sabrent path ran 16QAM cleanly: 8 of 8 messages, quality
+   about 53, 0 FAILs.
+
+**Running totals of 16QAM.2000 by hardware path** (all campaigns so far):
+
+| path | S:N setting | attempted | delivered | corrupted |
+|---|---|---|---|---|
+| Sabrent → Syba | WGN 20 | 14 | 10 | 4 |
+| Sabrent → Syba | WGN 25 | 9 | 8 | 1 |
+| Syba → Sabrent | WGN 25 | 8 | 8 | 0 |
+
+8PSK.2000 (Syba → Sabrent, WGN 20): 14 attempted, 14 delivered.
 
 ---
 
