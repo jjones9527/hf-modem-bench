@@ -486,6 +486,43 @@ Campaigns: `cal7wgn22` (started 16:33), then `cal7wgn28`.
 
 ---
 
+## cal7wgn22: ARDOP 1.0.2.9, WGN 22 (expected ≈ 14 dB data S:N), cal7 levels
+
+Started 12 Nov 2026 at 16:33. Station 1 (VA3ZTF) uses the Syba and station 2
+(VE3XZQ) the Sabrent, as since wgn25a. 2 replicates of Text_50KB (5 + 5 messages).
+The operator was asked to watch the IONOS Lvl meter; no red was reported.
+
+| run | start | outcome | delivered | 2→1 goodput (Sabrent → Syba) | 1→2 goodput (Syba → Sabrent) | modes | ended by |
+|---|---|---|---|---|---|---|---|
+| 0001 | 16:36:00 | completed | 10/10, 50.2 min | 1,234–1,292 bit/s | 1,147–1,189 bit/s | both 8PSK.2000 after the 4PSK ramp | normal end |
+| 0002 | 17:30:52 | completed | 10/10, 51.4 min | 1,198–1,263 bit/s | 1,129–1,219 bit/s | both 8PSK.2000 after the 4PSK ramp | normal end |
+
+ARDOP debug logs (data frames, both runs):
+
+| run | sender | 8PSK.2000 frames sent | NAKs received | receiver's 8PSK quality, median (p10–p90) | 16QAM |
+|---|---|---|---|---|---|
+| 0001 | station 1 (Syba) | 257 | 2 | 72 (72–73) | never |
+| 0001 | station 2 (Sabrent) | 258 | 4 | 73 (72–74) | never |
+| 0002 | station 1 (Syba) | 257 | 1 | 73 (72–73) | never |
+| 0002 | station 2 (Sabrent) | 258 | 10 | 73 (72–74) | never |
+
+No Winlink errors (checksum, decompress or link) in either station's log.
+
+**Findings:**
+1. **At cal7 levels the two directions are symmetric.** Both ran 8PSK.2000 for
+   the whole session, at the same receive quality (72–73) and within about 7%
+   goodput of each other. The earlier quality gap on the Sabrent → Syba path
+   (about 24–31 against 53 at 16QAM) doesn't show at 8PSK.
+2. **ARDOP never tried 16QAM at this S:N.** The quality sits at 72–74, just
+   under the shift-up threshold seen before (about 72–74), so the gearshift
+   stays at 8PSK. This differs from pilot01 (WGN 20 at the old, hotter
+   levels, about 14 dB data S:N), where 16QAM was used. It is consistent with the lower cal7 levels
+   giving a slightly lower data S:N than estimated (S:N recording below).
+3. 20 of 20 messages delivered, none corrupted, all at 8PSK.2000 in both
+   directions (the Sabrent → Syba path included).
+
+---
+
 ## Planned next
 
 - **Replace the Sabrent** with a second adapter of the Syba's model, since a
