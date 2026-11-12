@@ -210,9 +210,35 @@ It got 50 data ACKs and 27 NAKs. Station 2 reached 8PSK.2000 and stayed there
 
 ---
 
+## wgn25a: WGN 25, USB adapters swapped between the ARDOP instances
+
+Started 12 Nov 2026 at 11:11. `scripts/windows/swap_ardop_devices.ps1` swapped
+the `CaptureDevice` and `PlaybackDevice` lines in the two `ARDOP_Win TNC.ini`
+files and nothing else (verified by diffing against the `.bak` copies). Station 1
+(VA3ZTF) now uses the **Syba** (C-Media) and station 2 (VE3XZQ) uses the
+**Sabrent**. The cabling, the Windows balance and the IONOS gains are as in
+swap02; they go with the devices.
+
+Tone check at WGN 20 after the swap: station 1 +2.6 dB, station 2 +2.9 dB
+against the reference, transmit mismatch −0.3 dB, receive mismatch +0.7 dB. This
+is the mirror image of swap02, as expected.
+
+Two changes at once, the device swap and S:N 25, are deliberate: the first
+question is whether 16QAM is clean at about 19 dB true S:N. If it is, WGN 20 is
+run next with the devices still swapped, to see which way the 16QAM direction
+goes.
+
+| run | start | outcome | delivered | 2→1 goodput | 1→2 goodput | modes | ended by |
+|---|---|---|---|---|---|---|---|
+| 0001 | | | | | | | |
+| 0002 | | | | | | | |
+
+---
+
 ## Planned next
 
-- **WGN 25 and WGN 15** (about 19 and 9 dB true S:N): is 16QAM clean above the
-  threshold, and what does ARDOP do below it?
+- **WGN 20 with the devices swapped**, if wgn25a is clean: does the 16QAM direction
+  follow the Sabrent → Syba hardware path, which would now be station 2 → 1?
+- **WGN 15** (about 9 dB true S:N): what does ARDOP do below the threshold?
 - Possibly a receive-level check: raise both microphones by about 6 dB and keep
   the S:N the same. Drive level stays at 90, because it changes the true S:N.
