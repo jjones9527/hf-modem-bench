@@ -441,6 +441,24 @@ are known, measured properties of this bench, and the report has to state them.
 
 ---
 
+## cal6wgn14 (first attempt): stopped, IONOS input clipping
+
+Started 12 Nov 2026 at 16:02 at the cal6 levels. The operator saw the IONOS
+**Lvl** meter repeatedly going into the red (more than about 1,100–1,200 mV p-p)
+during ARDOP transmissions. At cal6 the tone reaches the IONOS about 6 dB hotter
+than in the original calibration, which left about 8 dB of headroom with the tone
+at about 400 mV, so ARDOP's peaks now clip at the IONOS input. The run was
+stopped at 16:22 after 2 of 10 messages. Both sessions were aborted remotely and
+the run was marked `invalid`. The 16QAM test didn't show the problem: its
+−1 dBFS-peak signal at Windows level 90/100 evidently peaks lower at the IONOS
+than ARDOP at DriveLevel 90 does.
+
+**Rule added:** the IONOS Lvl meter must never go red during an ARDOP session.
+Watch it for the first few minutes of each campaign. Lower the levels in Windows,
+never from the IONOS front panel.
+
+---
+
 ## Planned next
 
 - **Replace the Sabrent** with a second adapter of the Syba's model, since a
