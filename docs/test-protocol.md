@@ -76,6 +76,33 @@ The first logs (10 Nov 2026, back to back without IONOS) show why this check mat
 
 The Winlink log alone would have reported this as "the modem is slow one way". [bench-setup.md](bench-setup.md) gives the level-matching procedure.
 
+### Path-quality check (before every campaign)
+
+The tone check and the S:N measurement can both look fine on a bench that still
+damages multi-carrier QAM. See the results log for 11–12 Nov: a loose plug,
+an IONOS stuck in a multipath-like state, and an adapter with an input timing
+fault. So before every campaign, and after any change at the bench:
+
+1. **Reboot the IONOS if its front panel was used.** Its serial reset commands
+   don't undo every menu change.
+2. Check that every 3.5 mm plug is fully seated.
+3. If Windows re-detected a USB audio device (it shows a new name such as
+   "3- USB Audio Device"), set its levels, balance, AGC (off), enhancements (off)
+   and format (48 kHz, 16-bit) again. `scripts/windows/hfbench_fx.ps1` shows
+   whether enhancements are disabled.
+4. Run the tone check (`hfbench audio check --snr 20 40`). The transmit and
+   receive mismatches must be within 1 dB.
+5. Run the 16QAM path test (`hfbench audio qam --snr 40 40`). Syba → Syba must be
+   **flat (tilt < 0.5 dB) and at least 19 dB MER**. A periodic ripple across the
+   carriers means the IONOS needs a reboot. Record every path's MER, its
+   low/high-carrier MER and its tilt with the campaign: they are the bench's
+   per-direction quality and belong in the report.
+
+The bench's known limit (12 Nov calibration): the Sabrent adds an 8.4 dB
+low-pass tilt when it plays, and an intermittent timing wander when it records.
+The Syba → Syba path tops out at about 20 dB MER. Results above about 20 dB true
+S:N on 16QAM-class modes are bench-limited.
+
 ## 4. Workload
 
 - **Workload (decided 10 Nov 2026):** **5 messages queued at each station**, 10 per run, each with one 51,200-byte attachment from the fixed set `Text_50KB`, which has 10 unique files. The files are random UTF-8 text, about 6.4 bits per byte, so B2F compresses each to about 82% (about 42.2 KB on the air). Their compression ratios agree to within 0.1%, so content doesn't affect timing. That stability is what matters, more than strict incompressibility. The set hash (`hfbench payload hash Text_50KB`) is in the matrix and on every run-sheet row. Each station always sends the same five files; the matrix comments list them. Never edit or regenerate these files. `hfbench payload make` remains available for making a new binary set if one is ever needed.
