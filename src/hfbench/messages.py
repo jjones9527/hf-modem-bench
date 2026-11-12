@@ -117,13 +117,19 @@ def run_messages(run_id: str, sender: str, recipient: str, files: list[Path], *,
             for i, f in enumerate(files, start=1)]
 
 
-def split_payload_set(directory: str | Path, per_station: int = 5) -> tuple[list[Path], list[Path]]:
-    """Fixed assignment: sorted names; first half station 1, second half station 2."""
+def split_payload_set(directory: str | Path, per_station: int = 5,
+                      counts: tuple[int, int] | None = None) -> tuple[list[Path], list[Path]]:
+    """Fixed assignment by sorted name: station 1 gets the first n1 files, station 2
+    the next n2. counts=(n1, n2) overrides per_station; (10, 0) is a one-way
+    workload in which only station 1 sends."""
+    n1, n2 = counts if counts is not None else (per_station, per_station)
+    if n1 < 0 or n2 < 0 or n1 + n2 == 0:
+        raise ValueError(f"message counts must be >= 0 and not both 0, got {n1} + {n2}")
     # exact-name order on every OS (WindowsPath sorts case-insensitively)
     files = sorted((p for p in Path(directory).iterdir() if p.is_file()), key=lambda p: p.name)
-    if len(files) < 2 * per_station:
-        raise ValueError(f"need {2 * per_station} files in {directory}, found {len(files)}")
-    return files[:per_station], files[per_station:2 * per_station]
+    if len(files) < n1 + n2:
+        raise ValueError(f"need {n1 + n2} files in {directory}, found {len(files)}")
+    return files[:n1], files[n1:n1 + n2]
 
 
 # --- campaign templates: build once, instantiate per run --------------------------
@@ -184,9 +190,10 @@ def instantiate(template: str, run_id: str, *, now: datetime | None = None,
 
 
 def build_campaign_templates(payload_dir: str | Path, calls: tuple[str, str], out_dir: str | Path,
-                             per_station: int = 5) -> dict[int, Path]:
-    """Write messages/station1.template.xml and station2.template.xml (built once)."""
-    s1, s2 = split_payload_set(payload_dir, per_station)
+                             per_station: int = 5, counts: tuple[int, int] | None = None) -> dict[int, Path]:
+    """Write messages/station1.template.xml and station2.template.xml (built once).
+    A station with no messages gets a template with an empty message list."""
+    s1, s2 = split_payload_set(payload_dir, per_station, counts)
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     paths = {}

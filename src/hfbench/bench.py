@@ -312,6 +312,9 @@ class WinlinkAutomation:
             if moved:
                 self.say(f"Moved {moved} stale partial file(s) to quarantine/{run_id}")
         for st in todo:
+            if self.mg._ph_mid(1) not in self.templates[st]:
+                planned[st] = []          # one-way workload: this station sends nothing
+                continue
             if st not in planned:
                 xml, planned[st] = self.mg.instantiate(self.templates[st], run_id)
                 paths[st].parent.mkdir(parents=True, exist_ok=True)

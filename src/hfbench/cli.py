@@ -173,10 +173,12 @@ def cmd_messages(args):
     from . import messages as mg
 
     d = _campaign_dir(args)
-    paths = mg.build_campaign_templates(args.payloads, (args.s1_call, args.s2_call), d / "messages", args.per_station)
-    s1, s2 = mg.split_payload_set(args.payloads, args.per_station)
+    counts = (args.s1_messages if args.s1_messages is not None else args.per_station,
+              args.s2_messages if args.s2_messages is not None else args.per_station)
+    paths = mg.build_campaign_templates(args.payloads, (args.s1_call, args.s2_call), d / "messages", counts=counts)
+    s1, s2 = mg.split_payload_set(args.payloads, counts=counts)
     for st, files in ((1, s1), (2, s2)):
-        print(f"station {st}: {paths[st]}  ({', '.join(f.name for f in files)})")
+        print(f"station {st}: {paths[st]}  ({len(files)} messages: {', '.join(f.name for f in files) or 'none'})")
     print(f"payload set sha256 = {pl.sha256_set(args.payloads)[0]}")
 
 
@@ -478,7 +480,9 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--payloads", default="payloads/Text_50KB")
     s.add_argument("--s1-call", required=True, help="station 1 callsign (sends the first half of the set)")
     s.add_argument("--s2-call", required=True)
-    s.add_argument("--per-station", type=int, default=5)
+    s.add_argument("--per-station", type=int, default=5, help="messages each station sends (default 5 + 5)")
+    s.add_argument("--s1-messages", type=int, help="station 1's count, overriding --per-station (e.g. 10)")
+    s.add_argument("--s2-messages", type=int, help="station 2's count, overriding --per-station (0 = one-way)")
     s.set_defaults(func=cmd_messages)
 
     au = sub.add_parser("audio", help="tone-based level check (run on the Windows desktop)").add_subparsers(dest="acmd", required=True)

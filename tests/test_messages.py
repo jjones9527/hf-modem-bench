@@ -84,3 +84,14 @@ def test_split_is_case_sensitive_on_every_os(tmp_path, monkeypatch):
         (tmp_path / n).write_text(n)
     s1, s2 = mg.split_payload_set(tmp_path, per_station=2)
     assert [p.name for p in s1 + s2] == ["A.txt", "C.txt", "b.txt", "d.txt"]   # not A, b, C, d
+
+
+def test_split_one_way_counts():
+    s1, s2 = mg.split_payload_set(PAYLOADS, counts=(10, 0))
+    assert len(s1) == 10 and s2 == []
+    a, b = mg.split_payload_set(PAYLOADS)
+    assert s1 == a + b          # same files, same order as the 5 + 5 split
+    with pytest.raises(ValueError):
+        mg.split_payload_set(PAYLOADS, counts=(0, 0))
+    with pytest.raises(ValueError):
+        mg.split_payload_set(PAYLOADS, counts=(11, 0))

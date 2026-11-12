@@ -536,7 +536,7 @@ file reads 15.2 / 15.8 dB, because its last 40 minutes are WGN 28 traffic.
 
 ---
 
-## cal7wgn28: ARDOP 1.0.2.9, WGN 28 (expected ≈ 21 dB data S:N), cal7 levels
+## cal7wgn28: ARDOP 1.0.2.9, WGN 28 (measured ≈ 18 dB data S:N), cal7 levels
 
 Started 12 Nov 2026 at 18:23, straight after cal7wgn22, with the same devices and
 levels.
@@ -572,7 +572,20 @@ complete. The likeliest explanation is the same mechanism as the earlier
 checksum failures. A 16QAM frame decoded to wrong data that still passed ARDOP's
 frame check. Here it probably hit the B2F framing (for example a block length),
 so Winlink waited for more data instead of failing the checksum. This is a
-hypothesis: the received bytes aren't logged, so it can't be confirmed.
+hypothesis.
+
+**What station 2 actually received** (checked 12 Nov, 20:50):
+- Winlink had left a partial, `Partials\AS21E74HAIMR.bin` (34,500 bytes,
+  written 19:30). The next run's set-up quarantined it, and it is archived as
+  `logs/archive/partials/cal7wgn28-0002-AS21E74HAIMR.bin`.
+- It holds the B2F compressed stream received so far: CRC16, the length (51,411),
+  then the LZHUF data. `scripts/check_partial.py` decodes it.
+- The header is intact. The attachment matches the original
+  `File-A9TS9.txt` **byte for byte for the first 41,838 of 51,200 bytes (82%)**,
+  which is exactly where the saved compressed data ends.
+- **So the first 82% of the message arrived uncorrupted.** The last 7.6 KB
+  (received 19:30–19:31:35) was never written to the partial, so corruption
+  there can't be confirmed or ruled out. A Winlink-side stall remains possible.
 
 **Findings:**
 1. **At WGN 28 ARDOP runs 16QAM.2000 in both directions from the first message,**
@@ -587,7 +600,13 @@ hypothesis: the received bytes aren't logged, so it can't be confirmed.
    checksum error. Meanwhile Sabrent → Syba delivered 7 of 7 at quality 38. So
    failures don't simply follow ARDOP's quality figure. Whatever corrupts
    16QAM data without a frame failure can happen on either path.
-4. The operator was asked to watch the IONOS Lvl meter at the start of 16QAM;
+4. **Measured S:N** (`listen-20261112-1823`, trimmed to the two runs): data
+   frames **17.9 dB** (1 → 2) and **18.4 dB** (2 → 1), control frames 23.5 dB,
+   mismatch −0.5 dB. That's only 3 dB above WGN 22 for a 6 dB step. The bench's
+   own noise (32 dB below the reference, a data-frame ceiling of about 24 dB)
+   now adds to the IONOS noise. **On this bench, "good conditions" top out at
+   about 18–20 dB data S:N.**
+5. The operator was asked to watch the IONOS Lvl meter at the start of 16QAM;
    no red was reported.
 
 **16QAM.2000 at cal7 levels by hardware path:**
@@ -599,6 +618,35 @@ hypothesis: the received bytes aren't logged, so it can't be confirmed.
 
 Previous totals (pre-cal7 levels) are in the wgn25a section. Across all campaigns,
 16QAM.2000 has now had 6 failures in 46 messages. 8PSK.2000 has had none in the messages counted here (14 at WGN 20, 20 at cal7wgn22).
+
+---
+
+## oneway28: ARDOP 1.0.2.9, WGN 28, one-way (station 1 → station 2)
+
+Decided 12 Nov 2026 with the operator. From now on each run sends **10 messages one
+way**, from station 1 (Syba playback) to station 2 (Sabrent capture). Station 2
+sends none. The reasons:
+- Every modem is compared over the same hardware path, so the bench's two
+  unequal paths don't mix into one number.
+- The weak direction carries only ACKs and control frames, in robust modes.
+- The Syba's output is flat. The Sabrent's 8 dB output tilt would favour
+  modems that equalise.
+- ARDOP rated this direction better (16QAM quality 64 against 38).
+
+`hfbench messages build --s1-messages 10 --s2-messages 0` builds the templates
+(added in this session). The runner then imports nothing at station 2 but still
+requires its Outbox to be empty. A failed message is now treated as a result
+(reliability) as well as a run outcome.
+
+Pre-check (20:20–20:40, after the operator reset both Winlink instances):
+
+| item | value |
+|---|---|
+| tone check, WGN 20 | transmit −0.2 / −0.3 dB against the reference, mismatch +0.1, receive mismatch +0.7, unchanged from cal7 |
+| tone check, WGN 40 | tone S:N 32.3–32.5 dB |
+| 16QAM path check, WGN 40, full level | Syba → Syba **22.0 dB** (tilt 0.1); Syba → Sabrent 18.7 (falls 21.7 / 16.6); Sabrent → Syba 18.3 (tilt 8.3); Sabrent → Sabrent 17.5. **Pass** |
+
+Campaign started 20:44, 3 replicates at WGN 28, with listen `listen-20261112-2044`.
 
 ---
 

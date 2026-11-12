@@ -269,3 +269,28 @@ def test_winlink_automation_prepare_and_partials(tmp_path):
     assert uis["VE3XZQ"].started == "VA3ZTF"           # station 2 calls station 1
     with pytest.raises(Exception, match="not from this run"):
         wa.prepare({"run_id": "c-0002"})                # previous run's messages still queued
+
+
+def test_winlink_automation_one_way_workload(tmp_path):
+    from hfbench import messages as mg
+    from hfbench.bench import WinlinkAutomation
+    inst1, inst2 = tmp_path / "RMS Express", tmp_path / "RMS Express 2"
+    for inst, call in ((inst1, "VA3ZTF"), (inst2, "VE3XZQ")):
+        (inst / call / "Messages").mkdir(parents=True)
+        (inst / call / "Data").mkdir()
+        (inst / call / "Partials").mkdir()
+    camp = tmp_path / "camp"
+    mg.build_campaign_templates(Path(__file__).resolve().parents[1] / "payloads" / "Text_50KB",
+                                ("VA3ZTF", "VE3XZQ"), camp / "messages", counts=(10, 0))
+    uis = {}
+    wa = WinlinkAutomation(camp, installs=(str(inst1), str(inst2)), say=lambda s: None,
+                           ui_factory=lambda call: uis.setdefault(call, FakeUI(call)))
+    info = wa.prepare({"run_id": "c-0001"})
+    assert len(info["mids"]) == 10
+    assert len(uis["VA3ZTF"].outbox) == 10
+    assert uis["VE3XZQ"].outbox == [] and uis["VE3XZQ"].imported == []   # nothing imported
+    again = wa.prepare({"run_id": "c-0001"})                               # resumable
+    assert again["mids"] == info["mids"]
+    uis["VE3XZQ"].outbox = ["STRAY"]
+    with pytest.raises(Exception, match="not from this run"):
+        wa.prepare({"run_id": "c-0001"})   # the silent station's Outbox must be empty too
