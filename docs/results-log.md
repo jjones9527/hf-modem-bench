@@ -681,6 +681,32 @@ cal7wgn28-0002 partial). So it can list the exact bytes that changed:
   in the 34,494 received. Its tail was never saved, so that hang is still
   unexplained.
 
+**0002** (restarted 21:05 after the operator's reset): **dnc, 4/10**. The first
+four messages were delivered at 1,290–1,435 bit/s. The 5th, RY0VDQU1TRYD
+(File-FJYnL.txt), failed at 21:29:09 with the same *Checksum error*. Station 2's
+ARDOP log for that message: 42 16QAM frames, all PASS on the first try, quality
+62–66, 0 NAKs. Its partial (`oneway28-0002-RY0VDQU1TRYD.bin`, 41,994 compressed
+bytes) has **4 wrong bytes, all within 104 bytes** (compressed offsets 21,443–21,546).
+Each error again stays inside one nibble:
+
+| compressed offset | sent | received |
+|---|---|---|
+| 21,443 | 1011 1001 | 1011 **1000** |
+| 21,501 | 1001 1011 | 1000 1011 |
+| 21,545 | 0101 1100 | 0101 **1011** |
+| 21,546 | 1111 0111 | **1000** 0111 |
+
+The runner then stopped before 0003, because 6 messages were left in station 1's
+Outbox.
+
+**16QAM.2000 at WGN 28 (≈ 18 dB data S:N), Syba → Sabrent so far:** cal7wgn28
+8 attempted, 7 delivered, 1 hang. oneway28: 7 attempted, 5 delivered, 2
+corrupted. **Total: 15 messages, 3 failures (20%).** Every failure ends the
+session, so at that rate a 10-message run would complete only about 1 time in 9
+(0.8¹⁰ ≈ 0.11). For ARDOP at this S:N, the useful measures are therefore **goodput
+per delivered message and the failure rate per message**, not completed runs.
+Automatic recovery is what makes collecting them practical.
+
 **What this means:** the earlier corruptions (checksum and decompress errors)
 fit the same mechanism. On this path ARDOP 1.0.2.9's 16QAM sometimes
 mis-decides a symbol, and its frame check doesn't always catch it. This failure
