@@ -1,0 +1,31 @@
+# ARDOP on the recalibrated bench (cal6, results log): WGN 20, 2 replicates.
+# Station 1 (VA3ZTF) = Syba, station 2 (VE3XZQ) = Sabrent; tone +8.7/+8.8 dB vs reference, so ARDOP data S:N ~ setting.
+# Question: with the loose plug and the IONOS comb fixed, does the 16QAM asymmetry/corruption remain?
+
+[campaign]
+name = "cal6wgn20"
+stage = "pilot"
+replicates = 2
+profiles = ["WGN"]
+snr_db = [20]
+order = "sequential"
+abort_minutes = 90          # 10 x ~42 KB at ARDOP ~14 dB data S:N took ~50 min on 10 Nov
+abort_retries = 3
+
+[ionos]
+bandwidth_hz = 3000
+multipaths = 2
+
+[payload]
+file = "Text_50KB"
+bytes = 51200
+sha256 = "3ec10a0b30de0039bb0b949d7e160a5d4625c03ba2f245a60785d3973e0279f9"
+messages = 10
+
+[[modems]]
+name = "ARDOP"
+version = "1.0.2.9"
+bandwidth_hz = 2000
+
+[[impairments]]
+name = "none"
