@@ -240,6 +240,24 @@ def _noise_summary(audio, results):
 IONOS_RESET = "BANDWIDTH:3000; MULTIPATH:2; OFFSET:0; FADE DEPTH:0; FADE FREQ:0; FM DEVIATION:0; FM RATE:0"
 
 
+def _asdict_qam(r):
+    from dataclasses import asdict as _asdict
+    d = _asdict(r)
+    d.pop("raw", None)
+    return d
+
+
+def _save_raw_qam(path, results):
+    """All recordings as float32 arrays in one .npz, keyed '<setting>|<level> <path>'."""
+    import numpy as np
+    arrs = {}
+    for r in results:
+        for k, (x, fs_in, fs_out) in r.raw.items():
+            arrs[f"{r.ionos_setting}|{k}"] = np.asarray(x, dtype=np.float32)
+            arrs[f"{r.ionos_setting}|{k}|fs"] = np.array([fs_in, fs_out])
+    np.savez_compressed(path, **arrs)
+
+
 def cmd_audio(args):
     import json
 
@@ -283,6 +301,40 @@ def cmd_audio(args):
         print(audio.format_listen(audio.analyze_listen(series, ptt, setting)))
         if args.acmd == "listen" and args.json:
             print(f"\nsaved {args.json}")
+        return
+
+    if args.acmd == "qam":
+        from . import qamtest
+
+        stations = (audio.station_from_ardop_ini(1, args.s1), audio.station_from_ardop_ini(2, args.s2))
+        for s in stations:
+            print(f"station {s.number}: play '{s.playback}', record '{s.capture}'")
+        io = None
+        if args.port:
+            from .ionos import Ionos
+
+            io = Ionos.open(args.port)
+        saved = []
+        try:
+            for snr in args.snr:
+                setting = f"WGN:{snr}"
+                if io is not None:
+                    io.apply(f"{IONOS_RESET}; {setting}")
+                    print(f"\nIONOS set to WGN, S:N {snr} dB (add-ons off)")
+                else:
+                    print(f"\nSet the IONOS to WGN, S:N {snr} dB by hand (no --port given).")
+                r = qamtest.run_qam(stations, n_sym=args.symbols, ionos_setting=setting if io else "")
+                print(qamtest.format_qam(r))
+                saved.append(r)
+        finally:
+            if io is not None:
+                io.close()
+        if args.json:
+            Path(args.json).write_text(json.dumps([_asdict_qam(r) for r in saved], indent=1))
+            print(f"\nsaved {args.json}")
+        if args.raw:
+            _save_raw_qam(args.raw, saved)
+            print(f"saved {args.raw}")
         return
 
     if args.acmd == "devices":
@@ -442,6 +494,16 @@ def build_parser() -> argparse.ArgumentParser:
     s = au.add_parser("listen-report", help="re-analyze a saved listen --json file")
     s.add_argument("json_in")
     s.add_argument("--setting", type=float)
+    s.set_defaults(func=cmd_audio)
+    s = au.add_parser("qam", help="16QAM path test: MER of an ARDOP-like signal on all four paths")
+    s.add_argument("--s1", default=r"C:\RMS Express", help="station 1 install (reads ARDOP_Win TNC.ini)")
+    s.add_argument("--s2", default=r"C:\RMS Express 2", help="station 2 install")
+    s.add_argument("--port", default="COM3", help="IONOS port; '' to set WGN by hand")
+    s.add_argument("--snr", type=int, nargs="+", default=[40, 25],
+                   help="IONOS WGN settings (default 40 = near noise-free, 25 = as wgn25a)")
+    s.add_argument("--symbols", type=int, default=800, help="16QAM symbols per transmission (100 per second)")
+    s.add_argument("--json", help="save results to this file")
+    s.add_argument("--raw", help="save every recording to this .npz, for offline analysis")
     s.set_defaults(func=cmd_audio)
     s = au.add_parser("report", help="re-analyze a saved --json result (plays nothing)")
     s.add_argument("json_in")

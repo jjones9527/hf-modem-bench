@@ -284,10 +284,71 @@ capture in mono, at 48 kHz, 16-bit.
 
 ---
 
+## qam01: 16QAM path test without ARDOP (12 Nov 2026)
+
+`hfbench audio qam` (module `hfbench.qamtest`) plays a known ARDOP-like signal
+from each station and records it on both microphones, which covers all four
+paths. The signal has 10 carriers from 600 to 2400 Hz, 200 Hz apart, at 100
+baud with random 16QAM symbols, and a chirp at each end for timing. Each run
+was 800 symbols (8 s) at two drive levels: −1 dBFS peak, and 6 dB lower. The
+bench was as in wgn25a, with devices swapped: station 1 = Syba, station 2 =
+Sabrent. The raw recordings are in the archive under `qam/`
+(`qam-raw.npz`, `qam-rep.npz`).
+
+Per path it reports:
+- **MER**: the error left after fitting each carrier's gain and phase drift, so
+  higher is better. The IONOS noise alone would allow about 35 dB here
+  (in-band S:N measured at WGN 40).
+- **Timing jitter**: the rms change in timing error from one symbol to the next,
+  taken from the slope of phase across the carriers.
+- **Timing wander**: the peak-to-peak range of the timing error after smoothing
+  over 0.2 s.
+- **Tilt**: the spread in gain across the carriers.
+
+Three repeats at WGN 40 (`qam-rep`), with the range across the 3 × 2 levels:
+
+| path (plays → records) | MER dB | jitter µs | wander µs p-p | tilt dB |
+|---|---|---|---|---|
+| Syba → Syba | 22.4–22.7 | 2.9–4.3 | 24–29 | 2.6 |
+| Syba → Sabrent | 14.7–19.3 | 3.4–4.6 | 57–83 | 2.5 |
+| **Sabrent → Syba** | 16.4–21.1 | **8.8–10.6** | 27–107 | **9.7** |
+| Sabrent → Sabrent | 17.7–22.3 | 4.6–7.4 | 36–92 | 10.0 |
+
+The paths recorded by the Syba run about +90 ppm against the paths recorded by
+the Sabrent, whichever adapter plays. The IONOS re-clocks the audio, so the
+recording adapter's clock is the one that counts.
+
+**Findings:**
+1. **The Sabrent impairs the signal in both directions; the Syba doesn't.** Syba → Syba is
+   clean and repeatable, and is the bench's best path. Every path through the Sabrent
+   is worse.
+   - When the Sabrent plays, it adds about 9–10 µs of symbol-to-symbol timing
+     jitter and about 10 dB of tilt across 600–2400 Hz. The tilt probably comes
+     from the headphone-splitter cable loading its output, since it needs about
+     28 dB more IONOS input gain (CH IN 50 vs 2).
+   - When the Sabrent records, it adds slow timing wander (about 60–80 µs p-p).
+2. **This explains the ARDOP results.** At 2.4 kHz, 10 µs of jitter is about 9°
+   of phase from one symbol to the next. That's a large part of 16QAM's
+   decision margin, and ARDOP can't track it within a frame. 8PSK, with a
+   constant amplitude and wider phase spacing, tolerates it. Sabrent → Syba is
+   the path where ARDOP's 16QAM quality was 24–31 and where all five corrupted
+   messages occurred.
+3. Even the best path tops out at about 22.5 dB MER, so the bench (the IONOS or
+   the adapters) has a floor of its own below the noise. Record this as a bench
+   limit for 16QAM-class modes.
+
+---
+
 ## Planned next
 
-- **WGN 20 with the devices swapped**, if wgn25a is clean: does the 16QAM direction
-  follow the Sabrent → Syba hardware path, which would now be station 2 → 1?
+- **Qualify or replace the Sabrent.** Try another USB port, ideally on a
+  different controller and not on a hub, and turn off USB selective suspend.
+  Then re-run `hfbench audio qam --snr 40 40 40`. If its paths don't get to
+  match Syba → Syba (MER ≥ 22 dB, jitter ≤ 4.5 µs), replace it with a
+  second adapter of the Syba's model. **Acceptance for the bench:** all four paths
+  within about 1 dB MER of each other, before any modem results count.
+- Then re-run WGN 20 and WGN 25 to see whether the ARDOP direction asymmetry and
+  the corruption go away.
 - **WGN 15** (about 9 dB true S:N): what does ARDOP do below the threshold?
 - Possibly a receive-level check: raise both microphones by about 6 dB and keep
   the S:N the same. Drive level stays at 90, because it changes the true S:N.
