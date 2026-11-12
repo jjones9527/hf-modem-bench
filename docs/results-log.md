@@ -648,6 +648,46 @@ Pre-check (20:20–20:40, after the operator reset both Winlink instances):
 
 Campaign started 20:44, 3 replicates at WGN 28, with listen `listen-20261112-2044`.
 
+| run | start | outcome | delivered | 1→2 goodput | modes | ended by |
+|---|---|---|---|---|---|---|
+| 0001 | 20:45:56 | dnc | 1/10, 10 min | 1,363 bit/s | 16QAM.2000 | station 2: *Link Error – Checksum error. Failed to assemble correct binary image* (20:54:54), on the 2nd message S176LKCKL8SF (File-NqdBp.txt) |
+
+The runner then stopped before 0002, as designed, because station 1's Outbox still
+held 9 messages. One-way B2F worked as expected: station 2 sent FF, and station 1
+offered all ten and sent them one at a time.
+
+**Forensics of the corrupted message.** Station 2's partial `S176LKCKL8SF.bin`
+(42,000 bytes, archived as `logs/archive/partials/oneway28-0001-S176LKCKL8SF.bin`)
+holds 41,994 of the 42,117 compressed bytes. `scripts/check_partial.py` decodes it.
+It also re-compresses the original message with the same LZHUF coder, which
+reproduces Winlink's stream exactly (0 differences against the clean
+cal7wgn28-0002 partial). So it can list the exact bytes that changed:
+
+| compressed offset | sent | received | bits flipped |
+|---|---|---|---|
+| 33,402 | 1010 0110 | **1001** 0110 | 2, inside the high nibble |
+| 33,465 | 1001 1010 | 1001 **1001** | 2, inside the low nibble |
+
+- **Only two bytes of 42,000 are wrong.** Each error is confined to one 4-bit
+  nibble, which is one 16QAM symbol, and both are the same confusion: 1010
+  received as 1001. These are **demodulation symbol errors**, not lost or
+  duplicated data and not a software fault.
+- The two bytes are 63 bytes apart, in the same B2F block. ARDOP 16QAM.2000
+  carries 1,024 bytes per frame, so they were almost certainly in one frame.
+- Station 2's ARDOP log shows every data frame of this message decoded PASS
+  on the first try, at quality 61–66, with no NAKs. **A frame with two symbol
+  errors passed ARDOP's frame check** and was delivered to Winlink as good.
+- The cal7wgn28-0002 hang partial, re-checked the same way, has 0 wrong bytes
+  in the 34,494 received. Its tail was never saved, so that hang is still
+  unexplained.
+
+**What this means:** the earlier corruptions (checksum and decompress errors)
+fit the same mechanism. On this path ARDOP 1.0.2.9's 16QAM sometimes
+mis-decides a symbol, and its frame check doesn't always catch it. This failure
+was on the Syba → Sabrent path, so the problem isn't confined to the Sabrent →
+Syba direction. For the comparison it counts as an ARDOP 16QAM reliability
+result at about 18 dB data S:N on this bench.
+
 ---
 
 ## Planned next
