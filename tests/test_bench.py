@@ -423,3 +423,11 @@ def test_runner_stops_after_two_failed_recoveries(tmp_path):
     assert any("Stopping" in s for s in rp.said)
     man = mf.build_manifest(mx.read_runsheet(d / "runsheet.csv"), mf.read_events(d / "events.jsonl"))
     assert man[0]["notes"].count("recovery FAILED") == 2
+
+
+def test_winlink_ui_script_entry_point_exists():
+    import hfbench.winlink_ui as w
+    import inspect
+    src = inspect.getsource(w._main)
+    for action in ("status", "delete-outbox", "close-session", "close", "open-session", "launch"):
+        assert f'"{action}"' in src

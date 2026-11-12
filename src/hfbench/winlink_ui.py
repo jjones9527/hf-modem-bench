@@ -16,7 +16,7 @@ Notes from the bench:
 
 Run as a script for one-off actions:
   python -m hfbench.winlink_ui LOG CALL folders | select-folder NAME | import PATH | status
-                                 | delete-outbox | close-session | close | open-session
+                                 | delete-outbox | close-session | close | open-session | launch INSTALL
 """
 
 from __future__ import annotations
@@ -53,16 +53,25 @@ class WinlinkUI:
         self.auto = _auto()
 
     # -- windows -----------------------------------------------------------------
-    def main(self):
+    def _top_windows(self):
+        """(window, name, control type) for every readable top-level window. A window
+        that is closing can refuse access (COMError 'Access is denied'); skip it."""
+        out = []
         for w in self.auto.GetRootControl().GetChildren():
-            n = w.Name or ""
-            if w.ControlTypeName == "WindowControl" and "Winlink Express" in n and f"- {self.call}" in n:
+            try:
+                out.append((w, w.Name or "", w.ControlTypeName))
+            except Exception:
+                continue
+        return out
+
+    def main(self):
+        for w, n, kind in self._top_windows():
+            if kind == "WindowControl" and "Winlink Express" in n and f"- {self.call}" in n:
                 return w
         raise RuntimeError(f"Winlink Express main window for {self.call} not found")
 
     def session_window(self):
-        for w in self.auto.GetRootControl().GetChildren():
-            n = w.Name or ""
+        for w, n, _ in self._top_windows():
             if "Peer-to-Peer Session" in n and n.rstrip().endswith(f"- {self.call}"):
                 return w
         raise RuntimeError(f"no Peer-to-Peer Session window open for {self.call}")
@@ -241,9 +250,11 @@ class WinlinkUI:
         """Answer confirmation boxes of this instance with Yes/OK; return their texts."""
         time.sleep(wait)
         seen = []
-        for w in self.auto.GetRootControl().GetChildren():
-            n = w.Name or ""
-            if w.ProcessId != pid or "Winlink Express" in n or "Peer-to-Peer" in n:
+        for w, n, _ in self._top_windows():
+            try:
+                if w.ProcessId != pid or "Winlink Express" in n or "Peer-to-Peer" in n:
+                    continue
+            except Exception:
                 continue
             seen += self._texts(w)
             for b in names:
@@ -372,9 +383,20 @@ class WinlinkProcesses:
         return killed
 
     def launch(self, install: str) -> None:
-        import subprocess
-        exe = Path(install) / "RMS Express.exe"
-        subprocess.Popen([str(exe)], cwd=str(install), close_fds=True)
+        """Start Winlink Express through its own scheduled task in the desktop session,
+        so it isn't a child of the runner: Task Scheduler can kill a task's child
+        processes when that task ends or is stopped."""
+        exe = str(Path(install) / "RMS Express.exe").replace("'", "''")
+        wd = str(install).replace("'", "''")
+        name = "hfbench_winlink_" + "".join(c for c in Path(install).name if c.isalnum())
+        self._ps(
+            f"$a = New-ScheduledTaskAction -Execute '{exe}' -WorkingDirectory '{wd}'; "
+            "$p = New-ScheduledTaskPrincipal -UserId ([Security.Principal.WindowsIdentity]::GetCurrent().Name) "
+            "-LogonType Interactive; "
+            "$s = New-ScheduledTaskSettingsSet -ExecutionTimeLimit ([TimeSpan]::Zero) -AllowStartIfOnBatteries "
+            "-DontStopIfGoingOnBatteries -MultipleInstances IgnoreNew; "
+            f"Register-ScheduledTask -TaskName '{name}' -Action $a -Principal $p -Settings $s -Force | Out-Null; "
+            f"Start-ScheduledTask -TaskName '{name}'")
 
 
 def _main(argv: list[str]) -> None:
@@ -400,6 +422,10 @@ def _main(argv: list[str]) -> None:
         return
     elif action == "open-session":
         say(ui.open_ardop_p2p())
+    elif action == "launch":                  # args: install folder
+        WinlinkProcesses().launch(args[0])
+        ui.wait_main()
+        say(f"{ui.call}: Winlink Express started")
     else:
         raise SystemExit(f"unknown action {action}")
     say("folders:", ui.folder_counts())

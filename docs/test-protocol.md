@@ -271,7 +271,7 @@ Each modem puts out a different average power at a given drive level. On this be
 
 Recommendation: plot against **A**, and report each modem's measured offset (B − A) in a table. That needs a rule for setting each modem's drive, which is still to be agreed.
 
-### Automatic recovery after a failed run (`--recover`, built 12 Nov 2026, not yet tried on the bench)
+### Automatic recovery after a failed run (`--recover`, built and tried on the bench 12 Nov 2026)
 
 A failed run (dnc) leaves messages in an Outbox and often a Winlink instance in a
 bad state, so the next run can't start. With `hfbench run --automate --recover`
@@ -293,13 +293,20 @@ Each recovery is recorded as a `recover` event and shows in the manifest's
 the operator. `hfbench recover -d runs\<campaign> <run_id>` runs the same reset by
 hand.
 
-**Bench trial still needed** (with the operator watching). Each step can be run
-alone with `python -m hfbench.winlink_ui LOG CALL status | delete-outbox |
-close-session | close | open-session`. Check:
-- whether Delete or closing Winlink asks for confirmation (the code answers Yes/OK);
-- that selecting the grid rows by UI Automation selects all of them;
-- that **Open Session:** opens the session type shown next to it;
-- that ARDOP_Win exits with its session window, so port 8200/8300 is free on restart.
+**Bench trial (12 Nov 2026, 21:40–22:10, operator watching):** each step was run
+alone with `scripts/windows/hfbench_ui_do.ps1` and then as a whole. Results:
+- Delete removed all 6 leftover Outbox messages in one go (15 s) without a
+  confirmation box.
+- Session window **Exit** and closing Winlink Express needed no confirmation.
+  ARDOP_Win exits with its session window, so ports 8200/8300 are free on restart.
+- **Open Session:** opens Ardop P2P, and the TNC starts with it (about 17 s to
+  "Disconnected/Listening" with Start enabled).
+- The full `hfbench recover` took **75 s** for both stations, with no force-stop needed.
+- Winlink is started through its own scheduled task (`hfbench_winlink_<install>`,
+  no time limit), not as a child of the runner, because Task Scheduler can kill a
+  task's child processes.
+- Fixed during the trial: a window that is closing can refuse UI Automation access,
+  so the window search now skips windows it can't read.
 
 ## 8. Metrics
 

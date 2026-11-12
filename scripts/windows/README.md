@@ -12,4 +12,6 @@ windows.
 | `hfbench_start_listen.ps1 -Minutes N -Setting S` | Records the true per-direction S:N during runs and writes `hfbench\listen-<stamp>.json/.txt`. Each recording gets its own task, so starting one doesn't stop another. |
 | `hfbench_start_campaign.ps1 -Campaign NAME -MaxRuns N [-AutoContinue]` | Runs `hfbench run --automate` for a campaign in `hfbench\runs\NAME`, tee'd to `console-<stamp>.txt`. `-AutoContinue` passes `--auto-continue 120`. `-Recover` passes `--recover`: after a failed run the runner clears both Outboxes, restarts both Winlink Express instances and their Ardop P2P sessions, and carries on. |
 
+| `hfbench_ui_do.ps1 -Call CALL -Do ACTION [-Arg X]` | Runs one `hfbench.winlink_ui` step in the desktop session (`status`, `delete-outbox`, `close-session`, `close`, `open-session`, `launch "C:\RMS Express"`) and prints its log. Used to try the recovery step by step. |
+
 Run one over SSH with `powershell -NoProfile -ExecutionPolicy Bypass -File %USERPROFILE%\<script>`.
