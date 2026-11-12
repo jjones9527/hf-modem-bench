@@ -119,7 +119,7 @@ class PathResult:
     flatness_db: float                  # max - min carrier gain
     ppm: float                          # recording rate re playback rate (end to end)
     wander_us: float = float("nan")     # peak-to-peak of the 0.2 s-smoothed timing error
-    jitter_us: float = float("nan")     # rms symbol-to-symbol change of the timing error
+    jitter_us: float = float("nan")     # rms symbol-to-symbol timing change; noise-limited, tracks MER
     offset_ms: float = 0.0              # window offset that gave the best MER
     found: bool = True
     note: str = ""
@@ -258,19 +258,26 @@ def run_qam(stations, *, n_sym: int = 800, peak_dbfs: float = -1.0, levels_db=LE
     return res
 
 
+def _mean_db(v):
+    return float(10 * np.log10(np.mean(10 ** (np.asarray(v) / 10))))
+
+
 def format_qam(r: QamResult, levels_db=LEVELS_DB) -> str:
     lines = [f"IONOS: {r.ionos_setting or '(not set by hfbench)'}", "",
-             "path  (plays -> records)  drive   level dBFS rms   MER dB   worst carrier   flatness dB"
-             "   timing wander us p-p   jitter us    ppm",
-             "-" * 135]
+             "path  (plays -> records)  drive   level dBFS rms   MER dB   MER 600-1000 / 2000-2400 Hz"
+             "   tilt dB   timing wander us p-p    ppm",
+             "-" * 128]
     for key, p in r.paths.items():
         li, path = key.split(" ")
         lv = levels_db[int(li[1:])]
         if not p["found"]:
             lines.append(f"{path:<26}{lv:>+5.0f}   {p['note']}")
             continue
-        worst = min(p["mer_by_carrier"])
+        mk = p["mer_by_carrier"]
+        lo, hi = _mean_db(mk[:3]), _mean_db(mk[-3:])
         lines.append(f"{path:<26}{lv:>+5.0f}{p['level_dbfs_rms']:>15.1f}{p['mer_db']:>10.1f}"
-                     f"{worst:>14.1f}{p['flatness_db']:>15.1f}{p['wander_us']:>21.0f}{p['jitter_us']:>14.1f}"
-                     f"{p['ppm']:>9.0f}")
+                     f"{lo:>17.1f} / {hi:<10.1f}{p['flatness_db']:>9.1f}{p['wander_us']:>22.0f}{p['ppm']:>9.0f}")
+    lines += ["",
+              "MER that falls toward the high carriers points to timing error (phase error grows with",
+              "frequency); tilt is the spread of gain across 600-2400 Hz."]
     return "\n".join(lines)

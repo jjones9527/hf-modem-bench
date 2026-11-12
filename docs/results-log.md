@@ -318,34 +318,73 @@ The paths recorded by the Syba run about +90 ppm against the paths recorded by
 the Sabrent, whichever adapter plays. The IONOS re-clocks the audio, so the
 recording adapter's clock is the one that counts.
 
+**Findings (revised after qam02, see there):**
+1. Syba → Syba was the cleanest path. On every path the Sabrent played, gain
+   rippled or tilted across the carriers and MER fell toward the high carriers.
+   On every path the Sabrent recorded, MER also fell toward the high carriers.
+2. *Correction:* the "jitter" column (symbol-to-symbol timing change) is mostly
+   measurement noise. It rises as MER falls, and in qam02 it reads about 10 µs on
+   every path, Syba → Syba included. Don't use it as evidence. The sign of a
+   timing problem is **MER that falls with carrier frequency**, because phase
+   error from a timing error grows with frequency.
+3. Even the best path topped out at about 22.5 dB MER, so the bench has a floor
+   of its own below the IONOS noise. Record this as a bench limit for 16QAM-class
+   modes.
+
+---
+
+## qam02: after moving the Sabrent to another USB port (12 Nov 2026)
+
+The Sabrent was moved to a USB port on the Mac mini itself, not through a hub.
+Windows re-enumerated it as **"3- USB Audio Device"**, a new endpoint with
+default settings. Station 2's ARDOP was pointed at the new name. The endpoint was
+set up again: playback 100 with balance L 0 / R 100, microphone 75, AGC off, and
+48 kHz 16-bit. The first tone checks showed station 2 dead in both directions:
+**the Sabrent's 3.5 mm plugs weren't fully seated.** Once reseated:
+
+| tone check at WGN 20 | station 1 vs reference | station 2 vs reference | transmit mismatch | receive mismatch | H2 |
+|---|---|---|---|---|---|
+| before (wgn25a) | +2.6 dB | +2.9 dB | −0.3 dB | +0.7 dB | −40 dBc |
+| after reseating | **+8.7 dB** | **+8.9 dB** | −0.2 dB | +0.7 dB | −45 dBc |
+
+Both stations now reach the IONOS about 6 dB hotter, still matched to within
+0.2 dB. The IONOS gains are unchanged (CH1 IN 50, CH2 IN 2). The splitter cables
+join both adapters' outputs, so a badly seated plug changes the loading on
+*both*. It's quite possible a plug was partly seated during earlier campaigns
+too.
+
+`hfbench audio qam --snr 40 40 40` (`qam-port2`), first repeat:
+
+| path (plays → records) | MER dB | MER 600–1000 / 2000–2400 Hz | tilt dB |
+|---|---|---|---|
+| Syba → Syba | 19.5–20.1 | 19.3 / 19.0 (flat) | 0.1 |
+| Syba → Sabrent | 14.8–16.8 | 17.5 / 12.8 (**falls**) | 0.1 |
+| Sabrent → Syba | 16.5–19.0 | 19.0 / 18.4 (flat) | 8.4 (low-pass: +5.5 dB at 600 Hz, −2.9 dB at 2400 Hz) |
+| Sabrent → Sabrent | 14.0–17.7 | 18.5 / 15.7 (**falls**) | 8.4 |
+
 **Findings:**
-1. **The Sabrent impairs the signal in both directions; the Syba doesn't.** Syba → Syba is
-   clean and repeatable, and is the bench's best path. Every path through the Sabrent
-   is worse.
-   - When the Sabrent plays, it adds about 9–10 µs of symbol-to-symbol timing
-     jitter and about 10 dB of tilt across 600–2400 Hz. The tilt probably comes
-     from the headphone-splitter cable loading its output, since it needs about
-     28 dB more IONOS input gain (CH IN 50 vs 2).
-   - When the Sabrent records, it adds slow timing wander (about 60–80 µs p-p).
-2. **This explains the ARDOP results.** At 2.4 kHz, 10 µs of jitter is about 9°
-   of phase from one symbol to the next. That's a large part of 16QAM's
-   decision margin, and ARDOP can't track it within a frame. 8PSK, with a
-   constant amplitude and wider phase spacing, tolerates it. Sabrent → Syba is
-   the path where ARDOP's 16QAM quality was 24–31 and where all five corrupted
-   messages occurred.
-3. Even the best path tops out at about 22.5 dB MER, so the bench (the IONOS or
-   the adapters) has a floor of its own below the noise. Record this as a bench
-   limit for 16QAM-class modes.
+1. **The loose plug accounted for the earlier problems with the Sabrent's
+   playback.** Before reseating, the Syba's paths rippled ±1.5 dB across the
+   carriers and the Sabrent's playback paths lost MER toward the high carriers.
+   Both are gone now. Sabrent playback is flat in MER, apart from a smooth
+   8.4 dB low-pass tilt that leaves its top carriers about 3 dB down in S:N.
+2. **The Sabrent's input still has a timing fault.** Everything it records loses
+   3–5 dB of MER toward the high carriers and shows more timing wander (44–134 µs
+   against 24–35 µs). It did the same before the move and before reseating.
+3. Now that the Syba → Syba ripple is gone, its MER reads about 19.5–20 dB at
+   the hotter level, against 22.5 dB before. So the bench floor is about 20 dB.
+4. Acceptance (all four paths within about 1 dB MER) **still fails**, by 3–5 dB,
+   on the paths the Sabrent records.
 
 ---
 
 ## Planned next
 
-- **Qualify or replace the Sabrent.** Try another USB port, ideally on a
-  different controller and not on a hub, and turn off USB selective suspend.
-  Then re-run `hfbench audio qam --snr 40 40 40`. If its paths don't get to
-  match Syba → Syba (MER ≥ 22 dB, jitter ≤ 4.5 µs), replace it with a
-  second adapter of the Syba's model. **Acceptance for the bench:** all four paths
+- **Replace the Sabrent** with a second adapter of the Syba's model, since a
+  different port didn't fix its input (qam02). Then recalibrate: the tone check,
+  then `hfbench audio qam --snr 40 40 40` until all four paths agree within about
+  1 dB MER, with flat MER across the carriers. Also check that every plug is
+  fully seated at each step, and re-run the tone check after any cable is moved. **Acceptance for the bench:** all four paths
   within about 1 dB MER of each other, before any modem results count.
 - Then re-run WGN 20 and WGN 25 to see whether the ARDOP direction asymmetry and
   the corruption go away.
