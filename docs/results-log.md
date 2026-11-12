@@ -536,6 +536,72 @@ file reads 15.2 / 15.8 dB, because its last 40 minutes are WGN 28 traffic.
 
 ---
 
+## cal7wgn28: ARDOP 1.0.2.9, WGN 28 (expected ≈ 21 dB data S:N), cal7 levels
+
+Started 12 Nov 2026 at 18:23, straight after cal7wgn22, with the same devices and
+levels.
+
+| run | start | outcome | delivered | 2→1 goodput (Sabrent → Syba) | 1→2 goodput (Syba → Sabrent) | modes | ended by |
+|---|---|---|---|---|---|---|---|
+| 0001 | 18:26:08 | completed | 10/10, 43.1 min | 1,409–1,563 bit/s | 1,364–1,431 bit/s | both 16QAM.2000 from the first message | normal end |
+| 0002 | 19:13:53 | dnc | 3/10, 18.7 min | 1,276–1,547 bit/s (2 msgs) | 1,381 bit/s (1 msg) | both 16QAM.2000 | ARQ timeout during station 1's 2nd message (AS21E74HAIMR), 19:32:38 |
+
+ARDOP debug logs, 16QAM.2000 frames:
+
+| run | path | receiver | 16QAM quality, median (p10–p90) | frames | NAKs |
+|---|---|---|---|---|---|
+| 0001 | Sabrent → Syba | station 1 | **38 (37–40)** | 217 | 1 |
+| 0001 | Syba → Sabrent | station 2 | **64 (63–64)** | 216 | 1 |
+| 0002 | Sabrent → Syba | station 1 | 38 (37–40) | 83 | 1 |
+| 0002 | Syba → Sabrent | station 2 | 64 (63–64) | 83 | 0 |
+
+**The 0002 failure:**
+- Station 1's TNC sent all of AS21E74HAIMR at 16QAM.2000 (19:27:47–19:31:35).
+  Every data frame was ACKed on the first try (0 NAKs), and station 2's TNC
+  decoded all of them as PASS at quality 63–64.
+- Both ends' ARQ stats agree to the byte: station 1 sent 85,161 bytes over the
+  session and station 2 received 85,161.
+- Station 1 then sent IDLE to hand over the link. Station 2's TNC answered each
+  IDLE with an ACK (22 times) but stayed in IRS, because its Winlink Express never
+  sent anything back. After 60 s station 1's ARQ timeout disconnected.
+- Station 2's Winlink log shows "Receiving AS21E74HAIMR" at 19:27:57 and nothing
+  more until the disconnect. There was no checksum or decompress error.
+
+So all the bytes arrived, but Winlink at station 2 didn't recognise the message as
+complete. The likeliest explanation is the same mechanism as the earlier
+checksum failures. A 16QAM frame decoded to wrong data that still passed ARDOP's
+frame check. Here it probably hit the B2F framing (for example a block length),
+so Winlink waited for more data instead of failing the checksum. This is a
+hypothesis: the received bytes aren't logged, so it can't be confirmed.
+
+**Findings:**
+1. **At WGN 28 ARDOP runs 16QAM.2000 in both directions from the first message,**
+   at 1,364–1,563 bit/s, about 20% above 8PSK at WGN 22.
+2. **The 16QAM quality asymmetry is still there at cal7 levels:** 38 on
+   Sabrent → Syba against 64 on Syba → Sabrent. That's the same direction as in
+   wgn25a (24 against 53). The Syba's recording of the Sabrent's signal is
+   still the weak path, consistent with the qam pre-check (Sabrent output tilt
+   8.3 dB).
+3. **The failure was on the good path, Syba → Sabrent (quality 64).** It's the
+   first failure on this path and the first that shows as a hang instead of a
+   checksum error. Meanwhile Sabrent → Syba delivered 7 of 7 at quality 38. So
+   failures don't simply follow ARDOP's quality figure. Whatever corrupts
+   16QAM data without a frame failure can happen on either path.
+4. The operator was asked to watch the IONOS Lvl meter at the start of 16QAM;
+   no red was reported.
+
+**16QAM.2000 at cal7 levels by hardware path:**
+
+| path | S:N setting | attempted | delivered | failed (corrupted or hung) |
+|---|---|---|---|---|
+| Sabrent → Syba | WGN 28 | 7 | 7 | 0 |
+| Syba → Sabrent | WGN 28 | 8 | 7 | 1 (hang, 0002) |
+
+Previous totals (pre-cal7 levels) are in the wgn25a section. Across all campaigns,
+16QAM.2000 has now had 6 failures in 46 messages. 8PSK.2000 has had none in the messages counted here (14 at WGN 20, 20 at cal7wgn22).
+
+---
+
 ## Planned next
 
 - **Replace the Sabrent** with a second adapter of the Syba's model, since a
