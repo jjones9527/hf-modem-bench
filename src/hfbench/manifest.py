@@ -88,7 +88,7 @@ def run_state(events: list[dict], run_id: str) -> str:
     for e in events:
         if e.get("run_id") == run_id:
             last = e["event"]
-    return {None: "pending", "start": "running", "mark": "running", "end": "done"}[last]
+    return {None: "pending", "start": "running", "mark": "running", "end": "done", "recover": "done"}[last]
 
 
 def last_outcome(events: list[dict], run_id: str) -> str | None:
@@ -147,6 +147,18 @@ def mark_run(events_path: str | Path, note: str, *, t: datetime | None = None) -
     return ev
 
 
+def recover_event(events_path: str | Path, run_id: str, ok: bool, *, notes: str = "",
+                  t: datetime | None = None) -> dict:
+    """Record an automatic bench recovery (Outboxes cleared, Winlink restarted)
+    after run_id ended. It belongs to that run's last attempt."""
+    events_path = Path(events_path)
+    if run_state(read_events(events_path), run_id) != "done":
+        raise ManifestError(f"{run_id} has not ended; recovery follows a finished run")
+    ev = {"event": "recover", "run_id": run_id, "ok": ok, "notes": notes, **_stamp(t or now())}
+    _append(events_path, ev)
+    return ev
+
+
 def build_manifest(runsheet: list[dict], events: list[dict]) -> list[dict]:
     """One row per attempt (start/end pair). Unstarted runs are omitted;
     a start with no end is reported with an empty outcome."""
@@ -163,6 +175,10 @@ def build_manifest(runsheet: list[dict], events: list[dict]) -> list[dict]:
             if not lst or lst[-1]["end"] is not None:
                 raise ManifestError(f"end without start for {rid}")
             lst[-1]["end"] = e
+        elif e["event"] == "recover":
+            if not lst or lst[-1]["end"] is None:
+                raise ManifestError(f"recover before the end of an attempt for {rid}")
+            lst[-1].setdefault("recover", []).append(e)
         elif e["event"] == "mark":
             if not lst or lst[-1]["end"] is not None:
                 raise ManifestError(f"mark outside a running attempt for {rid}")
@@ -196,7 +212,9 @@ def build_manifest(runsheet: list[dict], events: list[dict]) -> list[dict]:
                 "marks": " | ".join(
                     f"+{int((datetime.fromisoformat(k['t_utc']) - datetime.fromisoformat(s['t_utc'])).total_seconds())}s "
                     f"{k['notes']}" for k in a["marks"]),
-                "notes": e.get("notes", "") if e else "",
+                "notes": "; ".join(x for x in [e.get("notes", "") if e else ""] + [
+                    f"recovery {'ok' if r['ok'] else 'FAILED'} at {r['t_utc']}" + (f" ({r['notes']})" if r["notes"] else "")
+                    for r in a.get("recover", [])] if x),
             })
     return rows
 

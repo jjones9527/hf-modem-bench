@@ -69,6 +69,7 @@ class BenchRunner:
     key: Callable[[], str | None] = lambda: None
     say: Callable[[str], None] = print
     poll_s: float = 2.0
+    recover: bool = False                             # after a dnc: automation.recover(), then go on
     _used: set = field(default_factory=set)
 
     @property
@@ -225,7 +226,23 @@ class BenchRunner:
             if r is None:
                 break
             results.append(r)
+            if r.outcome == "dnc" and self.recover and self.automation is not None:
+                if not self._recover(r.run_id):
+                    break
         return results
+
+    def _recover(self, run_id: str) -> bool:
+        """Two attempts; if both fail, stop the campaign for the operator."""
+        for attempt in (1, 2):
+            try:
+                info = self.automation.recover(run_id)
+                mf.recover_event(self.events_path, run_id, True, notes=info.get("note", ""), t=self.clock())
+                return True
+            except Exception as e:
+                mf.recover_event(self.events_path, run_id, False, notes=f"attempt {attempt}: {e}", t=self.clock())
+                self.say(f"*** Recovery attempt {attempt} after {run_id} failed: {e}")
+        self.say("*** Stopping: reset the bench by hand (clear Outboxes, restart Winlink, open Ardop P2P) and rerun.")
+        return False
 
 
 # --- Winlink Express automation (Windows desktop session) ------------------------
@@ -253,7 +270,8 @@ class WinlinkAutomation:
     the Message-IDs, dates and run ID change per run."""
 
     def __init__(self, campaign_dir: str | Path, installs: tuple[str, str] = (r"C:\RMS Express", r"C:\RMS Express 2"),
-                 caller: int = 2, say: Callable[[str], None] = print, ui_factory=None):
+                 caller: int = 2, say: Callable[[str], None] = print, ui_factory=None,
+                 procs=None, sleep: Callable[[float], None] = lambda s: __import__("time").sleep(s)):
         from . import messages as mg
 
         self.mg = mg
@@ -272,6 +290,11 @@ class WinlinkAutomation:
             from .winlink_ui import WinlinkUI
             ui_factory = lambda call: WinlinkUI(call, log=say)
         self.ui = {st: ui_factory(self.calls[st]) for st in (1, 2)}
+        if procs is None:
+            from .winlink_ui import WinlinkProcesses
+            procs = WinlinkProcesses()
+        self.procs = procs
+        self.sleep = sleep
 
     def _quarantine_partials(self, run_id: str) -> int:
         n = 0
@@ -333,3 +356,64 @@ class WinlinkAutomation:
 
     def abort(self) -> None:
         self.ui[self.caller].abort()
+
+    def recover(self, run_id: str) -> dict:
+        """The operator's reset after a failed run, automated:
+        1. abort the session if it is still connected;
+        2. delete everything in both Outboxes (to Deleted Items, as by hand);
+        3. close both session windows and both Winlink Express instances
+           (force-stop any process of that install still running after 60 s);
+        4. move partial files to quarantine/<run_id> while Winlink is closed;
+        5. start both instances again and open their Ardop P2P sessions;
+        6. check both Outboxes are empty.
+        Raises AutomationError if the bench isn't ready afterwards."""
+        self.say(f"--- Recovery after {run_id}: clearing Outboxes and restarting Winlink Express")
+        caller = self.ui[self.caller]
+        try:
+            if caller.has_session_window() and caller.status().connected:
+                caller.abort()
+                for _ in range(45):
+                    self.sleep(2)
+                    if not caller.status().connected:
+                        break
+                else:
+                    raise AutomationError(f"{self.calls[self.caller]} still connected 90 s after Abort")
+        except AutomationError:
+            raise
+        except Exception as e:      # a dead session window is what a restart is for
+            self.say(f"  (session status not readable: {e})")
+        deleted, forced = {}, {}
+        for st in (1, 2):
+            deleted[st] = self.ui[st].delete_folder_messages("Outbox") if self.ui[st].has_main_window() else []
+        for st in (1, 2):
+            ui = self.ui[st]
+            try:
+                ui.close_session_window()
+            except Exception as e:
+                self.say(f"  ({self.calls[st]}: {e}; Winlink will be closed anyway)")
+            closed = ui.close_main()
+            self.sleep(3)
+            if not closed or self.procs.running(self.installs[st - 1]):
+                forced[st] = self.procs.kill(self.installs[st - 1])
+                self.say(f"  {self.calls[st]}: force-stopped processes {forced[st]}")
+                self.sleep(3)
+            if self.procs.running(self.installs[st - 1]):
+                raise AutomationError(f"{self.calls[st]}: Winlink/ARDOP processes still running after stop")
+        moved = self._quarantine_partials(run_id)
+        if moved:
+            self.say(f"  moved {moved} partial file(s) to quarantine/{run_id}")
+        for st in (1, 2):
+            self.procs.launch(self.installs[st - 1])
+            self.ui[st].wait_main()
+        for st in (1, 2):
+            self.ui[st].open_ardop_p2p()
+        for st in (1, 2):
+            left = self.ui[st].folder_mids("Outbox")
+            if left:
+                raise AutomationError(f"{self.calls[st]}: Outbox has {len(left)} message(s) after recovery")
+        n = {st: len(v) for st, v in deleted.items()}
+        note = (f"deleted {n[1]} + {n[2]} Outbox messages, {moved} partial(s) quarantined"
+                + (f", force-stopped {sorted(forced)}" if forced else ""))
+        self.say(f"--- Recovery done: {note}")
+        return {"deleted": deleted, "forced": forced, "partials": moved, "note": note}
+

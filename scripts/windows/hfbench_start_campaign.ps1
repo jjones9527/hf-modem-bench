@@ -1,5 +1,6 @@
-param([int]$MaxRuns = 1, [switch]$AutoContinue, [string]$Campaign = "pilot01")
+param([int]$MaxRuns = 1, [switch]$AutoContinue, [switch]$Recover, [string]$Campaign = "pilot01")
 $ac = if ($AutoContinue) { ' --auto-continue 120' } else { '' }
+if ($Recover) { $ac += ' --recover' }
 $ErrorActionPreference = "Stop"
 $dir = Join-Path $env:USERPROFILE 'hfbench'
 $stamp = (Get-Date).ToUniversalTime().ToString('yyyyMMdd-HHmm')

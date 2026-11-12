@@ -271,6 +271,36 @@ Each modem puts out a different average power at a given drive level. On this be
 
 Recommendation: plot against **A**, and report each modem's measured offset (B − A) in a table. That needs a rule for setting each modem's drive, which is still to be agreed.
 
+### Automatic recovery after a failed run (`--recover`, built 12 Nov 2026, not yet tried on the bench)
+
+A failed run (dnc) leaves messages in an Outbox and often a Winlink instance in a
+bad state, so the next run can't start. With `hfbench run --automate --recover`
+(`hfbench_start_campaign.ps1 -Recover`), the runner repeats the operator's manual
+reset and then carries on:
+
+1. abort the session if it is still connected;
+2. select every Outbox message at both stations and press **Delete** (they go to
+   Deleted Items);
+3. close both session windows (**Exit**), then both Winlink Express instances;
+   any process of that install still running after 60 s is force-stopped;
+4. move partial files to `quarantine/<run_id>` (kept for `scripts/check_partial.py`);
+5. start both instances, open **Ardop P2P** from **Open Session:** (the ARDOP TNC
+   starts with it), and wait until **Start** is enabled;
+6. check both Outboxes are empty.
+
+Each recovery is recorded as a `recover` event and shows in the manifest's
+`notes` ("recovery ok at …"). If recovery fails twice in a row, the runner stops for
+the operator. `hfbench recover -d runs\<campaign> <run_id>` runs the same reset by
+hand.
+
+**Bench trial still needed** (with the operator watching). Each step can be run
+alone with `python -m hfbench.winlink_ui LOG CALL status | delete-outbox |
+close-session | close | open-session`. Check:
+- whether Delete or closing Winlink asks for confirmation (the code answers Yes/OK);
+- that selecting the grid rows by UI Automation selects all of them;
+- that **Open Session:** opens the session type shown next to it;
+- that ARDOP_Win exits with its session window, so port 8200/8300 is free on restart.
+
 ## 8. Metrics
 
 | Metric | Definition |

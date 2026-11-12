@@ -212,12 +212,21 @@ def cmd_run(args):
         return input().strip().lower() != "q"
 
     runner = BenchRunner(d, winlink_session_source(args.winlink_dir),
-                         ionos=ionos, automation=automation, key=key, poll_s=args.poll)
+                         ionos=ionos, automation=automation, key=key, poll_s=args.poll,
+                         recover=bool(args.recover and automation is not None))
     try:
         runner.run(max_runs=args.max_runs, wait_between=between)
     finally:
         if ionos is not None:
             ionos.close()
+
+
+def cmd_recover(args):
+    from .bench import WinlinkAutomation
+
+    d = _campaign_dir(args)
+    info = WinlinkAutomation(d, installs=(args.winlink_dir, args.winlink_dir2)).recover(args.run_id)
+    print(info["note"])
 
 
 def _noise_summary(audio, results):
@@ -473,7 +482,16 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--winlink-dir2", default=r"C:\RMS Express 2", help="station 2 Winlink install")
     s.add_argument("--auto-continue", type=float, metavar="SECONDS",
                    help="start the next run after this pause instead of waiting for Enter")
+    s.add_argument("--recover", action="store_true",
+                   help="with --automate: after a failed run, clear both Outboxes, restart both Winlink "
+                        "Express instances and their Ardop P2P sessions, then continue")
     s.set_defaults(func=cmd_run)
+
+    s = with_dir(sub.add_parser("recover", help="reset the bench now as after a failed run (desktop session)"))
+    s.add_argument("run_id", help="run the reset follows (partials go to quarantine/<run_id>)")
+    s.add_argument("--winlink-dir", default=r"C:\RMS Express")
+    s.add_argument("--winlink-dir2", default=r"C:\RMS Express 2")
+    s.set_defaults(func=cmd_recover)
 
     s = with_dir(sub.add_parser("messages", help="build the campaign's message templates (once)"))
     s.add_argument("action", choices=["build"])

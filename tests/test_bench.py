@@ -294,3 +294,132 @@ def test_winlink_automation_one_way_workload(tmp_path):
     uis["VE3XZQ"].outbox = ["STRAY"]
     with pytest.raises(Exception, match="not from this run"):
         wa.prepare({"run_id": "c-0001"})   # the silent station's Outbox must be empty too
+
+
+class RecUI(FakeUI):
+    """FakeUI that also models the windows the recovery touches."""
+    def __init__(self, call, log):
+        super().__init__(call)
+        self.log, self.main_open, self.session_open, self.connected = log, True, True, False
+
+    def has_main_window(self):
+        return self.main_open
+
+    def has_session_window(self):
+        return self.session_open
+
+    def status(self):
+        from hfbench.winlink_ui import SessionStatus
+        return SessionStatus(self.connected, "", "", not self.connected, self.connected, "")
+
+    def abort(self):
+        self.log.append((self.call, "abort")); self.connected = False
+
+    def delete_folder_messages(self, name):
+        gone, self.outbox = list(self.outbox), []
+        self.log.append((self.call, "delete", len(gone)))
+        return gone
+
+    def close_session_window(self):
+        self.session_open = False; self.log.append((self.call, "close-session"))
+
+    def close_main(self):
+        assert not self.session_open
+        self.main_open = False; self.log.append((self.call, "close"))
+        return True
+
+    def wait_main(self):
+        assert self.main_open
+
+    def open_ardop_p2p(self):
+        assert self.main_open
+        self.session_open = True; self.log.append((self.call, "open-session"))
+
+
+class FakeProcs:
+    def __init__(self, uis, log, stuck=()):
+        self.uis, self.log, self.stuck = uis, log, set(stuck)
+
+    def _ui(self, install):
+        return self.uis["VA3ZTF" if install.endswith("RMS Express") else "VE3XZQ"]
+
+    def running(self, install):
+        return self._ui(install).main_open or install in self.stuck
+
+    def kill(self, install):
+        self.stuck.discard(install); self._ui(install).main_open = False
+        self.log.append((install, "kill")); return [1234]
+
+    def launch(self, install):
+        self._ui(install).main_open = True; self.log.append((install, "launch"))
+
+
+def _recovery_bench(tmp_path, stuck=()):
+    from hfbench import messages as mg
+    from hfbench.bench import WinlinkAutomation
+    inst1, inst2 = tmp_path / "RMS Express", tmp_path / "RMS Express 2"
+    for inst, call in ((inst1, "VA3ZTF"), (inst2, "VE3XZQ")):
+        for sub in ("Messages", "Data", "Partials"):
+            (inst / call / sub).mkdir(parents=True)
+    (inst2 / "VE3XZQ" / "Partials" / "S176LKCKL8SF.bin").write_bytes(b"x")
+    camp = tmp_path / "camp"
+    mg.build_campaign_templates(Path(__file__).resolve().parents[1] / "payloads" / "Text_50KB",
+                                ("VA3ZTF", "VE3XZQ"), camp / "messages", counts=(10, 0))
+    log, uis = [], {}
+    procs = FakeProcs(uis, log, stuck={str(inst2)} if "2" in stuck else set())
+    wa = WinlinkAutomation(camp, installs=(str(inst1), str(inst2)), say=lambda s: None,
+                           ui_factory=lambda call: uis.setdefault(call, RecUI(call, log)),
+                           procs=procs, sleep=lambda s: None)
+    return wa, uis, log, camp
+
+
+def test_recover_follows_the_operator_procedure(tmp_path):
+    wa, uis, log, camp = _recovery_bench(tmp_path)
+    wa.prepare({"run_id": "c-0001"})
+    uis["VA3ZTF"].outbox = uis["VA3ZTF"].outbox[1:]        # one message got through
+    uis["VE3XZQ"].connected = True                           # caller still connected
+    info = wa.recover("c-0001")
+    assert len(info["deleted"][1]) == 9 and info["deleted"][2] == [] and not info["forced"]
+    order = [e[1] for e in log]
+    assert order.index("abort") < order.index("delete") < order.index("close-session") < order.index("close")
+    assert order.index("close") < order.index("launch") < order.index("open-session")
+    assert (camp / "quarantine" / "c-0001" / "station2" / "S176LKCKL8SF.bin").exists()   # moved while closed
+    assert all(u.session_open and u.main_open and u.outbox == [] for u in uis.values())
+    wa.prepare({"run_id": "c-0002"})                         # the next run can be queued
+
+
+def test_recover_force_stops_a_stuck_instance(tmp_path):
+    wa, uis, log, _ = _recovery_bench(tmp_path, stuck="2")
+    info = wa.recover("c-0001")
+    assert list(info["forced"]) == [2] and any(e[1] == "kill" for e in log)
+
+
+def test_runner_recovers_after_dnc_and_records_it(tmp_path):
+    d, rows = _campaign(tmp_path, abort_minutes=60)
+    rp = Replay(FX / "winlink_ardop_p2p_20261110.log", T(17, 49))
+
+    class Rec(FakeAutomation):
+        def recover(self, run_id):
+            self.calls.append(("recover", run_id)); return {"note": "deleted 9 + 0 Outbox messages"}
+    fa = Rec(SESSION6_MIDS + ["NEVERSENT001"])                # -> dnc
+    BenchRunner(d, rp.sessions, automation=fa, clock=rp.clock, sleep=rp.sleep, say=rp.said.append,
+                poll_s=10, recover=True).run(max_runs=1)
+    assert ("recover", rows[0]["run_id"]) in fa.calls
+    man = mf.build_manifest(mx.read_runsheet(d / "runsheet.csv"), mf.read_events(d / "events.jsonl"))
+    assert man[0]["outcome"] == "dnc" and "recovery ok" in man[0]["notes"] and "8/9 messages" in man[0]["notes"]
+
+
+def test_runner_stops_after_two_failed_recoveries(tmp_path):
+    d, rows = _campaign(tmp_path, abort_minutes=60)
+    rp = Replay(FX / "winlink_ardop_p2p_20261110.log", T(17, 49))
+
+    class Bad(FakeAutomation):
+        def recover(self, run_id):
+            self.calls.append(("recover", run_id)); raise RuntimeError("Outbox still has 9")
+    fa = Bad(SESSION6_MIDS + ["NEVERSENT001"])
+    res = BenchRunner(d, rp.sessions, automation=fa, clock=rp.clock, sleep=rp.sleep, say=rp.said.append,
+                      poll_s=10, recover=True).run()
+    assert len(res) == 1 and [c for c in fa.calls if c[0] == "recover"] == [("recover", rows[0]["run_id"])] * 2
+    assert any("Stopping" in s for s in rp.said)
+    man = mf.build_manifest(mx.read_runsheet(d / "runsheet.csv"), mf.read_events(d / "events.jsonl"))
+    assert man[0]["notes"].count("recovery FAILED") == 2

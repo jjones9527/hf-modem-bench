@@ -15,7 +15,8 @@ Notes from the bench:
   'Connected - In sending state' / 'Disconnected/Listening'.
 
 Run as a script for one-off actions:
-  python -m hfbench.winlink_ui LOG CALL folders | select-folder NAME | export PATH | import PATH
+  python -m hfbench.winlink_ui LOG CALL folders | select-folder NAME | import PATH | status
+                                 | delete-outbox | close-session | close | open-session
 """
 
 from __future__ import annotations
@@ -25,6 +26,7 @@ import sys
 import threading
 import time
 from dataclasses import dataclass
+from pathlib import Path
 
 
 def _auto():
@@ -215,6 +217,165 @@ class WinlinkUI:
             self._thread(lambda: item.GetLegacyIAccessiblePattern().DoDefaultAction())
             self.log(f"Abort pressed in {self.call}'s session window")
 
+    # -- recovery: the operator's reset, step by step ---------------------------------
+    # The operator's procedure (12 Nov 2026): select every Outbox message, press
+    # Delete, close the session window, close Winlink Express, start it again and open
+    # the Ardop P2P session (the ARDOP TNC starts with it). Control names come from
+    # the UI survey of 11 Nov 2026 and still need a live trial (see docs).
+
+    def has_session_window(self) -> bool:
+        try:
+            self.session_window()
+            return True
+        except RuntimeError:
+            return False
+
+    def has_main_window(self) -> bool:
+        try:
+            self.main()
+            return True
+        except RuntimeError:
+            return False
+
+    def _press_confirmations(self, pid: int, wait: float = 2.0, names=("Yes", "OK")) -> list[str]:
+        """Answer confirmation boxes of this instance with Yes/OK; return their texts."""
+        time.sleep(wait)
+        seen = []
+        for w in self.auto.GetRootControl().GetChildren():
+            n = w.Name or ""
+            if w.ProcessId != pid or "Winlink Express" in n or "Peer-to-Peer" in n:
+                continue
+            seen += self._texts(w)
+            for b in names:
+                btn = w.ButtonControl(Name=b, searchDepth=3)
+                if btn.Exists(0.3):
+                    self._thread(lambda btn=btn: btn.GetInvokePattern().Invoke())
+                    time.sleep(1)
+                    break
+        return seen
+
+    def delete_folder_messages(self, name: str = "Outbox", attempts: int = 3) -> list[str]:
+        """Select every message in a folder and press Delete (they go to Deleted
+        Items, as when the operator does it). Returns the MIDs that were there."""
+        before = self.folder_mids(name)
+        if not before:
+            return []
+        for _ in range(attempts):
+            main = self.main()
+            rows = [r for r in main.TableControl(AutomationId="grdMessageList").GetChildren()
+                    if (r.Name or "").startswith("Row ")]
+            for i, r in enumerate(rows):
+                # SELFLAG_TAKEFOCUS|TAKESELECTION for the first row, ADDSELECTION for the rest
+                r.GetLegacyIAccessiblePattern().Select(3 if i == 0 else 8)
+                time.sleep(0.1)
+            t = self._thread(lambda: main.MenuItemControl(Name="Delete", searchDepth=3)
+                             .GetLegacyIAccessiblePattern().DoDefaultAction())
+            texts = self._press_confirmations(main.ProcessId)
+            t.join(90)
+            if texts:
+                self.log(f"  {self.call}: Delete asked: {' '.join(texts)[:120]!r}")
+            left = self.folder_mids(name)
+            if not left:
+                self.log(f"{self.call}: deleted {len(before)} message(s) from {name}")
+                return before
+        raise RuntimeError(f"{self.call}: {name} still has {len(left)} message(s) after Delete")
+
+    def close_session_window(self, timeout: float = 30) -> None:
+        if not self.has_session_window():
+            return
+        w = self.session_window()
+        self._thread(lambda: w.MenuItemControl(Name="Exit", searchDepth=3).GetLegacyIAccessiblePattern().DoDefaultAction())
+        t0 = time.time()
+        while self.has_session_window():
+            if time.time() - t0 > timeout:
+                raise RuntimeError(f"{self.call}: session window did not close within {timeout:.0f} s")
+            self._press_confirmations(w.ProcessId, wait=1.0)
+        self.log(f"{self.call}: session window closed")
+
+    def close_main(self, timeout: float = 60) -> bool:
+        """Close Winlink Express normally. False if it is still open after timeout."""
+        if not self.has_main_window():
+            return True
+        main = self.main()
+        pid = main.ProcessId
+        self._thread(lambda: main.GetWindowPattern().Close())
+        t0 = time.time()
+        while self.has_main_window():
+            if time.time() - t0 > timeout:
+                return False
+            self._press_confirmations(pid, wait=1.0)
+        self.log(f"{self.call}: Winlink Express closed")
+        return True
+
+    def wait_main(self, timeout: float = 120) -> None:
+        t0 = time.time()
+        while not self.has_main_window():
+            if time.time() - t0 > timeout:
+                raise RuntimeError(f"{self.call}: Winlink Express window did not appear within {timeout:.0f} s")
+            time.sleep(2)
+        time.sleep(5)   # let it finish loading folders
+
+    def open_ardop_p2p(self, timeout: float = 90) -> SessionStatus:
+        """Open the Ardop P2P session from the main window ('Open Session:' with the
+        session type 'Ardop P2P' selected) and wait until Start is enabled."""
+        if not self.has_session_window():
+            main = self.main()
+            if not main.MenuItemControl(Name="Ardop P2P", searchDepth=3).Exists(1):
+                raise RuntimeError(f"{self.call}: session type 'Ardop P2P' is not selected in the main window")
+            self._thread(lambda: main.MenuItemControl(Name="Open Session:", searchDepth=3)
+                         .GetLegacyIAccessiblePattern().DoDefaultAction())
+        t0 = time.time()
+        while True:
+            if time.time() - t0 > timeout:
+                raise RuntimeError(f"{self.call}: Ardop P2P session not ready within {timeout:.0f} s")
+            time.sleep(2)
+            if not self.has_session_window():
+                continue
+            try:
+                st = self.status()
+            except Exception:
+                continue
+            if st.can_start and not st.connected:
+                self.log(f"{self.call}: Ardop P2P session open ({st.state or 'ready'})")
+                return st
+
+
+class WinlinkProcesses:
+    """Start, find and (last resort) stop the Winlink Express and ARDOP processes
+    of one install, identified by their executable path."""
+
+    EXES = ("RMS Express.exe", "ARDOP_Win.exe")
+
+    def __init__(self, run=None):
+        import subprocess
+        self._run = run or (lambda args: subprocess.run(args, capture_output=True, text=True, timeout=60).stdout)
+
+    def _ps(self, script: str) -> str:
+        return self._run(["powershell", "-NoProfile", "-Command", script])
+
+    def pids(self, install: str) -> dict[str, list[int]]:
+        out = {}
+        for exe in self.EXES:
+            path = str(Path(install) / exe).replace("'", "''")
+            txt = self._ps(f"Get-CimInstance Win32_Process -Filter \"Name='{exe}'\" | "
+                           f"Where-Object {{ $_.ExecutablePath -eq '{path}' }} | ForEach-Object {{ $_.ProcessId }}")
+            out[exe] = [int(x) for x in txt.split() if x.strip().isdigit()]
+        return out
+
+    def running(self, install: str) -> bool:
+        return any(self.pids(install).values())
+
+    def kill(self, install: str) -> list[int]:
+        killed = [p for v in self.pids(install).values() for p in v]
+        for p in killed:
+            self._run(["taskkill", "/PID", str(p), "/F"])
+        return killed
+
+    def launch(self, install: str) -> None:
+        import subprocess
+        exe = Path(install) / "RMS Express.exe"
+        subprocess.Popen([str(exe)], cwd=str(install), close_fds=True)
+
 
 def _main(argv: list[str]) -> None:
     logf = open(argv[0], "a", encoding="utf-8")
@@ -229,6 +390,16 @@ def _main(argv: list[str]) -> None:
         say(ui.import_xml(args[0]))
     elif action == "status":
         say(ui.status())
+    elif action == "delete-outbox":
+        say("deleted:", ui.delete_folder_messages("Outbox"))
+    elif action == "close-session":
+        ui.close_session_window()
+    elif action == "close":
+        ui.close_session_window()
+        say("closed:", ui.close_main())
+        return
+    elif action == "open-session":
+        say(ui.open_ardop_p2p())
     else:
         raise SystemExit(f"unknown action {action}")
     say("folders:", ui.folder_counts())
