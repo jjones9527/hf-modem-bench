@@ -515,9 +515,22 @@ No Winlink errors (checksum, decompress or link) in either station's log.
    (about 24–31 against 53 at 16QAM) doesn't show at 8PSK.
 2. **ARDOP never tried 16QAM at this S:N.** The quality sits at 72–74, just
    under the shift-up threshold seen before (about 72–74), so the gearshift
-   stays at 8PSK. This differs from pilot01 (WGN 20 at the old, hotter
-   levels, about 14 dB data S:N), where 16QAM was used. It is consistent with the lower cal7 levels
-   giving a slightly lower data S:N than estimated (S:N recording below).
+   stays at 8PSK. In pilot01 (WGN 20 at the old, hotter levels, about 14 dB
+   data S:N) 16QAM was used. At this S:N, whether ARDOP shifts up is
+   borderline and depends on small differences in quality.
+
+**Measured S:N** (`listen-20261112-1633`, trimmed to 16:33–18:22:13 so that the
+cal7wgn28 traffic recorded after it is excluded):
+
+| direction | data frames | data S:N median (middle half) | vs setting | control S:N |
+|---|---|---|---|---|
+| 1 → 2 (Syba → Sabrent) | 551 | **14.9 dB** (14.8–15.0) | −7.1 dB | 19.0 dB |
+| 2 → 1 (Sabrent → Syba) | 562 | **15.5 dB** (15.4–15.5) | −6.5 dB | 18.8 dB |
+
+Data-frame mismatch −0.6 dB (symmetric). The data S:N is about 1 dB above the
+cal7 estimate (setting − 8 dB), so here data ≈ setting − 7 dB. The untrimmed
+file reads 15.2 / 15.8 dB, because its last 40 minutes are WGN 28 traffic.
+
 3. 20 of 20 messages delivered, none corrupted, all at 8PSK.2000 in both
    directions (the Sabrent → Syba path included).
 
