@@ -716,6 +716,66 @@ result at about 18 dB data S:N on this bench.
 
 ---
 
+## ARDOP 1.0.2.9 source: why corrupted 16QAM frames pass (12 Nov 2026)
+
+Source: the ARSFI ARDOP_Win repository (VB.NET), commit `bc11cb3` (20 Jul 2026),
+whose AssemblyInfo is version **1.0.2.9**, the TNC Winlink Express runs on the bench.
+
+**How a received data carrier is checked** (`DemodulateDecode12K.vb`,
+`CorrectRawDataWithRS`). Each carrier holds a byte count, the data, a 2-byte CRC and
+Reed-Solomon parity. A 16QAM carrier is 1 + 128 + 2 + 64 bytes = 390 symbols.
+1. If the CRC over count + data matches, the data is accepted. **RS parity is not
+   looked at.**
+2. Only if the CRC fails does RS correct up to 32 byte errors, and then the CRC is
+   checked again.
+
+So symbol errors that RS can fix produce no NAK and no visible sign in the log. A
+carrier whose errors happen to satisfy the CRC is accepted without the RS check
+that would have caught them.
+
+**The CRC is weaker than its comment says** (`Globals.vb`,
+`GenCRC16FrameType`/`CheckCRC16FrameType`). It is commented as CRC-16-CCITT
+(x¹⁶ + x¹² + x⁵ + 1). But this left-shifting algorithm uses the constant `&H8810`,
+where CCITT needs `&H1021`. `&H8810` is the polynomial x¹⁶ + x¹⁵ + x¹¹ + x⁴, which
+has no +1 term and is divisible by x⁴. `scripts/ardop_crc_sim.py` ports the routine
+bit for bit and puts random 16QAM symbol (nibble) errors into a 129-byte carrier
+(200,000 trials each):
+
+| symbol errors in a carrier | ARDOP 1.0.2.9 CRC misses | true CRC-16-CCITT misses |
+|---|---|---|
+| 1 | never | never |
+| 2 | **1 in 8,300** | never |
+| 4 | **1 in 2,700** | 1 in 67,000 |
+
+**This matches what the bench shows:**
+- the corrupted messages contain only whole-symbol (nibble) errors, 2 and 4 of
+  them in one carrier;
+- every frame of those messages passed on the first try with no NAKs (RS was
+  quietly fixing the other carriers' errors);
+- each 16QAM message is about 42 frames × 8 carriers ≈ 340 carrier checks. If
+  most carriers carry a few symbol errors at about 18 dB data S:N on this bench,
+  roughly 1 escape per 3,000–8,000 carriers gives a failure every 10–25 messages.
+  That's the order of magnitude seen.
+
+8PSK carries 3 bits per symbol and runs at a higher quality here, so it has
+fewer errors to slip through (0 failures in 34 messages).
+
+**Upstream has since changed the check.** In the current ARDOP_Win development
+code (1.0.3.x), `CorrectRawDataWithRS` carries the note "2026-10-10 LAB
+EXPERIMENT: Verify parity as well as CRC for every carrier". It now accepts a
+carrier only when the RS parity verifies **and** the CRC matches. The CRC
+constant is unchanged. Verifying parity is receiver-side only, so it stays
+compatible over the air. Changing the CRC polynomial would not.
+
+**What this means for the comparison:**
+- The 16QAM failures are an ARDOP 1.0.2.9 integrity weakness, made more frequent
+  by symbol errors from the S:N and the bench's own MER limit (about 17–22 dB).
+  They are not a fault of one station or adapter.
+- They should be reported as an ARDOP 1.0.2.9 result. A later ARDOP version with
+  parity verification is worth testing on the same bench.
+
+---
+
 ## Planned next
 
 - **Replace the Sabrent** with a second adapter of the Syba's model, since a
