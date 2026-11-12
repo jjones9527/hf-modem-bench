@@ -378,6 +378,69 @@ too.
 
 ---
 
+## cal: bench recalibration (12 Nov 2026, afternoon)
+
+The Sabrent stays in the bench: there's no second adapter, and the Mac mini has
+no audio input. What happened during recalibration, in order:
+
+1. **Level trim to the IONOS reference.** The Windows levels and IONOS
+   **CH2 IN 2 → 1** were changed to bring both stations to about 0 dB against the
+   reference. The 16QAM test then got much worse on every path. At WGN 40 a
+   tone's S:N was only about 31 dB, against about 40 before.
+2. **Windows enhancements.** The re-enumerated Sabrent endpoint had
+   "Microsoft Audio Home Theater Effects" enabled (registry `DisableSysFx` = 0),
+   and the Syba had no saved setting. Both are now **disabled** (`DisableSysFx` = 1,
+   checked with registry query `scripts/windows/hfbench_fx.ps1`). This made
+   **no** measurable difference (cal4 and cal5 are identical).
+3. **qam analysis bug.** The best demodulation window was at +2.25 ms, outside
+   the search range (−3 to +1 ms), so cal3–cal5 were understated. The search now
+   covers the whole symbol (−5 to +4.75 ms in 0.25 ms steps). Re-analysing the
+   earlier recordings changes them by less than 1 dB, except where noted.
+4. **The real fault was a comb inside the IONOS.** With the fixed analysis, cal5
+   showed the same gain ripple on all four paths: ±4 dB with peaks about 800 Hz
+   apart, meaning a second copy of the signal about 1.25 ms late. It was
+   identical at both receivers and for both players, so it was after the input
+   mix and before the output split, inside the IONOS. It probably came from a
+   front-panel menu change made while adjusting CH2 IN. **Rebooting the IONOS
+   cleared it.** `WGN:x` and the reset commands sent over serial did *not*.
+   Note that qam01 (`qam-rep`) shows a weaker ripple with the same spacing
+   (±1.3 dB), so the IONOS may have been in a slightly wrong state then too.
+5. CH2 IN was set back to 2, Syba playback L 90, Sabrent playback R 100.
+
+**Calibration (cal6, after the IONOS reboot):**
+
+| item | value |
+|---|---|
+| IONOS | firmware 2.03; CH1 IN 50 (Sabrent), CH2 IN 2 (Syba); OUT gains unchanged |
+| Windows playback | Syba "C-Media USB Audio Device" L 90 / R 0; Sabrent "3- USB Audio Device" L 0 / R 100; enhancements disabled on both |
+| Windows recording | Syba 35, Sabrent 75 (as calibrated 10 Nov); AGC off |
+| ARDOP | station 1 (VA3ZTF) = Syba, station 2 (VE3XZQ) = Sabrent; DriveLevel 90 |
+| tone check, WGN 20 | transmit +8.7 / +8.8 dB against the reference; mismatch −0.3 dB; receive mismatch +0.7 dB; H2 −45 dBc |
+| tone check, WGN 40 | tone S:N 41.3–41.7 dB; bench's own noise 33 dB below the reference |
+
+**16QAM path test (cal6, WGN 40, 2 repeats × 2 levels):**
+
+| path | MER dB | low / high carriers | tilt dB |
+|---|---|---|---|
+| Syba → Syba | 19.5–19.9 | flat | 0.1 |
+| Syba → Sabrent | 15.7–19.2 | sometimes falls (18 / 14) | 0.1 |
+| Sabrent → Syba | 17.2–19.0 | mostly flat | 8.4 |
+| Sabrent → Sabrent | 16.4–19.5 | sometimes falls | 8.4 |
+
+The Sabrent's intermittent input timing fault and its output tilt remain. They
+are known, measured properties of this bench, and the report has to state them.
+
+**Rules adopted for the protocol:**
+- Run `hfbench audio qam --snr 40 40` before every campaign, and again after
+  any change at the bench. Syba → Syba must be flat (tilt < 0.5 dB) and
+  ≥ 19 dB. A periodic ripple across the carriers means the IONOS needs a reboot.
+- **Reboot the IONOS after any front-panel menu use.**
+- Re-check that every plug is fully seated after anything is moved.
+- After any re-enumeration of a USB audio device, check its Windows settings:
+  levels, balance, AGC, enhancements and format.
+
+---
+
 ## Planned next
 
 - **Replace the Sabrent** with a second adapter of the Syba's model, since a

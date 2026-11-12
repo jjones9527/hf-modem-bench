@@ -182,7 +182,7 @@ def analyze(x: np.ndarray, fs_in: float, syms: np.ndarray, fs_out: float) -> Pat
     # the chirps and the carriers see different group delays through filters, so
     # search for the window position (within the 10 ms symbol) that fits best
     best = None
-    for off in np.arange(-3.0, 1.01, 0.5) * 1e-3:
+    for off in np.arange(-5.0, 4.76, 0.25) * 1e-3:     # the whole 10 ms symbol
         Y = _demod(x, p0, scale, fs_in, L, n_sym, off)
         m = _mer(Y, syms)
         if best is None or m[0] > best[1][0]:
