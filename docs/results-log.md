@@ -885,6 +885,37 @@ mismatch +0.7, mic noise 33 dB below the reference. Unchanged.
 
 ---
 
+### Sweep incident: ARDOP's busy detector blocked every call at WGN 40 (13 Nov)
+
+`sweep-ardop-50k-0002` (17:22) and `-0003` (18:57), both at WGN 40, ended *dnc (no
+connection)* after 90 minutes. Start was pressed, station 2 never called, and Winlink
+logged "Connection cancelled" about 2 min later. Runs at WGN 22 and 17 in between
+connected normally.
+
+**Cause, confirmed at 21:41** during `-0005` (WGN 40): both Ardop session windows
+showed **"Channel Busy"**, with no traffic on the bench. ARDOP 1.0.2.9's busy detector
+(`BusyDetector.vb`, BusyDet = 5) reports busy when the strongest ~94 Hz of the
+spectrum stands about 9 dB above the background, or the widest 66% about 12 dB above
+it. It only runs while ARDOP is idle. At WGN 40 the IONOS adds almost no noise, so the
+background is the bench's own noise, which is not flat (Sabrent tilt, small spurs).
+That trips the detector. At WGN 22 and 17 the IONOS's flat noise dominates.
+
+**Fix (operator's decision, 21:50):** BusyDet = 0 (detector off) in both
+`ARDOP_Win TNC.ini` files. There is no other station to protect on the bench. The
+detector acts only while idle, so data transfer is unaffected. ARDOP rewrites its ini
+when it closes, so the change was made with both Winlink/ARDOP instances closed
+(`scripts/windows/busydet_off.ps1`, backups `*.busydet5.bak`). After the restart, both
+windows showed "Channel Free" at WGN 40.
+- `-0002` and `-0003` were marked **invalid** (bench fault) and are repeated.
+- `-0005`'s interrupted first attempt recorded nothing and is also repeated.
+- A repeat needs fresh Message-IDs, because Winlink skips IDs it already holds. The
+  runner now does this automatically.
+
+**Also seen:** `-0004` (WGN 17, about 10 dB) was the first time-boxed run: 6/10
+delivered at 683–701 bit/s in 60 min, cut cleanly, followed by a normal recovery.
+
+---
+
 ## Planned next
 
 > **Superseded 13 Nov 2026 by [test-plan.md](test-plan.md)**, which covers the remaining modems, the metric changes and the open decisions. The items below are kept for the record.

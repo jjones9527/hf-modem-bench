@@ -482,3 +482,23 @@ def test_recovery_opens_the_profiles_session_type(tmp_path):
     wa.profile = MODEM_PROFILES["VARA HF"]
     wa.recover("c-0001")
     assert all(u.session_type == "Vara HF P2P" for u in uis.values())
+
+
+def test_prepare_uses_fresh_ids_when_winlink_skips_known_ones(tmp_path):
+    wa, uis, log, camp = _recovery_bench(tmp_path)
+    first = wa.prepare({"run_id": "c-0002"})["mids"]
+    uis["VA3ZTF"].outbox = []                               # attempt failed, Outbox cleared
+    known = set(first)
+    orig = RecUI.import_xml
+
+    def skip_known(self, path):                             # Winlink ignores IDs it has seen
+        import xml.etree.ElementTree as ET
+        ids = [m.find("id").text for m in ET.parse(path).getroot().findall("message_list/message")]
+        self.outbox += [i for i in ids if i not in known]
+        return "ok"
+    RecUI.import_xml = skip_known
+    try:
+        again = wa.prepare({"run_id": "c-0002"})["mids"]
+    finally:
+        RecUI.import_xml = orig
+    assert len(again) == 10 and not set(again) & known

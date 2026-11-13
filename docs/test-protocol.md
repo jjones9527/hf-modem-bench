@@ -317,6 +317,13 @@ alone with `scripts/windows/hfbench_ui_do.ps1` and then as a whole. Results:
   restarted instance, Winlink's dialogs (Import, message boxes) appear as children
   of the main window, not as top-level windows. Dialog searches now look in both.
 
+### Modem settings that only matter on the air
+
+A busy-channel detector protects other stations. On the bench there are none, and at
+low IONOS noise ARDOP's detector false-triggered on the bench's own noise and blocked
+every call. **Run each modem with its busy detector off** (ARDOP: BusyDet = 0, set
+13 Nov 2026), and record the setting per modem in test-environment.md.
+
 ## 8. Metrics
 
 | Metric | Definition |

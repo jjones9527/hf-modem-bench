@@ -136,8 +136,11 @@ def run_results(row: dict, logs: dict[int, list[lp.Session]]) -> RunResult:
 
 
 def campaign_results(manifest_rows: list[dict], logs: dict[int, list[lp.Session]]) -> list[RunResult]:
+    """Only each run's final attempt counts: an earlier attempt that was later marked
+    invalid (bench fault) and re-run is not a result."""
     return [run_results(r, logs) for r in manifest_rows
-            if r.get("start_utc") and r.get("outcome") not in ("invalid", "")]
+            if r.get("start_utc") and r.get("outcome") not in ("invalid", "")
+            and r.get("final_attempt", "yes") == "yes"]
 
 
 def write_csvs(results: list[RunResult], out_dir: str | Path) -> tuple[Path, Path]:

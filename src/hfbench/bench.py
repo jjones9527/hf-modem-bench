@@ -395,6 +395,14 @@ class WinlinkAutomation:
                 paths[st].write_bytes(xml)
             self.ui[st].import_xml(str(paths[st].resolve()))
             got = self.ui[st].folder_mids("Outbox")
+            if not got and planned[st]:
+                # Winlink skips Message-IDs it already holds (e.g. a re-run after an
+                # earlier attempt was deleted): give this attempt fresh IDs.
+                xml, planned[st] = self.mg.instantiate(self.templates[st], run_id)
+                paths[st].write_bytes(xml)
+                self.say(f"station {st}: re-import with fresh Message-IDs (the earlier IDs were already known)")
+                self.ui[st].import_xml(str(paths[st].resolve()))
+                got = self.ui[st].folder_mids("Outbox")
             if sorted(got) != sorted(planned[st]):
                 raise AutomationError(f"station {st} Outbox after import has {len(got)} messages, "
                                       f"expected this run's {len(planned[st])}")

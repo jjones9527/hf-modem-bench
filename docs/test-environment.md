@@ -96,3 +96,11 @@ The tone check and the true-S:N measurement are in [bench-setup.md](bench-setup.
 - **Windows Time is stopped.** Every log and timestamp comes from this one machine, so the logs line up with each other regardless. The UTC timestamps can still drift from true UTC; it was about 0.5 s on 10 Nov.
 - **Balanced power plan.** CPU frequency scaling is unlikely to matter for these modems on a 6-core CPU. Record it, or switch to High performance for consistency.
 - **Audio-only bench.** There's no transmitter ALC or PA linearity, and no receiver AGC. See the limitations in [test-protocol.md](test-protocol.md).
+
+## ARDOP busy detector off (13 Nov 2026)
+
+Both ARDOP_Win TNCs run with **BusyDet = 0** (busy-channel detector off) from 13 Nov
+21:50 UTC; it was 5 (the default) before. With very little IONOS noise (WGN 40) the
+detector read the bench's own uneven noise as a busy channel and ARDOP never called
+(results log, sweep incident). There is no other station on the bench. Change it only
+with ARDOP closed: it rewrites its ini on exit (`scripts/windows/busydet_off.ps1`).
