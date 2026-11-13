@@ -833,11 +833,13 @@ the comparison.
 
 | IONOS | data S:N | mode | messages | delivered | failed | goodput per message (receiver) | net throughput |
 |---|---|---|---|---|---|---|---|
-| WGN 22 | 14.9 / 15.5 dB | 8PSK.2000 | 20 (two-way) | 20 | 0 | about 1,200–1,290 bit/s | about 1,100 bit/s |
-| WGN 28 | 17.9 / 18.4 dB | 16QAM.2000 | 57 (14 two-way, 43 one-way) | 52 | **5 (8.8%)**: 4 checksum, 1 hang | 1,510–1,563 bit/s | about 1,100–1,160 bit/s |
+| WGN 22 | 14.9 / 15.5 dB | 8PSK.2000 | 20 (two-way) | 20 | 0 | 1,248–1,282 bit/s (run medians) | 1,107 bit/s |
+| WGN 28 | 17.9 / 18.4 dB | 16QAM.2000 | 57 (14 two-way, 43 one-way) | 52 | **5 (8.8%)**: 4 checksum, 1 stall | 1,497–1,551 bit/s (run medians) | 1,066 (oneway28), 1,161 (oneway28r), 1,181 (cal7wgn28) bit/s |
 
 *Net throughput* = compressed bytes delivered × 8 ÷ total session time, failed
-sessions included (recovery time excluded). One-way WGN 28: oneway28 15 messages
+sessions included (recovery time excluded). Figures recomputed 13 Nov with
+`hfbench results`, which reads both stations' logs and takes goodput from the
+receiver. One-way WGN 28: oneway28 15 messages
 in 77 min ≈ 1,095 bit/s; oneway28r 24 in 116 min ≈ 1,160 bit/s. WGN 22 two-way: 20
 in 102 min ≈ 1,105 bit/s.
 
@@ -851,9 +853,10 @@ in 102 min ≈ 1,105 bit/s.
    (see the source analysis above), not a station or an adapter. The bench's own
    impairments only set how often there are symbol errors to miss.
 3. **Winlink's end-to-end check caught every corrupted message.** Each surfaced as
-   a checksum error or a stall, never as a bad message in the Inbox. That has only
-   been checked through the log, not by comparing delivered attachments with the
-   originals. That check is now in the plan.
+   a checksum error or a stall, never as a bad message in the Inbox. **Verified 13
+   Nov:** `hfbench results --verify` compared every delivered attachment at the
+   receiving station with the payload file. **72 of 72 identical** (cal7wgn22 20,
+   cal7wgn28 13, oneway28 15, oneway28r 24).
 4. **Bench ceiling:** with the Sabrent in the chain, the highest data S:N reachable
    is about 18–20 dB (bench floor 32 dB below the reference, 16QAM MER 17–22 dB).
    That is enough for ARDOP's top mode, but probably not for VARA HF's fastest levels (to be confirmed on the bench).

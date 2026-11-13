@@ -1,0 +1,355 @@
+2026/11/12 22:43:35 1.8.6.0 *** Message PVSSZIVX5U2J posted to Outbox
+2026/11/12 22:43:35 1.8.6.0 *** Message X4IR68VSR1AP posted to Outbox
+2026/11/12 22:43:35 1.8.6.0 *** Message TL9R5WJVJWYT posted to Outbox
+2026/11/12 22:43:35 1.8.6.0 *** Message V8M2UFGGWKJH posted to Outbox
+2026/11/12 22:43:35 1.8.6.0 *** Message 2R5XOP4RCVK0 posted to Outbox
+2026/11/12 22:43:35 1.8.6.0 *** Message EVH4XNTLPZJZ posted to Outbox
+2026/11/12 22:43:35 1.8.6.0 *** Message 29QHTWJBVUF2 posted to Outbox
+2026/11/12 22:43:35 1.8.6.0 *** Message V8R57MNHGRW3 posted to Outbox
+2026/11/12 22:43:35 1.8.6.0 *** Message JN2B5HDRH8N2 posted to Outbox
+2026/11/12 22:43:35 1.8.6.0 *** Message 2GL1XITVHHTT posted to Outbox
+2026/11/12 22:43:44 1.8.6.0 *** Ardop P2P *** Calling VA3ZTF
+2026/11/12 22:43:54 1.8.6.0 
+2026/11/12 22:43:54 1.8.6.0 *** Ardop P2P *** Connected to Peer: VA3ZTF @ 2026/11/12 22:43:54  USB Dial: 7098.500
+2026/11/12 22:44:01 1.8.6.0 *** Ardop P2P ;FW: VA3ZTF
+2026/11/12 22:44:01 1.8.6.0 *** Ardop P2P [RMS Express-1.8.6.0-B2FHM$]
+2026/11/12 22:44:01 1.8.6.0 *** Ardop P2P VE3XZQ DE VA3ZTF >
+2026/11/12 22:44:01 1.8.6.0 *** Ardop P2P    ;FW: VE3XZQ
+2026/11/12 22:44:01 1.8.6.0 *** Ardop P2P    [RMS Express-1.8.6.0-B2FHM$]
+2026/11/12 22:44:01 1.8.6.0 *** Ardop P2P    ; VA3ZTF DE VE3XZQ (AA00AA)
+2026/11/12 22:44:01 1.8.6.0 *** Ardop P2P    ;PM: VA3ZTF EVH4XNTLPZJZ 42093 VE3XZQ hfbench oneway28r-0001 6/10
+2026/11/12 22:44:01 1.8.6.0 *** Ardop P2P    ;PM: VA3ZTF V8M2UFGGWKJH 42119 VE3XZQ hfbench oneway28r-0001 4/10
+2026/11/12 22:44:01 1.8.6.0 *** Ardop P2P    ;PM: VA3ZTF 2GL1XITVHHTT 42151 VE3XZQ hfbench oneway28r-0001 10/10
+2026/11/12 22:44:01 1.8.6.0 *** Ardop P2P    ;PM: VA3ZTF X4IR68VSR1AP 42158 VE3XZQ hfbench oneway28r-0001 2/10
+2026/11/12 22:44:01 1.8.6.0 *** Ardop P2P    ;PM: VA3ZTF TL9R5WJVJWYT 42161 VE3XZQ hfbench oneway28r-0001 3/10
+2026/11/12 22:44:01 1.8.6.0 *** Ardop P2P    ;PM: VA3ZTF V8R57MNHGRW3 42162 VE3XZQ hfbench oneway28r-0001 8/10
+2026/11/12 22:44:01 1.8.6.0 *** Ardop P2P    ;PM: VA3ZTF JN2B5HDRH8N2 42163 VE3XZQ hfbench oneway28r-0001 9/10
+2026/11/12 22:44:01 1.8.6.0 *** Ardop P2P    ;PM: VA3ZTF PVSSZIVX5U2J 42195 VE3XZQ hfbench oneway28r-0001 1/10
+2026/11/12 22:44:01 1.8.6.0 *** Ardop P2P    ;PM: VA3ZTF 29QHTWJBVUF2 42196 VE3XZQ hfbench oneway28r-0001 7/10
+2026/11/12 22:44:01 1.8.6.0 *** Ardop P2P    ;PM: VA3ZTF 2R5XOP4RCVK0 42197 VE3XZQ hfbench oneway28r-0001 5/10
+2026/11/12 22:44:01 1.8.6.0 *** Ardop P2P    FC EM EVH4XNTLPZJZ 51412 42093 0
+2026/11/12 22:44:01 1.8.6.0 *** Ardop P2P    F> 5E
+2026/11/12 22:44:39 1.8.6.0 *** Ardop P2P FS Y
+2026/11/12 22:44:39 1.8.6.0 *** Ardop P2P *** Sending EVH4XNTLPZJZ.
+2026/11/12 22:48:39 1.8.6.0 *** Ardop P2P FF
+2026/11/12 22:48:39 1.8.6.0 *** Message EVH4XNTLPZJZ moved from Outbox to Sent Items
+2026/11/12 22:48:39 1.8.6.0 *** Ardop P2P *** Completed send of message EVH4XNTLPZJZ
+2026/11/12 22:48:39 1.8.6.0 *** Ardop P2P *** Sent 1 message.  Bytes: 42465,  Time: 03:59,  bytes/minute: 10617
+2026/11/12 22:48:39 1.8.6.0 *** Ardop P2P    FC EM V8M2UFGGWKJH 51412 42119 0
+2026/11/12 22:48:39 1.8.6.0 *** Ardop P2P    F> A0
+2026/11/12 22:49:00 1.8.6.0 *** Ardop P2P FS Y
+2026/11/12 22:49:00 1.8.6.0 *** Ardop P2P *** Sending V8M2UFGGWKJH.
+2026/11/12 22:53:01 1.8.6.0 *** Ardop P2P FF
+2026/11/12 22:53:01 1.8.6.0 *** Message V8M2UFGGWKJH moved from Outbox to Sent Items
+2026/11/12 22:53:01 1.8.6.0 *** Ardop P2P *** Completed send of message V8M2UFGGWKJH
+2026/11/12 22:53:01 1.8.6.0 *** Ardop P2P *** Sent 1 message.  Bytes: 42491,  Time: 04:01,  bytes/minute: 10574
+2026/11/12 22:53:01 1.8.6.0 *** Ardop P2P    FC EM 2GL1XITVHHTT 51413 42151 0
+2026/11/12 22:53:01 1.8.6.0 *** Ardop P2P    F> 94
+2026/11/12 22:53:22 1.8.6.0 *** Ardop P2P FS Y
+2026/11/12 22:53:22 1.8.6.0 *** Ardop P2P *** Sending 2GL1XITVHHTT.
+2026/11/12 22:57:28 1.8.6.0 *** Ardop P2P FF
+2026/11/12 22:57:28 1.8.6.0 *** Message 2GL1XITVHHTT moved from Outbox to Sent Items
+2026/11/12 22:57:28 1.8.6.0 *** Ardop P2P *** Completed send of message 2GL1XITVHHTT
+2026/11/12 22:57:28 1.8.6.0 *** Ardop P2P *** Sent 1 message.  Bytes: 42524,  Time: 04:05,  bytes/minute: 10388
+2026/11/12 22:57:28 1.8.6.0 *** Ardop P2P    FC EM X4IR68VSR1AP 51412 42158 0
+2026/11/12 22:57:28 1.8.6.0 *** Ardop P2P    F> B5
+2026/11/12 22:57:49 1.8.6.0 *** Ardop P2P FS Y
+2026/11/12 22:57:49 1.8.6.0 *** Ardop P2P *** Sending X4IR68VSR1AP.
+2026/11/12 23:01:44 1.8.6.0 *** Ardop P2P FF
+2026/11/12 23:01:44 1.8.6.0 *** Message X4IR68VSR1AP moved from Outbox to Sent Items
+2026/11/12 23:01:44 1.8.6.0 *** Ardop P2P *** Completed send of message X4IR68VSR1AP
+2026/11/12 23:01:44 1.8.6.0 *** Ardop P2P *** Sent 1 message.  Bytes: 42530,  Time: 03:55,  bytes/minute: 10853
+2026/11/12 23:01:44 1.8.6.0 *** Ardop P2P    FC EM TL9R5WJVJWYT 51412 42161 0
+2026/11/12 23:01:44 1.8.6.0 *** Ardop P2P    F> 68
+2026/11/12 23:02:05 1.8.6.0 *** Ardop P2P FS Y
+2026/11/12 23:02:05 1.8.6.0 *** Ardop P2P *** Sending TL9R5WJVJWYT.
+2026/11/12 23:06:20 1.8.6.0 *** Message JN2B5HDRH8N2 moved from Outbox to Deleted Items
+2026/11/12 23:06:20 1.8.6.0 *** Message V8R57MNHGRW3 moved from Outbox to Deleted Items
+2026/11/12 23:06:20 1.8.6.0 *** Message 29QHTWJBVUF2 moved from Outbox to Deleted Items
+2026/11/12 23:06:20 1.8.6.0 *** Message 2R5XOP4RCVK0 moved from Outbox to Deleted Items
+2026/11/12 23:06:20 1.8.6.0 *** Message TL9R5WJVJWYT moved from Outbox to Deleted Items
+2026/11/12 23:06:20 1.8.6.0 *** Message PVSSZIVX5U2J moved from Outbox to Deleted Items
+2026/11/12 23:06:37 1.8.6.0 ----  Winlink Express is closing  ----
+2026/11/12 23:06:50 1.8.6.0 
+2026/11/12 23:06:50 1.8.6.0 -----  Winlink Express version 1.8.6.0 starting  -----
+2026/11/12 23:06:50 1.8.6.0 *** SFI = 116 from https://services.swpc.noaa.gov/text/wwv.txt
+2026/11/12 23:07:15 1.8.6.0 *** Ardop P2P *** ARDOP peer-to-peer session
+2026/11/12 23:07:16 1.8.6.0 *** Ardop P2P *** No radio has been selected.
+2026/11/12 23:07:16 1.8.6.0 *** Ardop P2P *** Waiting for TNC to initialize...
+2026/11/12 23:07:24 1.8.6.0 *** Ardop P2P *** Ready to start calling.
+2026/11/12 23:10:42 1.8.6.0 *** Message G8M6AGUCXI4J posted to Outbox
+2026/11/12 23:10:42 1.8.6.0 *** Message U2X9MDJYGWZR posted to Outbox
+2026/11/12 23:10:42 1.8.6.0 *** Message UHXFB248GLHM posted to Outbox
+2026/11/12 23:10:42 1.8.6.0 *** Message SFNMVPA04AG2 posted to Outbox
+2026/11/12 23:10:42 1.8.6.0 *** Message 1GBX2HGNVY5D posted to Outbox
+2026/11/12 23:10:42 1.8.6.0 *** Message 9VVY9DA9B34T posted to Outbox
+2026/11/12 23:10:42 1.8.6.0 *** Message 1KD9LCI6GTDQ posted to Outbox
+2026/11/12 23:10:42 1.8.6.0 *** Message K0EQ11LNBM4V posted to Outbox
+2026/11/12 23:10:42 1.8.6.0 *** Message NLVF4VT7VXGT posted to Outbox
+2026/11/12 23:10:42 1.8.6.0 *** Message L4VMEJQ9E1S8 posted to Outbox
+2026/11/12 23:10:51 1.8.6.0 *** Ardop P2P *** Calling VA3ZTF
+2026/11/12 23:10:57 1.8.6.0 
+2026/11/12 23:10:57 1.8.6.0 *** Ardop P2P *** Connected to Peer: VA3ZTF @ 2026/11/12 23:10:57  USB Dial: 7098.500
+2026/11/12 23:11:04 1.8.6.0 *** Ardop P2P ;FW: VA3ZTF
+2026/11/12 23:11:04 1.8.6.0 *** Ardop P2P [RMS Express-1.8.6.0-B2FHM$]
+2026/11/12 23:11:04 1.8.6.0 *** Ardop P2P VE3XZQ DE VA3ZTF >
+2026/11/12 23:11:04 1.8.6.0 *** Ardop P2P    ;FW: VE3XZQ
+2026/11/12 23:11:04 1.8.6.0 *** Ardop P2P    [RMS Express-1.8.6.0-B2FHM$]
+2026/11/12 23:11:04 1.8.6.0 *** Ardop P2P    ; VA3ZTF DE VE3XZQ (AA00AA)
+2026/11/12 23:11:04 1.8.6.0 *** Ardop P2P    ;PM: VA3ZTF 9VVY9DA9B34T 42090 VE3XZQ hfbench oneway28r-0002 6/10
+2026/11/12 23:11:04 1.8.6.0 *** Ardop P2P    ;PM: VA3ZTF SFNMVPA04AG2 42123 VE3XZQ hfbench oneway28r-0002 4/10
+2026/11/12 23:11:04 1.8.6.0 *** Ardop P2P    ;PM: VA3ZTF L4VMEJQ9E1S8 42151 VE3XZQ hfbench oneway28r-0002 10/10
+2026/11/12 23:11:04 1.8.6.0 *** Ardop P2P    ;PM: VA3ZTF U2X9MDJYGWZR 42155 VE3XZQ hfbench oneway28r-0002 2/10
+2026/11/12 23:11:04 1.8.6.0 *** Ardop P2P    ;PM: VA3ZTF UHXFB248GLHM 42160 VE3XZQ hfbench oneway28r-0002 3/10
+2026/11/12 23:11:04 1.8.6.0 *** Ardop P2P    ;PM: VA3ZTF K0EQ11LNBM4V 42163 VE3XZQ hfbench oneway28r-0002 8/10
+2026/11/12 23:11:04 1.8.6.0 *** Ardop P2P    ;PM: VA3ZTF NLVF4VT7VXGT 42163 VE3XZQ hfbench oneway28r-0002 9/10
+2026/11/12 23:11:04 1.8.6.0 *** Ardop P2P    ;PM: VA3ZTF G8M6AGUCXI4J 42194 VE3XZQ hfbench oneway28r-0002 1/10
+2026/11/12 23:11:04 1.8.6.0 *** Ardop P2P    ;PM: VA3ZTF 1KD9LCI6GTDQ 42199 VE3XZQ hfbench oneway28r-0002 7/10
+2026/11/12 23:11:04 1.8.6.0 *** Ardop P2P    ;PM: VA3ZTF 1GBX2HGNVY5D 42202 VE3XZQ hfbench oneway28r-0002 5/10
+2026/11/12 23:11:04 1.8.6.0 *** Ardop P2P    FC EM 9VVY9DA9B34T 51412 42090 0
+2026/11/12 23:11:04 1.8.6.0 *** Ardop P2P    F> DA
+2026/11/12 23:11:53 1.8.6.0 *** Ardop P2P FS Y
+2026/11/12 23:11:53 1.8.6.0 *** Ardop P2P *** Sending 9VVY9DA9B34T.
+2026/11/12 23:16:05 1.8.6.0 *** Ardop P2P FF
+2026/11/12 23:16:05 1.8.6.0 *** Message 9VVY9DA9B34T moved from Outbox to Sent Items
+2026/11/12 23:16:05 1.8.6.0 *** Ardop P2P *** Completed send of message 9VVY9DA9B34T
+2026/11/12 23:16:05 1.8.6.0 *** Ardop P2P *** Sent 1 message.  Bytes: 42462,  Time: 04:12,  bytes/minute: 10089
+2026/11/12 23:16:05 1.8.6.0 *** Ardop P2P    FC EM SFNMVPA04AG2 51412 42123 0
+2026/11/12 23:16:05 1.8.6.0 *** Ardop P2P    F> D6
+2026/11/12 23:16:33 1.8.6.0 *** Ardop P2P FS Y
+2026/11/12 23:16:33 1.8.6.0 *** Ardop P2P *** Sending SFNMVPA04AG2.
+2026/11/12 23:20:30 1.8.6.0 *** Ardop P2P FF
+2026/11/12 23:20:30 1.8.6.0 *** Message SFNMVPA04AG2 moved from Outbox to Sent Items
+2026/11/12 23:20:30 1.8.6.0 *** Ardop P2P *** Completed send of message SFNMVPA04AG2
+2026/11/12 23:20:30 1.8.6.0 *** Ardop P2P *** Sent 1 message.  Bytes: 42495,  Time: 03:57,  bytes/minute: 10745
+2026/11/12 23:20:30 1.8.6.0 *** Ardop P2P    FC EM L4VMEJQ9E1S8 51413 42151 0
+2026/11/12 23:20:30 1.8.6.0 *** Ardop P2P    F> D0
+2026/11/12 23:20:51 1.8.6.0 *** Ardop P2P FS Y
+2026/11/12 23:20:51 1.8.6.0 *** Ardop P2P *** Sending L4VMEJQ9E1S8.
+2026/11/12 23:25:02 1.8.6.0 *** Ardop P2P FF
+2026/11/12 23:25:02 1.8.6.0 *** Message L4VMEJQ9E1S8 moved from Outbox to Sent Items
+2026/11/12 23:25:02 1.8.6.0 *** Ardop P2P *** Completed send of message L4VMEJQ9E1S8
+2026/11/12 23:25:02 1.8.6.0 *** Ardop P2P *** Sent 1 message.  Bytes: 42524,  Time: 04:10,  bytes/minute: 10197
+2026/11/12 23:25:02 1.8.6.0 *** Ardop P2P    FC EM U2X9MDJYGWZR 51412 42155 0
+2026/11/12 23:25:02 1.8.6.0 *** Ardop P2P    F> 74
+2026/11/12 23:25:16 1.8.6.0 *** Ardop P2P FS Y
+2026/11/12 23:25:16 1.8.6.0 *** Ardop P2P *** Sending U2X9MDJYGWZR.
+2026/11/12 23:29:11 1.8.6.0 *** Ardop P2P FF
+2026/11/12 23:29:11 1.8.6.0 *** Message U2X9MDJYGWZR moved from Outbox to Sent Items
+2026/11/12 23:29:11 1.8.6.0 *** Ardop P2P *** Completed send of message U2X9MDJYGWZR
+2026/11/12 23:29:11 1.8.6.0 *** Ardop P2P *** Sent 1 message.  Bytes: 42527,  Time: 03:54,  bytes/minute: 10861
+2026/11/12 23:29:11 1.8.6.0 *** Ardop P2P    FC EM UHXFB248GLHM 51412 42160 0
+2026/11/12 23:29:11 1.8.6.0 *** Ardop P2P    F> CB
+2026/11/12 23:29:32 1.8.6.0 *** Ardop P2P FS Y
+2026/11/12 23:29:32 1.8.6.0 *** Ardop P2P *** Sending UHXFB248GLHM.
+2026/11/12 23:33:37 1.8.6.0 *** Ardop P2P FF
+2026/11/12 23:33:37 1.8.6.0 *** Message UHXFB248GLHM moved from Outbox to Sent Items
+2026/11/12 23:33:37 1.8.6.0 *** Ardop P2P *** Completed send of message UHXFB248GLHM
+2026/11/12 23:33:37 1.8.6.0 *** Ardop P2P *** Sent 1 message.  Bytes: 42532,  Time: 04:05,  bytes/minute: 10394
+2026/11/12 23:33:37 1.8.6.0 *** Ardop P2P    FC EM K0EQ11LNBM4V 51412 42163 0
+2026/11/12 23:33:37 1.8.6.0 *** Ardop P2P    F> E5
+2026/11/12 23:33:59 1.8.6.0 *** Ardop P2P FS Y
+2026/11/12 23:33:59 1.8.6.0 *** Ardop P2P *** Sending K0EQ11LNBM4V.
+2026/11/12 23:38:00 1.8.6.0 *** Ardop P2P FF
+2026/11/12 23:38:00 1.8.6.0 *** Message K0EQ11LNBM4V moved from Outbox to Sent Items
+2026/11/12 23:38:00 1.8.6.0 *** Ardop P2P *** Completed send of message K0EQ11LNBM4V
+2026/11/12 23:38:00 1.8.6.0 *** Ardop P2P *** Sent 1 message.  Bytes: 42535,  Time: 04:01,  bytes/minute: 10557
+2026/11/12 23:38:00 1.8.6.0 *** Ardop P2P    FC EM NLVF4VT7VXGT 51412 42163 0
+2026/11/12 23:38:00 1.8.6.0 *** Ardop P2P    F> 77
+2026/11/12 23:38:21 1.8.6.0 *** Ardop P2P FS Y
+2026/11/12 23:38:21 1.8.6.0 *** Ardop P2P *** Sending NLVF4VT7VXGT.
+2026/11/12 23:42:24 1.8.6.0 *** Ardop P2P FF
+2026/11/12 23:42:24 1.8.6.0 *** Message NLVF4VT7VXGT moved from Outbox to Sent Items
+2026/11/12 23:42:24 1.8.6.0 *** Ardop P2P *** Completed send of message NLVF4VT7VXGT
+2026/11/12 23:42:24 1.8.6.0 *** Ardop P2P *** Sent 1 message.  Bytes: 42535,  Time: 04:03,  bytes/minute: 10501
+2026/11/12 23:42:24 1.8.6.0 *** Ardop P2P    FC EM G8M6AGUCXI4J 51412 42194 0
+2026/11/12 23:42:24 1.8.6.0 *** Ardop P2P    F> C6
+2026/11/12 23:42:46 1.8.6.0 *** Ardop P2P FS Y
+2026/11/12 23:42:46 1.8.6.0 *** Ardop P2P *** Sending G8M6AGUCXI4J.
+2026/11/12 23:46:42 1.8.6.0 *** Ardop P2P FF
+2026/11/12 23:46:42 1.8.6.0 *** Message G8M6AGUCXI4J moved from Outbox to Sent Items
+2026/11/12 23:46:42 1.8.6.0 *** Ardop P2P *** Completed send of message G8M6AGUCXI4J
+2026/11/12 23:46:42 1.8.6.0 *** Ardop P2P *** Sent 1 message.  Bytes: 42566,  Time: 03:56,  bytes/minute: 10804
+2026/11/12 23:46:42 1.8.6.0 *** Ardop P2P    FC EM 1KD9LCI6GTDQ 51412 42199 0
+2026/11/12 23:46:42 1.8.6.0 *** Ardop P2P    F> CB
+2026/11/12 23:47:03 1.8.6.0 *** Ardop P2P FS Y
+2026/11/12 23:47:03 1.8.6.0 *** Ardop P2P *** Sending 1KD9LCI6GTDQ.
+2026/11/12 23:51:14 1.8.6.0 *** Ardop P2P FF
+2026/11/12 23:51:14 1.8.6.0 *** Message 1KD9LCI6GTDQ moved from Outbox to Sent Items
+2026/11/12 23:51:14 1.8.6.0 *** Ardop P2P *** Completed send of message 1KD9LCI6GTDQ
+2026/11/12 23:51:14 1.8.6.0 *** Ardop P2P *** Sent 1 message.  Bytes: 42571,  Time: 04:10,  bytes/minute: 10192
+2026/11/12 23:51:14 1.8.6.0 *** Ardop P2P    FC EM 1GBX2HGNVY5D 51412 42202 0
+2026/11/12 23:51:14 1.8.6.0 *** Ardop P2P    F> C8
+2026/11/12 23:51:35 1.8.6.0 *** Ardop P2P FS Y
+2026/11/12 23:51:35 1.8.6.0 *** Ardop P2P *** Sending 1GBX2HGNVY5D.
+2026/11/12 23:55:29 1.8.6.0 *** Ardop P2P FF
+2026/11/12 23:55:29 1.8.6.0 *** Message 1GBX2HGNVY5D moved from Outbox to Sent Items
+2026/11/12 23:55:29 1.8.6.0 *** Ardop P2P *** Completed send of message 1GBX2HGNVY5D
+2026/11/12 23:55:29 1.8.6.0 *** Ardop P2P *** Sent 1 message.  Bytes: 42574,  Time: 03:54,  bytes/minute: 10896
+2026/11/12 23:55:29 1.8.6.0 *** Ardop P2P    FQ
+2026/11/12 23:55:34 1.8.6.0 *** Ardop P2P *** --- End of session with VA3ZTF at 2026/11/12 23:55:34 ---
+2026/11/12 23:55:34 1.8.6.0 *** Ardop P2P *** Messages sent: 10.  Total bytes sent: 425321,  Time: 44:36,  bytes/minute: 9536
+2026/11/12 23:55:34 1.8.6.0 *** Ardop P2P *** Messages Received: 0.  Total bytes received: 0,  Total session time: 44:36,  bytes/minute: 0
+2026/11/12 23:55:34 1.8.6.0 *** Ardop P2P *** Disconnecting
+2026/11/12 23:55:52 1.8.6.0 *** Ardop P2P *** Disconnected from Peer: VA3ZTF @ 2026/11/12 23:55:52
+2026/11/12 23:55:53 1.8.6.0 *** Ardop P2P *** Session: 44.9 min;  Avg Throughput: 52272 Bytes/min;   1 Min Peak Throughput: 52272 Bytes/min
+2026/11/12 23:59:05 1.8.6.0 *** Message E6UC3JDW767C posted to Outbox
+2026/11/12 23:59:05 1.8.6.0 *** Message R30FEI21EJUE posted to Outbox
+2026/11/12 23:59:05 1.8.6.0 *** Message 7XQFBKZFRM1F posted to Outbox
+2026/11/12 23:59:05 1.8.6.0 *** Message LD5R88E8LVG3 posted to Outbox
+2026/11/12 23:59:05 1.8.6.0 *** Message U185CP1WDYMD posted to Outbox
+2026/11/12 23:59:05 1.8.6.0 *** Message 697OUUYZHTAB posted to Outbox
+2026/11/12 23:59:05 1.8.6.0 *** Message MCZAMU2W3TRT posted to Outbox
+2026/11/12 23:59:05 1.8.6.0 *** Message JM327K8C92IP posted to Outbox
+2026/11/12 23:59:05 1.8.6.0 *** Message 9UIUB6PZILUV posted to Outbox
+2026/11/12 23:59:05 1.8.6.0 *** Message 5XOTHDTY3KDD posted to Outbox
+2026/11/12 23:59:14 1.8.6.0 *** Ardop P2P *** Calling VA3ZTF
+2026/11/12 23:59:20 1.8.6.0 
+2026/11/12 23:59:20 1.8.6.0 *** Ardop P2P *** Connected to Peer: VA3ZTF @ 2026/11/12 23:59:20  USB Dial: 7098.500
+2026/11/12 23:59:33 1.8.6.0 *** Ardop P2P ;FW: VA3ZTF
+2026/11/12 23:59:33 1.8.6.0 *** Ardop P2P [RMS Express-1.8.6.0-B2FHM$]
+2026/11/12 23:59:33 1.8.6.0 *** Ardop P2P VE3XZQ DE VA3ZTF >
+2026/11/12 23:59:33 1.8.6.0 *** Ardop P2P    ;FW: VE3XZQ
+2026/11/12 23:59:33 1.8.6.0 *** Ardop P2P    [RMS Express-1.8.6.0-B2FHM$]
+2026/11/12 23:59:33 1.8.6.0 *** Ardop P2P    ; VA3ZTF DE VE3XZQ (AA00AA)
+2026/11/12 23:59:33 1.8.6.0 *** Ardop P2P    FC EM 697OUUYZHTAB 51412 42093 0
+2026/11/12 23:59:33 1.8.6.0 *** Ardop P2P    F> 98
+2026/11/12 23:59:54 1.8.6.0 *** Ardop P2P FS Y
+2026/11/12 23:59:54 1.8.6.0 *** Ardop P2P *** Sending 697OUUYZHTAB.
+2026/11/13 00:04:11 1.8.6.0 *** Ardop P2P *** Disconnected from Peer: VA3ZTF @ 2026/11/13 00:04:11
+2026/11/13 00:04:11 1.8.6.0 *** Ardop P2P *** Session: 4.8 min;  Avg Throughput: 96835 Bytes/min;   1 Min Peak Throughput: 96835 Bytes/min
+2026/11/13 00:04:11 1.8.6.0 *** Invalid client grid square for VA3ZTF. No session record reported. Gridsquare =  Error: Error: The grid square is missing
+2026/11/13 00:04:26 1.8.6.0 *** Message 5XOTHDTY3KDD moved from Outbox to Deleted Items
+2026/11/13 00:04:26 1.8.6.0 *** Message 9UIUB6PZILUV moved from Outbox to Deleted Items
+2026/11/13 00:04:26 1.8.6.0 *** Message JM327K8C92IP moved from Outbox to Deleted Items
+2026/11/13 00:04:26 1.8.6.0 *** Message MCZAMU2W3TRT moved from Outbox to Deleted Items
+2026/11/13 00:04:26 1.8.6.0 *** Message 697OUUYZHTAB moved from Outbox to Deleted Items
+2026/11/13 00:04:26 1.8.6.0 *** Message U185CP1WDYMD moved from Outbox to Deleted Items
+2026/11/13 00:04:26 1.8.6.0 *** Message LD5R88E8LVG3 moved from Outbox to Deleted Items
+2026/11/13 00:04:26 1.8.6.0 *** Message 7XQFBKZFRM1F moved from Outbox to Deleted Items
+2026/11/13 00:04:26 1.8.6.0 *** Message R30FEI21EJUE moved from Outbox to Deleted Items
+2026/11/13 00:04:26 1.8.6.0 *** Message E6UC3JDW767C moved from Outbox to Deleted Items
+2026/11/13 00:04:42 1.8.6.0 ----  Winlink Express is closing  ----
+2026/11/13 00:04:56 1.8.6.0 
+2026/11/13 00:04:56 1.8.6.0 -----  Winlink Express version 1.8.6.0 starting  -----
+2026/11/13 00:04:56 1.8.6.0 *** SFI = 116 from https://services.swpc.noaa.gov/text/wwv.txt
+2026/11/13 00:05:21 1.8.6.0 *** Ardop P2P *** ARDOP peer-to-peer session
+2026/11/13 00:05:21 1.8.6.0 *** Ardop P2P *** No radio has been selected.
+2026/11/13 00:05:21 1.8.6.0 *** Ardop P2P *** Waiting for TNC to initialize...
+2026/11/13 00:05:29 1.8.6.0 *** Ardop P2P *** Ready to start calling.
+2026/11/13 00:08:47 1.8.6.0 *** Message BIOJ51JVUPB5 posted to Outbox
+2026/11/13 00:08:47 1.8.6.0 *** Message Q5JQ1N9ILCA4 posted to Outbox
+2026/11/13 00:08:47 1.8.6.0 *** Message MQW7J6HIDWZ8 posted to Outbox
+2026/11/13 00:08:47 1.8.6.0 *** Message 9DQWI6VZ4KF5 posted to Outbox
+2026/11/13 00:08:47 1.8.6.0 *** Message XQN9GXSKHSL8 posted to Outbox
+2026/11/13 00:08:47 1.8.6.0 *** Message 7PF8G7HB2JHC posted to Outbox
+2026/11/13 00:08:47 1.8.6.0 *** Message NZ0ZMDOP17KV posted to Outbox
+2026/11/13 00:08:47 1.8.6.0 *** Message GIV8GU0UG8FM posted to Outbox
+2026/11/13 00:08:47 1.8.6.0 *** Message 2Z4AGL46WH7V posted to Outbox
+2026/11/13 00:08:47 1.8.6.0 *** Message C17ZMS8IALXV posted to Outbox
+2026/11/13 00:08:56 1.8.6.0 *** Ardop P2P *** Calling VA3ZTF
+2026/11/13 00:09:03 1.8.6.0 
+2026/11/13 00:09:03 1.8.6.0 *** Ardop P2P *** Connected to Peer: VA3ZTF @ 2026/11/13 00:09:03  USB Dial: 7098.500
+2026/11/13 00:09:15 1.8.6.0 *** Ardop P2P ;FW: VA3ZTF
+2026/11/13 00:09:15 1.8.6.0 *** Ardop P2P [RMS Express-1.8.6.0-B2FHM$]
+2026/11/13 00:09:15 1.8.6.0 *** Ardop P2P VE3XZQ DE VA3ZTF >
+2026/11/13 00:09:15 1.8.6.0 *** Ardop P2P    ;FW: VE3XZQ
+2026/11/13 00:09:15 1.8.6.0 *** Ardop P2P    [RMS Express-1.8.6.0-B2FHM$]
+2026/11/13 00:09:15 1.8.6.0 *** Ardop P2P    ; VA3ZTF DE VE3XZQ (AA00AA)
+2026/11/13 00:09:15 1.8.6.0 *** Ardop P2P    ;PM: VA3ZTF 7PF8G7HB2JHC 42092 VE3XZQ hfbench oneway28r-0004 6/10
+2026/11/13 00:09:15 1.8.6.0 *** Ardop P2P    ;PM: VA3ZTF 9DQWI6VZ4KF5 42119 VE3XZQ hfbench oneway28r-0004 4/10
+2026/11/13 00:09:15 1.8.6.0 *** Ardop P2P    ;PM: VA3ZTF Q5JQ1N9ILCA4 42153 VE3XZQ hfbench oneway28r-0004 2/10
+2026/11/13 00:09:15 1.8.6.0 *** Ardop P2P    ;PM: VA3ZTF C17ZMS8IALXV 42152 VE3XZQ hfbench oneway28r-0004 10/10
+2026/11/13 00:09:16 1.8.6.0 *** Ardop P2P    ;PM: VA3ZTF MQW7J6HIDWZ8 42162 VE3XZQ hfbench oneway28r-0004 3/10
+2026/11/13 00:09:16 1.8.6.0 *** Ardop P2P    ;PM: VA3ZTF 2Z4AGL46WH7V 42163 VE3XZQ hfbench oneway28r-0004 9/10
+2026/11/13 00:09:16 1.8.6.0 *** Ardop P2P    ;PM: VA3ZTF GIV8GU0UG8FM 42166 VE3XZQ hfbench oneway28r-0004 8/10
+2026/11/13 00:09:16 1.8.6.0 *** Ardop P2P    ;PM: VA3ZTF NZ0ZMDOP17KV 42194 VE3XZQ hfbench oneway28r-0004 7/10
+2026/11/13 00:09:16 1.8.6.0 *** Ardop P2P    ;PM: VA3ZTF BIOJ51JVUPB5 42196 VE3XZQ hfbench oneway28r-0004 1/10
+2026/11/13 00:09:16 1.8.6.0 *** Ardop P2P    ;PM: VA3ZTF XQN9GXSKHSL8 42201 VE3XZQ hfbench oneway28r-0004 5/10
+2026/11/13 00:09:16 1.8.6.0 *** Ardop P2P    FC EM 7PF8G7HB2JHC 51412 42092 0
+2026/11/13 00:09:16 1.8.6.0 *** Ardop P2P    F> F6
+2026/11/13 00:09:51 1.8.6.0 *** Ardop P2P FS Y
+2026/11/13 00:09:51 1.8.6.0 *** Ardop P2P *** Sending 7PF8G7HB2JHC.
+2026/11/13 00:14:11 1.8.6.0 *** Ardop P2P FF
+2026/11/13 00:14:11 1.8.6.0 *** Message 7PF8G7HB2JHC moved from Outbox to Sent Items
+2026/11/13 00:14:11 1.8.6.0 *** Ardop P2P *** Completed send of message 7PF8G7HB2JHC
+2026/11/13 00:14:11 1.8.6.0 *** Ardop P2P *** Sent 1 message.  Bytes: 42464,  Time: 04:19,  bytes/minute: 9814
+2026/11/13 00:14:11 1.8.6.0 *** Ardop P2P    FC EM 9DQWI6VZ4KF5 51412 42119 0
+2026/11/13 00:14:11 1.8.6.0 *** Ardop P2P    F> BC
+2026/11/13 00:14:25 1.8.6.0 *** Ardop P2P FS Y
+2026/11/13 00:14:25 1.8.6.0 *** Ardop P2P *** Sending 9DQWI6VZ4KF5.
+2026/11/13 00:18:22 1.8.6.0 *** Ardop P2P FF
+2026/11/13 00:18:22 1.8.6.0 *** Message 9DQWI6VZ4KF5 moved from Outbox to Sent Items
+2026/11/13 00:18:22 1.8.6.0 *** Ardop P2P *** Completed send of message 9DQWI6VZ4KF5
+2026/11/13 00:18:22 1.8.6.0 *** Ardop P2P *** Sent 1 message.  Bytes: 42491,  Time: 03:56,  bytes/minute: 10771
+2026/11/13 00:18:22 1.8.6.0 *** Ardop P2P    FC EM Q5JQ1N9ILCA4 51412 42153 0
+2026/11/13 00:18:22 1.8.6.0 *** Ardop P2P    F> E6
+2026/11/13 00:18:36 1.8.6.0 *** Ardop P2P FS Y
+2026/11/13 00:18:36 1.8.6.0 *** Ardop P2P *** Sending Q5JQ1N9ILCA4.
+2026/11/13 00:22:47 1.8.6.0 *** Ardop P2P FF
+2026/11/13 00:22:47 1.8.6.0 *** Message Q5JQ1N9ILCA4 moved from Outbox to Sent Items
+2026/11/13 00:22:47 1.8.6.0 *** Ardop P2P *** Completed send of message Q5JQ1N9ILCA4
+2026/11/13 00:22:47 1.8.6.0 *** Ardop P2P *** Sent 1 message.  Bytes: 42525,  Time: 04:10,  bytes/minute: 10171
+2026/11/13 00:22:47 1.8.6.0 *** Ardop P2P    FC EM C17ZMS8IALXV 51413 42152 0
+2026/11/13 00:22:47 1.8.6.0 *** Ardop P2P    F> AB
+2026/11/13 00:23:02 1.8.6.0 *** Ardop P2P FS Y
+2026/11/13 00:23:02 1.8.6.0 *** Ardop P2P *** Sending C17ZMS8IALXV.
+2026/11/13 00:27:03 1.8.6.0 *** Ardop P2P FF
+2026/11/13 00:27:03 1.8.6.0 *** Message C17ZMS8IALXV moved from Outbox to Sent Items
+2026/11/13 00:27:03 1.8.6.0 *** Ardop P2P *** Completed send of message C17ZMS8IALXV
+2026/11/13 00:27:03 1.8.6.0 *** Ardop P2P *** Sent 1 message.  Bytes: 42525,  Time: 04:01,  bytes/minute: 10585
+2026/11/13 00:27:03 1.8.6.0 *** Ardop P2P    FC EM MQW7J6HIDWZ8 51412 42162 0
+2026/11/13 00:27:03 1.8.6.0 *** Ardop P2P    F> A2
+2026/11/13 00:27:24 1.8.6.0 *** Ardop P2P FS Y
+2026/11/13 00:27:24 1.8.6.0 *** Ardop P2P *** Sending MQW7J6HIDWZ8.
+2026/11/13 00:31:22 1.8.6.0 *** Ardop P2P FF
+2026/11/13 00:31:22 1.8.6.0 *** Message MQW7J6HIDWZ8 moved from Outbox to Sent Items
+2026/11/13 00:31:22 1.8.6.0 *** Ardop P2P *** Completed send of message MQW7J6HIDWZ8
+2026/11/13 00:31:22 1.8.6.0 *** Ardop P2P *** Sent 1 message.  Bytes: 42534,  Time: 03:58,  bytes/minute: 10713
+2026/11/13 00:31:22 1.8.6.0 *** Ardop P2P    FC EM 2Z4AGL46WH7V 51412 42163 0
+2026/11/13 00:31:22 1.8.6.0 *** Ardop P2P    F> E1
+2026/11/13 00:31:37 1.8.6.0 *** Ardop P2P FS Y
+2026/11/13 00:31:37 1.8.6.0 *** Ardop P2P *** Sending 2Z4AGL46WH7V.
+2026/11/13 00:35:32 1.8.6.0 *** Ardop P2P FF
+2026/11/13 00:35:32 1.8.6.0 *** Message 2Z4AGL46WH7V moved from Outbox to Sent Items
+2026/11/13 00:35:32 1.8.6.0 *** Ardop P2P *** Completed send of message 2Z4AGL46WH7V
+2026/11/13 00:35:32 1.8.6.0 *** Ardop P2P *** Sent 1 message.  Bytes: 42535,  Time: 03:54,  bytes/minute: 10862
+2026/11/13 00:35:32 1.8.6.0 *** Ardop P2P    FC EM GIV8GU0UG8FM 51412 42166 0
+2026/11/13 00:35:32 1.8.6.0 *** Ardop P2P    F> B7
+2026/11/13 00:35:53 1.8.6.0 *** Ardop P2P FS Y
+2026/11/13 00:35:53 1.8.6.0 *** Ardop P2P *** Sending GIV8GU0UG8FM.
+2026/11/13 00:39:50 1.8.6.0 *** Ardop P2P FF
+2026/11/13 00:39:50 1.8.6.0 *** Message GIV8GU0UG8FM moved from Outbox to Sent Items
+2026/11/13 00:39:50 1.8.6.0 *** Ardop P2P *** Completed send of message GIV8GU0UG8FM
+2026/11/13 00:39:50 1.8.6.0 *** Ardop P2P *** Sent 1 message.  Bytes: 42538,  Time: 03:57,  bytes/minute: 10760
+2026/11/13 00:39:50 1.8.6.0 *** Ardop P2P    FC EM NZ0ZMDOP17KV 51412 42194 0
+2026/11/13 00:39:50 1.8.6.0 *** Ardop P2P    F> 9C
+2026/11/13 00:40:18 1.8.6.0 *** Ardop P2P FS Y
+2026/11/13 00:40:18 1.8.6.0 *** Ardop P2P *** Sending NZ0ZMDOP17KV.
+2026/11/13 00:44:14 1.8.6.0 *** Ardop P2P FF
+2026/11/13 00:44:14 1.8.6.0 *** Message NZ0ZMDOP17KV moved from Outbox to Sent Items
+2026/11/13 00:44:14 1.8.6.0 *** Ardop P2P *** Completed send of message NZ0ZMDOP17KV
+2026/11/13 00:44:14 1.8.6.0 *** Ardop P2P *** Sent 1 message.  Bytes: 42566,  Time: 03:56,  bytes/minute: 10822
+2026/11/13 00:44:14 1.8.6.0 *** Ardop P2P    FC EM BIOJ51JVUPB5 51412 42196 0
+2026/11/13 00:44:14 1.8.6.0 *** Ardop P2P    F> BF
+2026/11/13 00:44:42 1.8.6.0 *** Ardop P2P FS Y
+2026/11/13 00:44:42 1.8.6.0 *** Ardop P2P *** Sending BIOJ51JVUPB5.
+2026/11/13 00:48:43 1.8.6.0 *** Ardop P2P FF
+2026/11/13 00:48:43 1.8.6.0 *** Message BIOJ51JVUPB5 moved from Outbox to Sent Items
+2026/11/13 00:48:43 1.8.6.0 *** Ardop P2P *** Completed send of message BIOJ51JVUPB5
+2026/11/13 00:48:43 1.8.6.0 *** Ardop P2P *** Sent 1 message.  Bytes: 42568,  Time: 04:01,  bytes/minute: 10589
+2026/11/13 00:48:43 1.8.6.0 *** Ardop P2P    FC EM XQN9GXSKHSL8 51412 42201 0
+2026/11/13 00:48:43 1.8.6.0 *** Ardop P2P    F> 86
+2026/11/13 00:48:57 1.8.6.0 *** Ardop P2P FS Y
+2026/11/13 00:48:57 1.8.6.0 *** Ardop P2P *** Sending XQN9GXSKHSL8.
+2026/11/13 00:52:53 1.8.6.0 *** Ardop P2P FF
+2026/11/13 00:52:53 1.8.6.0 *** Message XQN9GXSKHSL8 moved from Outbox to Sent Items
+2026/11/13 00:52:53 1.8.6.0 *** Ardop P2P *** Completed send of message XQN9GXSKHSL8
+2026/11/13 00:52:54 1.8.6.0 *** Ardop P2P *** Sent 1 message.  Bytes: 42573,  Time: 03:56,  bytes/minute: 10805
+2026/11/13 00:52:54 1.8.6.0 *** Ardop P2P    FQ
+2026/11/13 00:52:58 1.8.6.0 *** Ardop P2P *** --- End of session with VA3ZTF at 2026/11/13 00:52:58 ---
+2026/11/13 00:52:58 1.8.6.0 *** Ardop P2P *** Messages sent: 10.  Total bytes sent: 425319,  Time: 43:55,  bytes/minute: 9684
+2026/11/13 00:52:58 1.8.6.0 *** Ardop P2P *** Messages Received: 0.  Total bytes received: 0,  Total session time: 43:55,  bytes/minute: 0
+2026/11/13 00:52:58 1.8.6.0 *** Ardop P2P *** Disconnecting
+2026/11/13 00:53:10 1.8.6.0 *** Ardop P2P *** Disconnected from Peer: VA3ZTF @ 2026/11/13 00:53:10
+2026/11/13 00:53:10 1.8.6.0 *** Ardop P2P *** Session: 44.1 min;  Avg Throughput: 53212 Bytes/min;   1 Min Peak Throughput: 53212 Bytes/min

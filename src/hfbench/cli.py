@@ -116,6 +116,37 @@ def cmd_manifest(args):
     print(f"wrote {len(man)} attempts to {out}")
 
 
+def _winlink_log_files(where: str) -> list[Path]:
+    """Winlink daily session logs from an install folder (<install>/<CALL>/Logs) or
+    from a folder of copied logs (e.g. logs/archive/winlink/station1)."""
+    p = Path(where)
+    files = sorted(p.glob("*/Logs/RMS Express [0-9]*.log")) or sorted(p.glob("RMS Express [0-9]*.log"))
+    if not files:
+        sys.exit(f"error: no 'RMS Express YYYYMMDD.log' files under {where}")
+    return files
+
+
+def cmd_results(args):
+    from . import results as rs
+
+    d = _campaign_dir(args)
+    man = mf.build_manifest(mx.read_runsheet(d / RUNSHEET), mf.read_events(d / EVENTS))
+    logs = {}
+    for st, where in ((1, args.s1), (2, args.s2)):
+        lines = []
+        for f in _winlink_log_files(where):
+            lines += lp.read_text(f)
+        logs[st] = lp.parse_winlink_log(lines)
+    res = rs.campaign_results(man, logs)
+    if args.verify:
+        from .bench import install_callsign
+        dirs = {st: Path(where) / install_callsign(where) / "Messages" for st, where in ((1, args.s1), (2, args.s2))}
+        rs.verify_attachments(res, dirs, args.verify)
+    mp, rp = rs.write_csvs(res, Path(args.out) if args.out else d)
+    print(rs.format_summary(res))
+    print(f"\nwrote {mp} and {rp}")
+
+
 def cmd_parse(args):
     sessions = []
     for p in args.winlink_log:
@@ -456,6 +487,15 @@ def build_parser() -> argparse.ArgumentParser:
     s = with_dir(sub.add_parser("manifest", help="build manifest.csv from run sheet + events"))
     s.add_argument("-o", "--out")
     s.set_defaults(func=cmd_manifest)
+
+    s = with_dir(sub.add_parser("results", help="per-message and per-run results from both stations' Winlink logs"))
+    s.add_argument("--s1", default=r"C:\RMS Express", help="station 1 install, or a folder of its copied logs")
+    s.add_argument("--s2", default=r"C:\RMS Express 2", help="station 2 install, or a folder of its copied logs")
+    s.add_argument("-o", "--out", help="output folder for messages.csv and runs.csv (default: the campaign folder)")
+    s.add_argument("--verify", metavar="PAYLOAD_DIR",
+                   help="compare every delivered attachment (receiver's <MID>.mime) with this payload set; "
+                        "needs --s1/--s2 to be the Winlink installs")
+    s.set_defaults(func=cmd_results)
 
     s = sub.add_parser("parse", help="parse Winlink Express (and ARDOP) logs to sessions/transfers CSV")
     s.add_argument("winlink_log", nargs="+", help="RMS Express YYYYMMDD.log file(s)")
