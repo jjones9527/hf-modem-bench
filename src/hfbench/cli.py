@@ -300,6 +300,45 @@ def _save_raw_qam(path, results):
     np.savez_compressed(path, **arrs)
 
 
+def _listen_per_run(audio, series, ptt, campaign: Path, energy_sender: int | None) -> None:
+    """Measured S:N for every run of a campaign, each over its own time window and
+    against its own IONOS setting (a sweep mixes settings in one recording).
+
+    Transmissions are found from the audio energy (any modem); in a one-way run the
+    long bursts are the sender's data. Where ARDOP's PTT log is in the recording it
+    is shown as a cross-check. ARDOP's PTT record can have gaps (oneway28r-0003,
+    around midnight, made its noise floor read 18 dB high), so energy is the default."""
+    from datetime import datetime
+
+    man = mf.build_manifest(mx.read_runsheet(campaign / RUNSHEET), mf.read_events(campaign / EVENTS))
+    print(f"{'run':<22} {'setting':>7} {'payload':<10} {'data S:N (n)':>15} {'control S:N':>12} {'ARDOP-PTT data':>15}")
+    for r in man:
+        if not r.get("end_utc"):
+            continue
+        a = datetime.fromisoformat(r["start_utc"]).timestamp()
+        b = datetime.fromisoformat(r["end_utc"]).timestamp()
+        ser = {k: [x for x in v if a <= x[0] < b] for k, v in series.items()}
+        if not any(ser.values()):
+            print(f"{r['run_id']:<22} {r['snr_db']:>7} {r['payload_file']:<10} {'not recorded':>15}")
+            continue
+        sender = energy_sender or 2
+        e = audio.analyze_listen(ser, audio.ptt_one_way(audio.bursts_from_energy(ser.get(3 - sender, [])),
+                                                        sender=sender), float(r["snr_db"]))
+        def pick(res, kind, snd=None):
+            ds = [d for d in res["directions"] if d["kind"] == kind and (snd is None or d["sender"] == snd)]
+            return max(ds, key=lambda d: d["n"]) if ds else None
+        cell = lambda d: f"{d['snr_median_db']:.1f} dB ({d['n']})" if d else "none"
+        p = {k: [x for x in v if a <= x[0] and x[1] < b] for k, v in ptt.items()}
+        cross = ""
+        if any(p.values()):
+            d = pick(audio.analyze_listen(ser, p, float(r["snr_db"])), "data", sender)
+            cross = cell(d)
+        ctl = pick(e, "control")
+        ctl_txt = f"{ctl['snr_median_db']:.1f} dB" if ctl else "none"
+        print(f"{r['run_id']:<22} {r['snr_db']:>7} {r['payload_file']:<10} {cell(pick(e, 'data', sender)):>15} "
+              f"{ctl_txt:>12} {cross:>15}")
+
+
 def cmd_audio(args):
     import json
 
@@ -334,9 +373,28 @@ def cmd_audio(args):
             if args.json:
                 Path(args.json).write_text(json.dumps(saved))
         else:
-            saved = json.loads(Path(args.json_in).read_text())
-        series = {int(k): [tuple(x) for x in v] for k, v in saved["series"].items()}
-        ptt = {int(k): [tuple(x) for x in v] for k, v in saved["ptt"].items()}
+            saved = {"series": {}, "ptt": {}, "setting_snr": None}
+            for f in args.json_in:                 # several back-to-back recordings are merged
+                one = json.loads(Path(f).read_text())
+                for key in ("series", "ptt"):
+                    for k, v in one[key].items():
+                        saved[key].setdefault(k, []).extend(v)
+                saved["setting_snr"] = saved["setting_snr"] if saved["setting_snr"] is not None else one.get("setting_snr")
+        series = {int(k): sorted(tuple(x) for x in v) for k, v in saved["series"].items()}
+        ptt = {int(k): sorted(tuple(x) for x in v) for k, v in saved["ptt"].items()}
+        if args.acmd == "listen-report" and args.runs:
+            _listen_per_run(audio, series, ptt, Path(args.runs), args.energy)
+            return
+        if args.acmd == "listen-report" and (args.t_from or args.t_to):
+            from datetime import datetime
+            a = datetime.fromisoformat(args.t_from).timestamp() if args.t_from else float("-inf")
+            b = datetime.fromisoformat(args.t_to).timestamp() if args.t_to else float("inf")
+            series = {k: [x for x in v if a <= x[0] < b] for k, v in series.items()}
+            ptt = {k: [x for x in v if a <= x[0] and x[1] < b] for k, v in ptt.items()}
+        if args.acmd == "listen-report" and args.energy:
+            mic = 3 - args.energy
+            ptt = audio.ptt_one_way(audio.bursts_from_energy(series.get(mic, [])), sender=args.energy)
+            print(f"(transmissions found from the audio energy; data bursts assigned to station {args.energy})")
         setting = args.setting if getattr(args, "setting", None) is not None else saved.get("setting_snr")
         print(f"bursts keyed: station 1 {len(ptt.get(1, []))}, station 2 {len(ptt.get(2, []))}; "
               f"blocks recorded: {', '.join(f'mic {k} {len(v)}' for k, v in sorted(series.items()))}")
@@ -558,9 +616,16 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--s2", default=r"C:\RMS Express 2")
     s.add_argument("--json", help="save the recording summary (band power + PTT) for re-analysis")
     s.set_defaults(func=cmd_audio)
-    s = au.add_parser("listen-report", help="re-analyze a saved listen --json file")
-    s.add_argument("json_in")
+    s = au.add_parser("listen-report", help="re-analyze saved listen --json file(s)")
+    s.add_argument("json_in", nargs="+", help="one or more listen JSON files (back-to-back recordings are merged)")
     s.add_argument("--setting", type=float)
+    s.add_argument("--from", dest="t_from", help="only from this time (ISO, e.g. 2026-11-13T16:28:00+00:00)")
+    s.add_argument("--to", dest="t_to", help="only up to this time (ISO)")
+    s.add_argument("--energy", type=int, choices=(1, 2), metavar="SENDER",
+                   help="find transmissions from the audio instead of ARDOP's log (any modem); "
+                        "one-way runs: long bursts are SENDER's data")
+    s.add_argument("--runs", metavar="CAMPAIGN_DIR",
+                   help="one line per run of this campaign, each over its own time and IONOS setting")
     s.set_defaults(func=cmd_audio)
     s = au.add_parser("qam", help="16QAM path test: MER of an ARDOP-like signal on all four paths")
     s.add_argument("--s1", default=r"C:\RMS Express", help="station 1 install (reads ARDOP_Win TNC.ini)")

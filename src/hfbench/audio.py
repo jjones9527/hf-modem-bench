@@ -429,14 +429,33 @@ def analyze_listen(series: dict[int, list[tuple[float, float]]],
     guard band); burst S:N = (burst power - noise) / noise, measured at the
     *other* station's microphone."""
     all_tx = sorted(iv for ivs in ptt.values() for iv in ivs)
+    # merged busy intervals (with guard), then a vectorised lookup: hours of
+    # recording x thousands of bursts would otherwise take minutes
+    merged: list[list[float]] = []
+    for a, b in all_tx:
+        a, b = a - guard_s, b + guard_s
+        if merged and a <= merged[-1][1]:
+            merged[-1][1] = max(merged[-1][1], b)
+        else:
+            merged.append([a, b])
+    starts = np.array([m[0] for m in merged])
+    ends = np.array([m[1] for m in merged])
 
-    def busy(t):
-        return any(a - guard_s <= t <= b + guard_s for a, b in all_tx)
+    def busy_mask(ts: np.ndarray) -> np.ndarray:
+        if not len(starts):
+            return np.zeros(len(ts), dtype=bool)
+        i = np.searchsorted(starts, ts, side="right") - 1
+        return (i >= 0) & (ts <= ends[np.clip(i, 0, None)])
 
     noise = {}
     for mic, pts in series.items():
-        quiet = [p for t, p in pts if not busy(t)]
-        noise[mic] = float(np.median(quiet)) if quiet else float("nan")
+        if not pts:
+            noise[mic] = float("nan")
+            continue
+        ts = np.array([t for t, _ in pts])
+        ps = np.array([p for _, p in pts])
+        quiet = ps[~busy_mask(ts)]
+        noise[mic] = float(np.median(quiet)) if len(quiet) else float("nan")
 
     stats = []
     bursts = []
@@ -468,6 +487,53 @@ def analyze_listen(series: dict[int, list[tuple[float, float]]],
     return {"setting_snr": setting_snr,
             "noise_dbfs_3k": {k: _db(v) for k, v in noise.items()},
             "directions": stats, "bursts": bursts}
+
+
+def bursts_from_energy(pts: list[tuple[float, float]], *, smooth: int = 5, rise_db: float = 1.0,
+                       min_s: float = 0.2, gap_s: float = 0.12, noise_pct: float = 5.0) -> list[tuple[float, float]]:
+    """Transmit intervals found from the recording itself, for modems whose own logs
+    don't give PTT times (VARA, Data2G, Mercury).
+
+    pts = [(unix time of block end, band power), ...] from one microphone. Every
+    transmission reaches both microphones through the IONOS, so either mic works,
+    but the energy alone can't say which station sent a burst.
+
+    Method: smooth over `smooth` blocks (~0.1 s); the noise floor is the
+    `noise_pct` percentile of the smoothed power; a burst is a run above
+    noise x 10^(rise_db/10) at least `min_s` long, with gaps shorter than `gap_s`
+    bridged. A 1 dB rise is a burst at about -6 dB S:N, so very weak signals are
+    missed; check against PTT truth (ARDOP) before relying on it."""
+    if len(pts) < smooth * 4:
+        return []
+    ts = np.array([t for t, _ in pts])
+    ps = np.convolve(np.array([p for _, p in pts]), np.ones(smooth) / smooth, mode="same")
+    thr = float(np.percentile(ps, noise_pct)) * 10 ** (rise_db / 10)
+    on = ps > thr
+    out: list[list[float]] = []
+    i = 0
+    n = len(on)
+    while i < n:
+        if on[i]:
+            j = i
+            while j + 1 < n and on[j + 1]:
+                j += 1
+            a, b = ts[i], ts[j]
+            if out and a - out[-1][1] < gap_s:
+                out[-1][1] = b
+            else:
+                out.append([a, b])
+            i = j + 1
+        else:
+            i += 1
+    return [(a, b) for a, b in out if b - a >= min_s]
+
+
+def ptt_one_way(bursts: list[tuple[float, float]], sender: int, data_min_s: float = 1.0
+                ) -> dict[int, list[tuple[float, float]]]:
+    """Assign energy-detected bursts in a one-way run: long bursts (data frames) to
+    the sending station, short ones (ACK/control) to the receiving station."""
+    return {sender: [iv for iv in bursts if iv[1] - iv[0] >= data_min_s],
+            3 - sender: [iv for iv in bursts if iv[1] - iv[0] < data_min_s]}
 
 
 def format_listen(r: dict) -> str:

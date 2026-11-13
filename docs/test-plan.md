@@ -80,8 +80,17 @@ The full wording is in [test-protocol.md](test-protocol.md) §4.
 1. Per-message results from **both** stations' logs: receiver-side goodput,
    failure type, and net throughput per run.
 2. Delivered-attachment SHA-256 check at the receiving station after each run.
-3. `audio listen` keyed from the audio itself (energy detection) instead of
-   ARDOP's log, so it measures any modem's S:N.
+3. **Done 13 Nov:** `audio listen-report --runs CAMPAIGN` measures each run's S:N
+   over its own window and setting. Transmissions are found from the audio energy
+   by default (any modem), with ARDOP's PTT log as a cross-check.
+   - **Validation:** on oneway28r, energy keying gave 18.3 dB against 18.4 dB from
+     ARDOP's PTT, with burst starts within 0.06 s. In one run, gaps in ARDOP's PTT
+     record around midnight made PTT keying read −10.7 dB.
+   - **Limit:** synthetic tests hold within 1 dB down to **0 dB**. Below that the
+     1 dB rise threshold misses bursts. For points under about 0 dB, ARDOP uses its PTT
+     log; other modems use their offset (measured S:N − setting) from the
+     higher-S:N points of the same campaign. The S:N lost there is IONOS noise, where
+     the relationship is linear.
 4. Recovery and session start made modem-aware: session type (Ardop P2P / VARA HF
    P2P), TNC executable, and ports from the run sheet.
 5. Time-boxed runs (D3).
