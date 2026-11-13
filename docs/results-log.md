@@ -776,7 +776,93 @@ compatible over the air. Changing the CRC polynomial would not.
 
 ---
 
+## oneway28 0003 and oneway28r: both directions one-way at WGN 28 (12–13 Nov 2026)
+
+**oneway28-0003** (21:48, first run with `--recover`): **completed, 10/10**, 1,284–1,441
+bit/s measured from the sender's log (see the goodput note below). oneway28 in
+total: **17 attempted, 15 delivered, 2 corrupted**.
+
+**oneway28r** (reverse, station 2 / Sabrent → station 1 / Syba, 4 runs, `--recover`).
+Pre-check (22:35): tone unchanged. 16QAM path check: Syba → Syba 21.0 dB, flat. The
+paths the Sabrent receives read 15.7 / 13.2 dB, 2–4 dB lower than at 20:40 (its
+intermittent capture timing).
+
+| run | start | outcome | delivered | goodput (receiver's log) | failure | recovery |
+|---|---|---|---|---|---|---|
+| 0001 | 22:43:52 | dnc | 4/10 | 1,517–1,553 bit/s | checksum error on msg 5, TL9R5WJVJWYT (23:06:08) | ok, 83 s |
+| 0002 | 23:10:54 | completed | 10/10 | 1,517–1,556 bit/s | none | none |
+| 0003 | 23:59:17 | dnc | 0/10 | none | checksum error on msg 1, 697OUUYZHTAB (00:04:09) | ok, 87 s |
+| 0004 | 00:09:00 | completed | 10/10 | 1,517–1,563 bit/s | none | none |
+
+**26 attempted, 24 delivered, 2 corrupted.** The automatic recovery ran twice
+unattended and the campaign carried on each time. The first start (22:38) failed
+before any run because, after the recovery restart, Winlink's Import dialog
+appeared as a child of the main window. That was fixed and the campaign restarted
+at 22:43.
+
+**Partials** (`scripts/check_partial.py`):
+
+| message | wrong bytes | span | errors |
+|---|---|---|---|
+| TL9R5WJVJWYT (0001) | 5 (6 symbols) | 110 bytes | xor 0001, 0001, 0011, 0001, 0011 0001 |
+| 697OUUYZHTAB (0003) | 4 | 46 bytes | xor 0001 0000, 0001 0000, 0001, 0001 |
+
+Same pattern as oneway28: a few symbol errors packed into one carrier, accepted
+with every frame PASS. Each carrier has 64 RS parity bytes (up to 32 corrections),
+so **all four corrupted carriers seen in the one-way runs would have been corrected
+by the parity already in the frame**, had 1.0.2.9 checked it.
+
+**Measured S:N** (listen, trimmed to each campaign's runs): data frames **17.9 dB**
+(1 → 2, oneway28) and **18.4 dB** (2 → 1, oneway28r), control frames 23.4–23.7 dB.
+
+**Goodput depends on which station's log is used.** Both directions send the
+same 16QAM frames, about 42 per message, at the same 5.3 s cycle, with 3–4 NAKs per
+run. Measured from the **receiving** station's log, Syba → Sabrent gives
+**1,510–1,561 bit/s**, the same as Sabrent → Syba. The sender's log gives about 10%
+less (1,284–1,441), because its "Sending … Completed send" interval includes about
+20 s of handover after the last frame. `hfbench parse` so far reads only station
+1's log. So every **tx** figure in this log, and every Syba → Sabrent figure in
+cal7wgn22/28 and oneway28, is sender-side and about 10% low. **From now on goodput
+is taken from the receiving station's log.**
+
+### Evaluation so far: ARDOP 1.0.2.9 on the calibrated bench (cal7)
+
+Earlier campaigns (pilot01 to wgn25a, cal6) ran on a bench with a loose plug, hot
+levels or IONOS clipping. They are kept as commissioning history, **not** used in
+the comparison.
+
+| IONOS | data S:N | mode | messages | delivered | failed | goodput per message (receiver) | net throughput |
+|---|---|---|---|---|---|---|---|
+| WGN 22 | 14.9 / 15.5 dB | 8PSK.2000 | 20 (two-way) | 20 | 0 | about 1,200–1,290 bit/s | about 1,100 bit/s |
+| WGN 28 | 17.9 / 18.4 dB | 16QAM.2000 | 57 (14 two-way, 43 one-way) | 52 | **5 (8.8%)**: 4 checksum, 1 hang | 1,510–1,563 bit/s | about 1,100–1,160 bit/s |
+
+*Net throughput* = compressed bytes delivered × 8 ÷ total session time, failed
+sessions included (recovery time excluded). One-way WGN 28: oneway28 15 messages
+in 77 min ≈ 1,095 bit/s; oneway28r 24 in 116 min ≈ 1,160 bit/s. WGN 22 two-way: 20
+in 102 min ≈ 1,105 bit/s.
+
+**Findings:**
+1. **16QAM is about 25% faster per message, but at this S:N its failures cancel
+   that out.** Each failure throws away the message in progress and ends the
+   session. Net throughput at WGN 28 is about the same as 8PSK at WGN 22. The WGN
+   22 runs were two-way, so the comparison is approximate.
+2. **The failures are an ARDOP 1.0.2.9 property, the same in both directions:**
+   Syba → Sabrent 2/17, Sabrent → Syba 2/26. The cause is the per-carrier check
+   (see the source analysis above), not a station or an adapter. The bench's own
+   impairments only set how often there are symbol errors to miss.
+3. **Winlink's end-to-end check caught every corrupted message.** Each surfaced as
+   a checksum error or a stall, never as a bad message in the Inbox. That has only
+   been checked through the log, not by comparing delivered attachments with the
+   originals. That check is now in the plan.
+4. **Bench ceiling:** with the Sabrent in the chain, the highest data S:N reachable
+   is about 18–20 dB (bench floor 32 dB below the reference, 16QAM MER 17–22 dB).
+   That is enough for ARDOP's top mode, but probably not for VARA HF's fastest levels (to be confirmed on the bench).
+
+---
+
 ## Planned next
+
+> **Superseded 13 Nov 2026 by [test-plan.md](test-plan.md)**, which covers the remaining modems, the metric changes and the open decisions. The items below are kept for the record.
 
 - **Replace the Sabrent** with a second adapter of the Syba's model, since a
   different port didn't fix its input (qam02). Then recalibrate: the tone check,

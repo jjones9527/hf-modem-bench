@@ -7,8 +7,9 @@ This decodes it and reports how far the attachment matches the original file, wh
 tells a corrupted transfer from one that simply stopped. It also re-compresses the
 original message and lists the exact compressed bytes that differ.
 
-    python3 scripts/check_partial.py <MID>.bin payloads/Text_50KB/<file>.txt
+    python3 scripts/check_partial.py <MID>.bin payloads/Text_50KB[/<file>.txt]
 """
+import os
 import struct
 import sys
 
@@ -243,6 +244,9 @@ def main(partial: str, original: str) -> None:
     header = out[:hdr_end].decode("latin-1")
     body_len = int(next(l.split(":")[1] for l in header.splitlines() if l.startswith("Body:")))
     att0 = hdr_end + body_len + 2
+    if os.path.isdir(original):    # a payload folder: use the file named in the header
+        name = next(l.split()[-1] for l in header.splitlines() if l.startswith("File:"))
+        original = os.path.join(original, name)
     orig = open(original, "rb").read()
     att = out[att0:]
     first = next((i for i in range(min(len(att), len(orig))) if att[i] != orig[i]), None)

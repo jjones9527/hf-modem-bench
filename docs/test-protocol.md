@@ -143,6 +143,8 @@ The sequence resets every add-on explicitly, so nothing carries over from the pr
 
 ### Stages
 
+> **Revised 13 Nov 2026:** the current staging, metrics and decisions are in [test-plan.md](test-plan.md). The stages below are the original plan.
+
 1. **Pilot** (about 10 runs). Check that the pipeline matches actual transfers: payload delivered intact, stamps line up with Winlink log sessions, and goodput is plausible against N5TW's curves for VARA 2300 and ARDOP 2000.
 2. **Coarse pass.** All modems × {WGN, MPG, MPM, MPP, MPD} × S:N {30, 20, 10, 5, 0} dB × 3 replicates.
 3. **Targeted pass.** Refine the SNR around each modem's knee for each profile with `snr_by_profile`, using 1–2 dB steps and 3–5 replicates.
