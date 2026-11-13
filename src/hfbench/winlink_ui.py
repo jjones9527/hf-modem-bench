@@ -16,7 +16,7 @@ Notes from the bench:
 
 Run as a script for one-off actions:
   python -m hfbench.winlink_ui LOG CALL folders | select-folder NAME | import PATH | status
-                                 | delete-outbox | close-session | close | open-session | launch INSTALL
+                                 | delete-outbox | close-session | close | open-session [TYPE] | launch INSTALL
 """
 
 from __future__ import annotations
@@ -356,19 +356,22 @@ class WinlinkUI:
             time.sleep(2)
         time.sleep(5)   # let it finish loading folders
 
-    def open_ardop_p2p(self, timeout: float = 90) -> SessionStatus:
-        """Open the Ardop P2P session from the main window ('Open Session:' with the
-        session type 'Ardop P2P' selected) and wait until Start is enabled."""
+    def open_session(self, session_type: str = "Ardop P2P", timeout: float = 90) -> SessionStatus:
+        """Open a P2P session from the main window ('Open Session:' with
+        `session_type` selected next to it) and wait until Start is enabled.
+        Verified for 'Ardop P2P' (12 Nov 2026). For VARA-type modems the session
+        type is expected to be 'Vara HF P2P'; confirm at each modem's bring-up.
+        The session type is not changed here: select it once by hand per install."""
         if not self.has_session_window():
             main = self.main()
-            if not main.MenuItemControl(Name="Ardop P2P", searchDepth=3).Exists(1):
-                raise RuntimeError(f"{self.call}: session type 'Ardop P2P' is not selected in the main window")
+            if not main.MenuItemControl(Name=session_type, searchDepth=3).Exists(1):
+                raise RuntimeError(f"{self.call}: session type {session_type!r} is not selected in the main window")
             self._thread(lambda: main.MenuItemControl(Name="Open Session:", searchDepth=3)
                          .GetLegacyIAccessiblePattern().DoDefaultAction())
         t0 = time.time()
         while True:
             if time.time() - t0 > timeout:
-                raise RuntimeError(f"{self.call}: Ardop P2P session not ready within {timeout:.0f} s")
+                raise RuntimeError(f"{self.call}: {session_type} session not ready within {timeout:.0f} s")
             time.sleep(2)
             if not self.has_session_window():
                 continue
@@ -377,30 +380,40 @@ class WinlinkUI:
             except Exception:
                 continue
             if st.can_start and not st.connected:
-                self.log(f"{self.call}: Ardop P2P session open ({st.state or 'ready'})")
+                self.log(f"{self.call}: {session_type} session open ({st.state or 'ready'})")
                 return st
+
+    def open_ardop_p2p(self, timeout: float = 90) -> SessionStatus:
+        return self.open_session("Ardop P2P", timeout)
 
 
 class WinlinkProcesses:
-    """Start, find and (last resort) stop the Winlink Express and ARDOP processes
-    of one install, identified by their executable path."""
+    """Start, find and (last resort) stop one station's processes: its Winlink
+    Express and the modem TNC that Winlink started (ARDOP_Win.exe in the install,
+    or a VARA-type program elsewhere), each identified by its full executable path."""
 
-    EXES = ("RMS Express.exe", "ARDOP_Win.exe")
-
-    def __init__(self, run=None):
+    def __init__(self, run=None, tnc_exes: dict[str, str] | None = None):
+        """tnc_exes maps an install folder to its TNC's full path; default
+        <install>\\ARDOP_Win.exe."""
         import subprocess
         self._run = run or (lambda args: subprocess.run(args, capture_output=True, text=True, timeout=60).stdout)
+        self.tnc_exes = tnc_exes or {}
 
     def _ps(self, script: str) -> str:
         return self._run(["powershell", "-NoProfile", "-Command", script])
 
+    def paths(self, install: str) -> list[str]:
+        return [str(Path(install) / "RMS Express.exe"),
+                self.tnc_exes.get(str(install), str(Path(install) / "ARDOP_Win.exe"))]
+
     def pids(self, install: str) -> dict[str, list[int]]:
         out = {}
-        for exe in self.EXES:
-            path = str(Path(install) / exe).replace("'", "''")
+        for path in self.paths(install):
+            exe = Path(path).name.replace("'", "''")
+            q = path.replace("'", "''")
             txt = self._ps(f"Get-CimInstance Win32_Process -Filter \"Name='{exe}'\" | "
-                           f"Where-Object {{ $_.ExecutablePath -eq '{path}' }} | ForEach-Object {{ $_.ProcessId }}")
-            out[exe] = [int(x) for x in txt.split() if x.strip().isdigit()]
+                           f"Where-Object {{ $_.ExecutablePath -eq '{q}' }} | ForEach-Object {{ $_.ProcessId }}")
+            out[path] = [int(x) for x in txt.split() if x.strip().isdigit()]
         return out
 
     def running(self, install: str) -> bool:
@@ -450,8 +463,8 @@ def _main(argv: list[str]) -> None:
         ui.close_session_window()
         say("closed:", ui.close_main())
         return
-    elif action == "open-session":
-        say(ui.open_ardop_p2p())
+    elif action == "open-session":             # optional arg: session type (default Ardop P2P)
+        say(ui.open_session(args[0] if args else "Ardop P2P"))
     elif action == "launch":                  # args: install folder
         WinlinkProcesses().launch(args[0])
         ui.wait_main()

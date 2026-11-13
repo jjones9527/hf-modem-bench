@@ -91,8 +91,16 @@ The full wording is in [test-protocol.md](test-protocol.md) §4.
      log; other modems use their offset (measured S:N − setting) from the
      higher-S:N points of the same campaign. The S:N lost there is IONOS noise, where
      the relationship is linear.
-4. Recovery and session start made modem-aware: session type (Ardop P2P / VARA HF
-   P2P), TNC executable, and ports from the run sheet.
+4. **Done 13 Nov:** recovery and session start are modem-aware. `MODEM_PROFILES` in
+   `bench.py` gives each modem's Winlink session type and each station's TNC program.
+   The runner picks the profile from the run sheet's `modem`, and
+   `--modem/--session-type/--tnc1/--tnc2` override it. **ARDOP is verified; the VARA
+   HF, Data2G and Mercury entries are best guesses** (session type 'Vara HF P2P';
+   TNCs `C:\VARA\VARA.exe`, `…\Data2G\data2g-host.exe`, `…\MercuryHF\mercury.exe`
+   and their second installs). They are printed as UNVERIFIED until confirmed at
+   bring-up. Bring-up check for each modem: select the session type once by hand
+   at both stations, then try `hfbench_ui_do.ps1 … -Do open-session -Arg "<type>"`
+   and a full `hfbench recover`.
 5. Time-boxed runs (D3).
 6. A first report generator: goodput, net throughput and message success against
    measured S:N, per modem and profile.

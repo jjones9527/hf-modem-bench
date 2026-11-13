@@ -227,7 +227,8 @@ def cmd_run(args):
     d = _campaign_dir(args)
     automation = None
     if args.automate:
-        automation = WinlinkAutomation(d, installs=(args.winlink_dir, args.winlink_dir2))
+        automation = WinlinkAutomation(d, installs=(args.winlink_dir, args.winlink_dir2),
+                                       profile=_profile_for(args, d))
 
     def between():
         if args.auto_continue is not None:
@@ -252,11 +253,40 @@ def cmd_run(args):
             ionos.close()
 
 
+def _profile_for(args, campaign: Path):
+    """Modem profile from --modem or the campaign's run sheet, with any overrides."""
+    import dataclasses
+
+    from .bench import modem_profile
+
+    name = getattr(args, "modem", None)
+    if not name:
+        modems = {r["modem"] for r in mx.read_runsheet(campaign / RUNSHEET)}
+        if len(modems) != 1:
+            sys.exit(f"error: campaign has modems {sorted(modems)}; pass --modem")
+        name = modems.pop()
+    prof = modem_profile(name)
+    over = {k: v for k, v in (("session_type", args.session_type), ("tnc1", args.tnc1), ("tnc2", args.tnc2)) if v}
+    prof = dataclasses.replace(prof, **over) if over else prof
+    print(f"modem {name}: session type {prof.session_type!r}, TNC {prof.tnc1} / {prof.tnc2}"
+          + ("" if prof.verified or over else "  (UNVERIFIED defaults: confirm at bring-up)"))
+    return prof
+
+
+def _profile_args(sp):
+    sp.add_argument("--modem", help="modem profile (default: from the run sheet): ARDOP, VARA HF, Data2G, Mercury")
+    sp.add_argument("--session-type", help="Winlink session type to open, e.g. 'Vara HF P2P'")
+    sp.add_argument("--tnc1", help="station 1 TNC executable (full path)")
+    sp.add_argument("--tnc2", help="station 2 TNC executable (full path)")
+    return sp
+
+
 def cmd_recover(args):
     from .bench import WinlinkAutomation
 
     d = _campaign_dir(args)
-    info = WinlinkAutomation(d, installs=(args.winlink_dir, args.winlink_dir2)).recover(args.run_id)
+    info = WinlinkAutomation(d, installs=(args.winlink_dir, args.winlink_dir2),
+                             profile=_profile_for(args, d)).recover(args.run_id)
     print(info["note"])
 
 
@@ -585,6 +615,7 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--winlink-dir2", default=r"C:\RMS Express 2", help="station 2 Winlink install")
     s.add_argument("--auto-continue", type=float, metavar="SECONDS",
                    help="start the next run after this pause instead of waiting for Enter")
+    _profile_args(s)
     s.add_argument("--recover", action="store_true",
                    help="with --automate: after a failed run, clear both Outboxes, restart both Winlink "
                         "Express instances and their Ardop P2P sessions, then continue")
@@ -594,6 +625,7 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("run_id", help="run the reset follows (partials go to quarantine/<run_id>)")
     s.add_argument("--winlink-dir", default=r"C:\RMS Express")
     s.add_argument("--winlink-dir2", default=r"C:\RMS Express 2")
+    _profile_args(s)
     s.set_defaults(func=cmd_recover)
 
     s = with_dir(sub.add_parser("messages", help="build the campaign's message templates (once)"))

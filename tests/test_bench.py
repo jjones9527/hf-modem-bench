@@ -331,8 +331,9 @@ class RecUI(FakeUI):
     def wait_main(self):
         assert self.main_open
 
-    def open_ardop_p2p(self):
+    def open_session(self, session_type="Ardop P2P"):
         assert self.main_open
+        self.session_type = session_type
         self.session_open = True; self.log.append((self.call, "open-session"))
 
 
@@ -458,3 +459,26 @@ def test_time_box_must_be_shorter_than_abort():
     m = mx.load_matrix(EXAMPLE)
     with pytest.raises(mx.MatrixError, match="time_box"):
         mx.validate(dataclasses.replace(m, time_box_minutes=m.abort_minutes))
+
+
+def test_modem_profiles_and_tnc_paths():
+    from hfbench.bench import modem_profile, MODEM_PROFILES
+    from hfbench.winlink_ui import WinlinkProcesses
+    assert modem_profile("ardop").session_type == "Ardop P2P" and modem_profile("ARDOP").verified
+    assert not modem_profile("VARA HF").verified
+    with pytest.raises(Exception, match="no modem profile"):
+        modem_profile("PACTOR")
+    seen = []
+    wp = WinlinkProcesses(run=lambda args: (seen.append(args[-1]), "")[1],
+                          tnc_exes={r"C:\RMS Express": r"C:\VARA\VARA.exe"})
+    assert wp.paths(r"C:\RMS Express")[1] == r"C:\VARA\VARA.exe"
+    assert not wp.running(r"C:\RMS Express")
+    assert any("VARA.exe" in q for q in seen)
+
+
+def test_recovery_opens_the_profiles_session_type(tmp_path):
+    from hfbench.bench import MODEM_PROFILES
+    wa, uis, log, camp = _recovery_bench(tmp_path)
+    wa.profile = MODEM_PROFILES["VARA HF"]
+    wa.recover("c-0001")
+    assert all(u.session_type == "Vara HF P2P" for u in uis.values())

@@ -280,6 +280,36 @@ def install_callsign(install_dir: str | Path) -> str:
     return calls[0]
 
 
+@dataclass(frozen=True)
+class ModemProfile:
+    """How Winlink Express runs a modem: the P2P session type selected in its main
+    window, and each station's TNC program (for the recovery's process checks).
+    ARDOP was verified on the bench (12 Nov 2026). The others are best guesses from
+    the installs and must be confirmed at each modem's bring-up (test-plan Stage 2/3);
+    override them with --session-type / --tnc1 / --tnc2."""
+    session_type: str
+    tnc1: str        # station 1 TNC executable ({install} = station 1's Winlink folder)
+    tnc2: str
+    verified: bool = False
+
+
+MODEM_PROFILES = {
+    "ARDOP": ModemProfile("Ardop P2P", r"{install}\ARDOP_Win.exe", r"{install}\ARDOP_Win.exe", verified=True),
+    "VARA HF": ModemProfile("Vara HF P2P", r"C:\VARA\VARA.exe", r"C:\VARA 2\VARA.exe"),
+    "Data2G": ModemProfile("Vara HF P2P", r"C:\Program Files\Data2G\data2g-host.exe",
+                           r"C:\Program Files\Data2G 2\data2g-host.exe"),
+    "Mercury": ModemProfile("Vara HF P2P", r"C:\Program Files\MercuryHF\mercury.exe",
+                            r"C:\Program Files\MercuryHF 2\mercury.exe"),
+}
+
+
+def modem_profile(name: str) -> ModemProfile:
+    for k, v in MODEM_PROFILES.items():
+        if k.lower() == (name or "").strip().lower():
+            return v
+    raise AutomationError(f"no modem profile for {name!r}; known: {', '.join(MODEM_PROFILES)}")
+
+
 class WinlinkAutomation:
     """Queues each run's messages by import and starts/aborts the P2P session.
 
@@ -288,7 +318,8 @@ class WinlinkAutomation:
 
     def __init__(self, campaign_dir: str | Path, installs: tuple[str, str] = (r"C:\RMS Express", r"C:\RMS Express 2"),
                  caller: int = 2, say: Callable[[str], None] = print, ui_factory=None,
-                 procs=None, sleep: Callable[[float], None] = lambda s: __import__("time").sleep(s)):
+                 procs=None, sleep: Callable[[float], None] = lambda s: __import__("time").sleep(s),
+                 profile: "ModemProfile | None" = None):
         from . import messages as mg
 
         self.mg = mg
@@ -307,9 +338,12 @@ class WinlinkAutomation:
             from .winlink_ui import WinlinkUI
             ui_factory = lambda call: WinlinkUI(call, log=say)
         self.ui = {st: ui_factory(self.calls[st]) for st in (1, 2)}
+        self.profile = profile or MODEM_PROFILES["ARDOP"]
         if procs is None:
             from .winlink_ui import WinlinkProcesses
-            procs = WinlinkProcesses()
+            tnc = {installs[0]: self.profile.tnc1.format(install=installs[0]),
+                   installs[1]: self.profile.tnc2.format(install=installs[1])}
+            procs = WinlinkProcesses(tnc_exes=tnc)
         self.procs = procs
         self.sleep = sleep
 
@@ -384,7 +418,8 @@ class WinlinkAutomation:
         5. start both instances again and open their Ardop P2P sessions;
         6. check both Outboxes are empty.
         Raises AutomationError if the bench isn't ready afterwards."""
-        self.say(f"--- Recovery after {run_id}: clearing Outboxes and restarting Winlink Express")
+        self.say(f"--- Recovery after {run_id}: clearing Outboxes and restarting Winlink Express "
+                 f"({self.profile.session_type})")
         caller = self.ui[self.caller]
         try:
             if caller.has_session_window() and caller.status().connected:
@@ -423,7 +458,7 @@ class WinlinkAutomation:
             self.procs.launch(self.installs[st - 1])
             self.ui[st].wait_main()
         for st in (1, 2):
-            self.ui[st].open_ardop_p2p()
+            self.ui[st].open_session(self.profile.session_type)
         for st in (1, 2):
             left = self.ui[st].folder_mids("Outbox")
             if left:
