@@ -68,3 +68,31 @@ def test_verify_attachments(tmp_path):
     assert delivered[1].integrity == "MISMATCH"
     assert delivered[2].integrity == "missing"
     assert "NOT identical" in rs.format_summary(res)
+
+
+def test_report_points_and_charts(tmp_path):
+    import shutil
+    pytest = __import__("pytest")
+    pytest.importorskip("matplotlib")
+    from hfbench import report as rp
+    camp = tmp_path / "oneway28r"
+    camp.mkdir()
+    shutil.copy(FX / "manifest.csv", camp / "runsheet.csv")      # manifest rows carry the run-sheet fields
+    rs.write_csvs(_load(), camp)
+    with open(camp / "snr.csv", "w") as f:
+        f.write("run_id,data_snr_db\n" + "".join(f"oneway28r-000{i},18.3\n" for i in range(1, 5)))
+    pts = rp.build_points([camp])
+    assert len(pts) == 1
+    p = pts[0]
+    assert (p.modem, p.payload, p.setting_db, p.runs) == ("ARDOP 1.0.2.9", "Text_50KB", 28.0, 4)
+    assert (p.delivered, p.attempted) == (24, 26) and p.snr_db == 18.3
+    assert 1500 < p.goodput_median < 1570 and 1100 < p.net_bps < 1200
+    files = rp.plot(pts, tmp_path / "out", ceiling_db=19)
+    assert {f.name for f in files} >= {"goodput-wgn.png", "net-wgn.svg", "success-wgn.png"}
+    assert rp.write_table(pts, tmp_path / "out" / "points.csv").exists()
+
+
+def test_modem_colors_are_fixed_slots():
+    from hfbench import report as rp
+    assert rp.modem_color("ARDOP 1.0.2.9") == "#2a78d6" and rp.modem_color("VARA HF 4.09") == "#eb6834"
+    __import__("pytest").raises(ValueError, rp.modem_color, "Pactor 4")

@@ -147,6 +147,22 @@ def cmd_results(args):
     print(f"\nwrote {mp} and {rp}")
 
 
+def cmd_report(args):
+    from . import report as rp
+
+    pts = rp.build_points(args.campaigns)
+    out = Path(args.out)
+    t = rp.write_table(pts, out / "points.csv")
+    files = rp.plot(pts, out, ceiling_db=args.ceiling, subtitle=args.subtitle or "")
+    for p in pts:
+        snr = f"{p.snr_db:5.1f} dB" if p.snr_db is not None else "  n/a  "
+        g = f"{p.goodput_median:5.0f}" if p.goodput_median else "    -"
+        n = f"{p.net_bps:5.0f}" if p.net_bps else "    -"
+        print(f"{p.modem:<16} {p.profile:<4} {p.payload:<10} set {p.setting_db:>4.0f}  S:N {snr}  "
+              f"{p.delivered:>3}/{p.attempted:<3} goodput {g}  net {n} bit/s  ({p.runs} runs)")
+    print(f"\nwrote {t} and {len(files)} chart files in {out}")
+
+
 def cmd_parse(args):
     sessions = []
     for p in args.winlink_log:
@@ -330,7 +346,8 @@ def _save_raw_qam(path, results):
     np.savez_compressed(path, **arrs)
 
 
-def _listen_per_run(audio, series, ptt, campaign: Path, energy_sender: int | None) -> None:
+def _listen_per_run(audio, series, ptt, campaign: Path, energy_sender: int | None,
+                    out_csv: Path | None = None) -> None:
     """Measured S:N for every run of a campaign, each over its own time window and
     against its own IONOS setting (a sweep mixes settings in one recording).
 
@@ -340,7 +357,10 @@ def _listen_per_run(audio, series, ptt, campaign: Path, energy_sender: int | Non
     around midnight, made its noise floor read 18 dB high), so energy is the default."""
     from datetime import datetime
 
+    import csv
+
     man = mf.build_manifest(mx.read_runsheet(campaign / RUNSHEET), mf.read_events(campaign / EVENTS))
+    rows_out = []
     print(f"{'run':<22} {'setting':>7} {'payload':<10} {'data S:N (n)':>15} {'control S:N':>12} {'ARDOP-PTT data':>15}")
     for r in man:
         if not r.get("end_utc"):
@@ -365,8 +385,20 @@ def _listen_per_run(audio, series, ptt, campaign: Path, energy_sender: int | Non
             cross = cell(d)
         ctl = pick(e, "control")
         ctl_txt = f"{ctl['snr_median_db']:.1f} dB" if ctl else "none"
+        dd = pick(e, "data", sender)
+        rows_out.append({"run_id": r["run_id"], "setting_db": r["snr_db"],
+                         "data_snr_db": f"{dd['snr_median_db']:.2f}" if dd else "",
+                         "data_n": dd["n"] if dd else 0,
+                         "control_snr_db": f"{ctl['snr_median_db']:.2f}" if ctl else "",
+                         "keyed_by": f"energy (sender {sender})", "ardop_ptt_data": cross})
         print(f"{r['run_id']:<22} {r['snr_db']:>7} {r['payload_file']:<10} {cell(pick(e, 'data', sender)):>15} "
               f"{ctl_txt:>12} {cross:>15}")
+    if out_csv:
+        with open(out_csv, "w", newline="", encoding="utf-8") as f:
+            w = csv.DictWriter(f, fieldnames=list(rows_out[0]) if rows_out else ["run_id"])
+            w.writeheader()
+            w.writerows(rows_out)
+        print(f"\nwrote {out_csv}")
 
 
 def cmd_audio(args):
@@ -413,7 +445,8 @@ def cmd_audio(args):
         series = {int(k): sorted(tuple(x) for x in v) for k, v in saved["series"].items()}
         ptt = {int(k): sorted(tuple(x) for x in v) for k, v in saved["ptt"].items()}
         if args.acmd == "listen-report" and args.runs:
-            _listen_per_run(audio, series, ptt, Path(args.runs), args.energy)
+            _listen_per_run(audio, series, ptt, Path(args.runs), args.energy,
+                            Path(args.out) if args.out else Path(args.runs) / "snr.csv")
             return
         if args.acmd == "listen-report" and (args.t_from or args.t_to):
             from datetime import datetime
@@ -585,6 +618,13 @@ def build_parser() -> argparse.ArgumentParser:
                         "needs --s1/--s2 to be the Winlink installs")
     s.set_defaults(func=cmd_results)
 
+    s = sub.add_parser("report", help="charts + table: goodput, net throughput and success vs measured S:N")
+    s.add_argument("campaigns", nargs="+", help="campaign folders (each with runs.csv, messages.csv, snr.csv)")
+    s.add_argument("-o", "--out", required=True, help="output folder")
+    s.add_argument("--ceiling", type=float, help="mark the bench's highest reachable data S:N (dB)")
+    s.add_argument("--subtitle", help="second title line, e.g. bench and date")
+    s.set_defaults(func=cmd_report)
+
     s = sub.add_parser("parse", help="parse Winlink Express (and ARDOP) logs to sessions/transfers CSV")
     s.add_argument("winlink_log", nargs="+", help="RMS Express YYYYMMDD.log file(s)")
     s.add_argument("--ardop", nargs="*", help="ARDOP_WinTNC_ARQSession_YYYYMMDD.log file(s)")
@@ -658,6 +698,7 @@ def build_parser() -> argparse.ArgumentParser:
                         "one-way runs: long bursts are SENDER's data")
     s.add_argument("--runs", metavar="CAMPAIGN_DIR",
                    help="one line per run of this campaign, each over its own time and IONOS setting")
+    s.add_argument("--out", help="with --runs: write the per-run S:N here (default <campaign>/snr.csv)")
     s.set_defaults(func=cmd_audio)
     s = au.add_parser("qam", help="16QAM path test: MER of an ARDOP-like signal on all four paths")
     s.add_argument("--s1", default=r"C:\RMS Express", help="station 1 install (reads ARDOP_Win TNC.ini)")

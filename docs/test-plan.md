@@ -102,8 +102,16 @@ The full wording is in [test-protocol.md](test-protocol.md) §4.
    at both stations, then try `hfbench_ui_do.ps1 … -Do open-session -Arg "<type>"`
    and a full `hfbench recover`.
 5. Time-boxed runs (D3).
-6. A first report generator: goodput, net throughput and message success against
-   measured S:N, per modem and profile.
+6. **Done 13 Nov:** `hfbench report CAMPAIGN... -o DIR [--ceiling dB]` writes three
+   charts per profile (goodput per message with its range, net throughput, and
+   messages delivered, each against measured data S:N) as PNG and SVG, plus
+   `points.csv` as the table view.
+   - **Inputs:** `hfbench results` (runs.csv, messages.csv) and
+     `audio listen-report --runs` (snr.csv).
+   - **Encoding:** each modem keeps a fixed colour slot from a palette validated for
+     colour-blind separation. Filled markers are Text_50KB, open markers
+     Text_5KB. Lines carry direct labels, the bench ceiling is marked, and the legend
+     sits below the plot.
 
 **Stage 1: ARDOP 1.0.2.9 (the release from winlink.org), WGN sweep** (unattended, about 18 h)
 - One-way, recovery on, time-boxed. IONOS settings chosen to give data S:N of
