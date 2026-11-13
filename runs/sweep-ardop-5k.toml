@@ -1,0 +1,35 @@
+# Stage 1 (test-plan.md): ARDOP 1.0.2.9 WGN sweep on the cal7 bench, one-way station 2 (VE3XZQ, Sabrent playback) -> station 1
+# (VA3ZTF, Syba capture), 10 messages per run (messages build --s1-messages 0 --s2-messages 10), recovery on (-Recover),
+# 60-min time box. Payload rule (test-protocol §4): Text_50KB at >= 10 dB data S:N, Text_5KB below; WGN 17 (~10 dB)
+# is the overlap point run with both sets. Expected data S:N at cal7 ~ setting - 7 dB, flattening near the bench
+# ceiling (~19 dB); the measured S:N (audio listen) is the axis, not the setting.
+
+[campaign]
+name = "sweep-ardop-5k"
+stage = "coarse"
+replicates = 3
+profiles = ["WGN"]
+snr_db = [17, 12, 7, 2]
+order = "blocked-random"
+order_seed = 13
+abort_minutes = 90
+abort_retries = 3
+time_box_minutes = 60
+
+[ionos]
+bandwidth_hz = 3000
+multipaths = 2
+
+[payload]
+file = "Text_5KB"
+bytes = 5120
+sha256 = "85741279e9a689624407e58e599340c048a72fdd56c9695345c6a1ac827384d4"
+messages = 10
+
+[[modems]]
+name = "ARDOP"
+version = "1.0.2.9"
+bandwidth_hz = 2000
+
+[[impairments]]
+name = "none"

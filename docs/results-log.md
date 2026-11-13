@@ -863,6 +863,28 @@ in 102 min ≈ 1,105 bit/s.
 
 ---
 
+## Stage 1: ARDOP 1.0.2.9 WGN sweep (started 13 Nov 2026, 16:26)
+
+Campaigns `sweep-ardop-50k` (Text_50KB; WGN 40, 22, 17; 9 runs) and `sweep-ardop-5k`
+(Text_5KB; WGN 17, 12, 7, 2; 12 runs). Both are one-way, 10 messages per run,
+recovery on, 60-min time box, 3 replicates in seeded random order (seed 13). Listen
+`listen-20261113-1626-1…4` (4 × 150 min).
+
+**Direction changed to station 2 → 1** (Sabrent playback → Syba capture). The pre-check
+at 16:25 found the Sabrent's *capture* degrading:
+
+| 16QAM path check, full level | 12 Nov 20:40 | 12 Nov 22:35 | 13 Nov 16:25 |
+|---|---|---|---|
+| Syba → Syba | 22.0 dB | 21.0 dB | 21.6 dB (tilt 0.1) |
+| Syba → Sabrent (old data path) | 18.7 | 15.7 | **14.7** (high carriers 12.3) |
+| Sabrent → Syba (new data path) | 18.3 | 17.4 | **17.0** (tilt 8.3) |
+| Sabrent → Sabrent | 17.5 | 13.2 | 12.7 |
+
+Tone check 16:20: transmit −0.3 / −0.4 dB against the reference, mismatch +0.1, receive
+mismatch +0.7, mic noise 33 dB below the reference. Unchanged.
+
+---
+
 ## Planned next
 
 > **Superseded 13 Nov 2026 by [test-plan.md](test-plan.md)**, which covers the remaining modems, the metric changes and the open decisions. The items below are kept for the record.

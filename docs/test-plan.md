@@ -18,7 +18,7 @@ marked **Decision** need the operator's choice before the work that depends on t
 
 | Change | Reason (from the ARDOP campaigns) |
 |---|---|
-| **One-way workload**: 10 messages from station 1 to station 2 | Two-way runs mixed two unequal hardware paths. One failure ended the session for both directions. |
+| **One-way workload**: 10 messages per run over one fixed path; from 13 Nov, station 2 (Sabrent playback) → station 1 (Syba capture) | Two-way runs mixed two unequal hardware paths. One failure ended the session for both directions. |
 | **Automatic recovery on for every campaign** (`--recover`) | Failures are routine near a modem's limit. Without recovery every failure stopped the bench until the operator reset it. Tried and working (oneway28r: 2 unattended recoveries, about 85 s each). |
 | **Reliability is measured per message**, not per run | At 9% message failure a 10-message run completes only about 4 times in 10. *Completed runs* hides how much got through. |
 | **Goodput from the receiving station's log** | The sender's log adds about 20 s of handover per message, about 10% low. This was found on 13 Nov, after it looked like a 10% difference between directions. |
