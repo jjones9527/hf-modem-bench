@@ -97,6 +97,8 @@ class BenchRunner:
         rid = row["run_id"]
         ids = {r["run_id"] for r in self.rows()}
         abort = timedelta(minutes=float(row["abort_minutes"]))
+        box_min = float(row.get("time_box_minutes") or 0)
+        box = timedelta(minutes=box_min) if box_min > 0 else None
         expected = int(row.get("payload_messages") or 1)
         events = mf.read_events(self.events_path)
         resumed = mf.run_state(events, rid) == "running"
@@ -141,6 +143,7 @@ class BenchRunner:
 
         session: lp.Session | None = None
         last_alert: datetime | None = None
+        boxed_at: datetime | None = None
         while True:
             k = (self.key() or "").lower()
             now = self.clock()
@@ -174,6 +177,17 @@ class BenchRunner:
                 self.say(f"{rid} -> {outcome} (operator)")
                 return RunResult(rid, outcome, session, "operator")
 
+            # Time box: end the session and keep what was delivered (not a failure).
+            if (box is not None and boxed_at is None and session is not None and started_at is not None
+                    and not session.closed and now - started_at > box):
+                boxed_at = now
+                self.say(f"Time box of {box_min:g} min reached: ending the session.")
+                if self.automation is not None:
+                    try:
+                        self.automation.abort()
+                    except Exception as e:
+                        self.say(f"(automatic abort failed: {e})")
+
             ref = started_at or armed
             if now - ref > abort and (last_alert is None or now - last_alert >= timedelta(minutes=1)):
                 last_alert = now
@@ -198,8 +212,11 @@ class BenchRunner:
                 incomplete = [t for t in mine if not t.completed]
                 over_time = end - started_at > abort
                 ok = len(done) >= expected and not incomplete and not over_time
-                outcome = "completed" if ok else "dnc"
+                boxed = (not ok and box is not None and boxed_at is not None and end >= boxed_at - CONNECT_SLACK
+                         and not over_time)
+                outcome = "completed" if ok else "timeboxed" if boxed else "dnc"
                 why = ("" if ok else
+                       f"{len(done)}/{expected} messages in the {box_min:g}-min time box" if boxed else
                        "over abort time" if over_time else
                        f"{len(done)}/{expected} messages")
                 mf.end_run(self.events_path, rid, outcome, notes=why, t=end)
@@ -226,7 +243,7 @@ class BenchRunner:
             if r is None:
                 break
             results.append(r)
-            if r.outcome == "dnc" and self.recover and self.automation is not None:
+            if r.outcome in ("dnc", "timeboxed") and self.recover and self.automation is not None:
                 if not self._recover(r.run_id):
                     break
         return results

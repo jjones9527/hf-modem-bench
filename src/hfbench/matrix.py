@@ -69,6 +69,7 @@ RUNSHEET_FIELDS = [
     "payload_messages",
     "abort_minutes",
     "abort_retries",
+    "time_box_minutes",
 ]
 
 
@@ -109,6 +110,9 @@ class Matrix:
     order_seed: int = 0
     abort_minutes: int = 30
     abort_retries: int = 3
+    # Time box: stop a run after this many minutes of session time and record what
+    # was delivered (outcome 'timeboxed', not a failure). 0 = no time box.
+    time_box_minutes: int = 0
     # Optional per-profile SNR override for targeted (knee-refinement) passes.
     snr_by_profile: dict[str, list[int]] = field(default_factory=dict)
 
@@ -160,6 +164,7 @@ def load_matrix(path: str | Path) -> Matrix:
         order_seed=int(c.get("order_seed", 0)),
         abort_minutes=int(c.get("abort_minutes", 30)),
         abort_retries=int(c.get("abort_retries", 3)),
+        time_box_minutes=int(c.get("time_box_minutes", 0)),
         snr_by_profile={k.upper(): [_snr(s) for s in v] for k, v in c.get("snr_by_profile", {}).items()},
     )
     validate(m)
@@ -179,6 +184,8 @@ def validate(m: Matrix) -> None:
         raise MatrixError("ionos.bandwidth_hz must be 3000 or 6000")
     if m.multipaths not in (2, 4):
         raise MatrixError("ionos.multipaths must be 2 or 4")
+    if m.time_box_minutes < 0 or (m.time_box_minutes and m.time_box_minutes >= m.abort_minutes):
+        raise MatrixError("campaign.time_box_minutes must be 0 (off) or less than abort_minutes")
     bad = [p for p in m.profiles if p not in IONOS_PRESETS]
     if bad:
         raise MatrixError(f"unknown IONOS profile(s) {bad}; available: {sorted(IONOS_PRESETS)}")
@@ -273,6 +280,7 @@ def build_runs(m: Matrix) -> list[dict]:
             "payload_messages": m.payload_messages,
             "abort_minutes": m.abort_minutes,
             "abort_retries": m.abort_retries,
+            "time_box_minutes": m.time_box_minutes,
         })
     return rows
 

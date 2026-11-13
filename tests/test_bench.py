@@ -431,3 +431,30 @@ def test_winlink_ui_script_entry_point_exists():
     src = inspect.getsource(w._main)
     for action in ("status", "delete-outbox", "close-session", "close", "open-session", "launch"):
         assert f'"{action}"' in src
+
+
+def test_time_box_ends_session_and_is_not_a_failure(tmp_path):
+    d, rows = _campaign(tmp_path, abort_minutes=90, time_box_minutes=20)
+    rp = Replay(FX / "winlink_ardop_p2p_20261110.log", T(17, 49))
+    fa = FakeAutomation(SESSION6_MIDS + ["NEVERSENT001"])          # 9 queued, 8 get through
+    r = BenchRunner(d, rp.sessions, automation=fa, clock=rp.clock, sleep=rp.sleep,
+                    say=rp.said.append, poll_s=10).run_one(rows[0])
+    assert ("abort",) in fa.calls                                    # box reached -> session ended
+    assert r.outcome == "timeboxed" and r.note == "8/9 messages in the 20-min time box"
+    assert any("Time box of 20 min" in s for s in rp.said)
+
+
+def test_no_time_box_same_run_is_dnc(tmp_path):
+    d, rows = _campaign(tmp_path, abort_minutes=90, time_box_minutes=0)
+    rp = Replay(FX / "winlink_ardop_p2p_20261110.log", T(17, 49))
+    fa = FakeAutomation(SESSION6_MIDS + ["NEVERSENT001"])
+    r = BenchRunner(d, rp.sessions, automation=fa, clock=rp.clock, sleep=rp.sleep,
+                    say=rp.said.append, poll_s=10).run_one(rows[0])
+    assert r.outcome == "dnc" and ("abort",) not in fa.calls
+
+
+def test_time_box_must_be_shorter_than_abort():
+    import dataclasses
+    m = mx.load_matrix(EXAMPLE)
+    with pytest.raises(mx.MatrixError, match="time_box"):
+        mx.validate(dataclasses.replace(m, time_box_minutes=m.abort_minutes))

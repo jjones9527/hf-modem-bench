@@ -401,6 +401,11 @@ def cmd_payload_make(args):
           f"sha256 = {digest}\nzlib ratio = {pl.compress_ratio(args.path):.3f}")
 
 
+def cmd_payload_derive(args):
+    digest, per = pl.derive_prefix_set(args.src, args.dst, args.bytes)
+    print(f"{args.dst}: first {args.bytes} bytes of each of {len(per)} files in {args.src}\nset sha256 = {digest}")
+
+
 def cmd_payload_hash(args):
     if Path(args.path).is_dir():
         digest, per = pl.sha256_set(args.path)
@@ -551,6 +556,11 @@ def build_parser() -> argparse.ArgumentParser:
     s = pay.add_parser("hash")
     s.add_argument("path")
     s.set_defaults(func=cmd_payload_hash)
+    s = pay.add_parser("derive", help="smaller set from the first N bytes of each file (Text_5KB from Text_50KB)")
+    s.add_argument("src")
+    s.add_argument("dst")
+    s.add_argument("--bytes", type=int, required=True)
+    s.set_defaults(func=cmd_payload_derive)
     return p
 
 

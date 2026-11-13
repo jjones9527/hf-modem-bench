@@ -20,7 +20,7 @@ import socket
 from datetime import datetime, timezone
 from pathlib import Path
 
-OUTCOMES = ("completed", "dnc", "invalid")
+OUTCOMES = ("completed", "dnc", "timeboxed", "invalid")
 
 MANIFEST_EXTRA_FIELDS = [
     "attempt",

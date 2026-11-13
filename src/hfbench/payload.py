@@ -43,3 +43,17 @@ def compress_ratio(path: str | Path) -> float:
     """zlib-compressed size / original size. ~1.0 means incompressible."""
     data = Path(path).read_bytes()
     return len(zlib.compress(data, 9)) / max(len(data), 1)
+
+
+def derive_prefix_set(src: str | Path, dst: str | Path, size: int) -> tuple[str, dict[str, str]]:
+    """A smaller set made of the first `size` bytes of every file in `src`, same
+    names. Text_5KB = derive_prefix_set('Text_50KB', 'Text_5KB', 5120): same files,
+    same character statistics, so the two sets differ only in length."""
+    out = Path(dst)
+    out.mkdir(parents=True, exist_ok=True)
+    for f in sorted((p for p in Path(src).iterdir() if p.is_file()), key=lambda p: p.name):
+        data = f.read_bytes()
+        if len(data) < size:
+            raise ValueError(f"{f.name} has only {len(data)} bytes")
+        (out / f.name).write_bytes(data[:size])
+    return sha256_set(out)

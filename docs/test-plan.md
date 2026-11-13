@@ -42,20 +42,18 @@ marked **Decision** need the operator's choice before the work that depends on t
 Report n, median and range for every point. Use 3 replicates on the coarse pass
 and 5 near the knee.
 
-## Run length at low S:N
+## Run length at low S:N (D3, decided 13 Nov 2026)
 
 At 10 × 42 KB per run, a modem running at 300 bit/s needs about 3 hours per run.
-Below about 95 bit/s, not even one message fits in a 60-minute run. Two options:
+Below about 95 bit/s not even one message fits in an hour. Two rules handle this.
+The full wording is in [test-protocol.md](test-protocol.md) §4.
 
-- **A. Time-boxed runs:** every run stops after 10 messages **or 60 minutes**.
-  Net throughput and message success still work; at very low S:N a run may deliver
-  nothing, which is itself the result.
-- **B. A small payload below a set S:N:** a second fixed set of 10 × about 5 KB
-  messages, used below (say) 10 dB. Run one overlap point with both sets to show
-  how the two connect.
-
-**Decision D3:** recommended A + B: time-box every run, and use the small set
-below 10 dB.
+1. **Every run is time-boxed at 60 minutes** (`time_box_minutes = 60`; the 90-minute
+   abort rule stays as a safety net). At the box the runner ends the session and
+   records outcome **`timeboxed`** with the messages delivered. This is not a failure.
+2. **Below 10 dB measured data S:N the small payload set `Text_5KB` is used**
+   (10 × 5,120 bytes, the first 5,120 bytes of each Text_50KB file). At each modem's
+   10 dB point the run is made with **both** sets, so the curves can be joined.
 
 ## Bench
 
@@ -63,12 +61,13 @@ below 10 dB.
   floor is 32 dB below the reference, and the 16QAM MER on Sabrent paths is 13–19 dB
   and varies. That's enough for ARDOP's top mode. It probably caps VARA HF below
   its fastest levels, which would understate exactly the "good conditions" answer.
-- **Decision D1:** replace the Sabrent with a second adapter of the Syba's model
-  (C-Media, flat, about 22 dB MER) before any VARA testing. Acceptance: all four
-  16QAM paths within about 1 dB MER and flat, and the tone check within 1 dB. If
-  that isn't possible, report the ceiling in every chart.
+- **D1 (decided 13 Nov): keep the current adapters.** No second adapter is available.
+  The ceiling is a stated bench limit: every chart marks the highest data S:N the
+  bench reached, and the report says the fastest modes may be capped by it. The
+  data direction stays station 1 (Syba playback) → station 2 (Sabrent capture). The
+  16QAM path check before each campaign records the Sabrent's state that day.
 - Turn off USB selective suspend (still on).
-- **Level policy, Decision D5:** set each modem so its **average** power at the IONOS
+- **Level policy (D5, decided 13 Nov):** set each modem so its **average** power at the IONOS
   matches the reference, which is what the IONOS S:N setting assumes, while keeping
   the Lvl meter out of the red. Record the crest factor. Modems with high peaks then
   get no S:N advantage from a hotter average, and the real-transmitter caveat about
@@ -89,7 +88,7 @@ below 10 dB.
 6. A first report generator: goodput, net throughput and message success against
    measured S:N, per modem and profile.
 
-**Stage 1: ARDOP 1.0.2.9, WGN sweep** (unattended, about 18 h)
+**Stage 1: ARDOP 1.0.2.9 (the release from winlink.org), WGN sweep** (unattended, about 18 h)
 - One-way, recovery on, time-boxed. IONOS settings chosen to give data S:N of
   about 20, 15, 10, 5, 0 and −5 dB (exact settings from the listen check), or until
   nothing is delivered. 3 replicates, then 5 at the two points around the knee.
@@ -105,10 +104,11 @@ nor a new adapter)
 - Then the same WGN sweep as ARDOP.
 
 **Stage 3: VARA HF 4.09**
-- **Decision D2:** registration at both ends (a key for VE3XZQ, or a bench licence
-  from the author). Unregistered VARA is speed-limited, so its results can't be
-  published until this is settled.
-- Ideally after D1, so its top speed isn't capped by the bench.
+- **D2 (decided 13 Nov): settle registration at the start of the VARA stage.** First
+  check whether one callsign's key registered on both instances gives full speed
+  (the operator may test this beforehand). If not, ask the VARA author about a key
+  for the second callsign or a bench licence. Unregistered VARA is speed-limited,
+  so no VARA result is published until both ends are confirmed registered.
 
 **Stage 4: fading profiles** (all modems)
 - MPG, MPM, MPP, MPD at three S:N points per modem: near its best, mid-range, and
@@ -119,10 +119,11 @@ nor a new adapter)
 - Frequency offset ±50 Hz, slow drift, flat fading, and an S:N step mid-run
   (adaptation speed).
 
-**Optional: ARDOP 1.0.3.x.** **Decision D4:** the current ARSFI development build
-verifies RS parity as well as the CRC, which should remove the 16QAM corruption.
-Repeating the WGN 28 point and the sweep with it would show what that is worth. It
-should only be published if that build is a release.
+**Stage 6 (last): Phil Sherrod's updated ARDOP (1.0.3.x development build).** D4,
+decided 13 Nov. ARDOP 1.0.2.9 as shipped by winlink.org is the release under test.
+The updated build verifies RS parity as well as the CRC, which should remove the
+16QAM corruption. It is tested at the end, on the same points as 1.0.2.9, and
+labelled as a development build in every chart and table.
 
 ## Time budget (unattended running)
 
@@ -140,12 +141,12 @@ recovery working it can run overnight and across days. A second Windows machine
 or IONOS isn't needed. If time is short, use 2 replicates on the fading coarse
 pass and add replicates only where results are close.
 
-## Decisions needed
+## Decisions (13 Nov 2026)
 
-| # | Decision | Recommendation |
+| # | Decision | Outcome |
 |---|---|---|
-| D1 | Replace the Sabrent with a second Syba-model adapter | Yes, before VARA |
-| D2 | VARA HF registration at both ends | Ask the VARA author about a key for the second callsign or a bench licence |
-| D3 | Low-S:N run length | Time-box at 60 min, plus a small payload set below 10 dB |
-| D4 | Include ARDOP 1.0.3.x | Yes, if it's a release (or labelled as a development build) |
-| D5 | Level policy | Equal average power at the IONOS reference; Lvl never red; record the crest factor |
+| D1 | Replace the Sabrent | **No:** no second adapter. Keep the current adapters, report the ceiling, keep the direction 1 → 2. |
+| D2 | VARA HF registration at both ends | **At the VARA stage:** first test one key on both instances; else ask the author. No VARA results published until both ends are confirmed registered. |
+| D3 | Low-S:N run length | **60-min time box on every run**, plus **Text_5KB below 10 dB**, with an overlap point. Documented in test-protocol §4. |
+| D4 | ARDOP versions | **1.0.2.9 (release) now; Phil's updated build (1.0.3.x, development) last**, labelled as such. |
+| D5 | Level policy | **Equal average power** at the IONOS reference; Lvl never red; record the crest factor. |
