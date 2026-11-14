@@ -127,7 +127,10 @@ The full wording is in [test-protocol.md](test-protocol.md) §4.
   nothing is delivered. **Run 13–14 Nov:** WGN 40, 22, 17 (Text_50KB) and 17, 12, 7, 2
   (Text_5KB) gave 21.9, 15.4, 10.8, 6.7, 3.1 and −1.8 dB. ARDOP still delivered 100% at
   −1.8 dB, so `sweep-ardop-5k-low` adds WGN −5 and −10 (about −5 and −7 dB, the
-  bench's floor). 3 replicates, then 5 at the two points around the knee.
+  bench's floor). **Result (14 Nov):** 0/6 at −6.0 dB (connects, then drops), no
+  connection at WGN −10. Reliability cliff between −1.8 and −6 dB. The knee by the
+  definition above is 3.1 dB; it is still 100% reliable at −1.8 dB. Summary in
+  results-log.md, "Stage 1 summary". 3 replicates, then 5 at the two points around the knee.
 - WGN 22 and 28 are already done at cal7: 77 messages. They are re-run one-way
   only if Stage 0 changes the metrics.
 

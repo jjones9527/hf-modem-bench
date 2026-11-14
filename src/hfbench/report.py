@@ -184,8 +184,9 @@ def plot(points: list[Point], out_dir: str | Path, *, ceiling_db: float | None =
                                 va="center", fontsize=9, color=INK)
             if ceiling_db is not None:
                 ax.axvline(ceiling_db, color=INK2, lw=1, ls=(0, (4, 3)), zorder=1)
-                ax.annotate(f"bench ceiling ~{ceiling_db:.0f} dB", (ceiling_db, 1), xycoords=("data", "axes fraction"),
-                            xytext=(-4, -4), textcoords="offset points", ha="right", va="top", fontsize=8, color=INK2)
+                # at the foot of the line: the top is where the best points sit
+                ax.annotate(f"bench ceiling ~{ceiling_db:.0f} dB", (ceiling_db, 0), xycoords=("data", "axes fraction"),
+                            xytext=(-4, 4), textcoords="offset points", ha="right", va="bottom", fontsize=8, color=INK2)
             ax.set_ylim(0, 105 if metric == "success" else max(ymax * 1.12, 1))
             ax.set_xlabel("Measured data-frame S:N (dB, 3 kHz)", color=INK2, fontsize=9)
             ax.set_ylabel(ylabel, color=INK2, fontsize=9)

@@ -1058,6 +1058,59 @@ Tests: `test_failed_calls_are_retried_then_dnc`, `test_call_that_connects_on_ret
 0003 had recorded no start and is simply re-run. 0002 stands. Campaign restarted
 15:25 UTC with the fixed runner.
 
+### sweep-ardop-5k-low results (14 Nov 2026, re-run from 15:25 UTC)
+
+With the re-call fix, all 6 runs ended without the operator. Every one is `dnc`.
+
+| IONOS setting | measured data S:N | runs | result |
+|---|---|---|---|
+| WGN −5 | **−6.0 dB** (−5.9 / −6.0 / −6.1; ARDOP PTT −5.7) | 0002, 0004, 0006 | connected each time, **0 of 10 delivered**; session dropped 8–19 min in |
+| WGN −10 | no data frames to measure (ARDOP's connect bursts read −10.3 to −10.7 dB) | 0001, 0003, 0005 | **no connection after 3 calls**, 3 times |
+
+How the −6 dB sessions fail: the connect (4FSK) succeeds within seconds, but the
+B2F handshake crawls. In 0004, station 2 logged its proposals at 15:49:04, and station
+1 logged them at 15:56:19, about 7 min for a few hundred bytes. The first message
+starts, and the link drops 1–8 min later. The sender's ARQ stats (0002, 0004): ARDOP's own leader
+S:N −10.2 / −9.8 dB, 49 and 40 of about 250 frame-type decodes failed, 4FSK quality
+44–61 (97 at good S:N). Only 1,839 bytes were sent per session, and 66 received.
+
+At WGN −10, energy keying found no data bursts (expected, below about −2 dB). ARDOP's
+PTT log keys the connect requests at −10.3 to −10.7 dB. That is lower than the −7 dB
+expected from the idle noise floor (−22.4 dBFS at WGN −10), so this point is reported
+only as "below −6 dB: no connection" and isn't plotted.
+
+### Stage 1 summary: ARDOP 1.0.2.9 on WGN (13–14 Nov 2026)
+
+| measured data S:N | payload | delivered | goodput median | net throughput | main data frames |
+|---|---|---|---|---|---|
+| 21.9 dB (ceiling) | 50 KB | 30/30 | 1,548 bit/s | 1,259 bit/s | 16QAM.2000 |
+| 15.4 dB | 50 KB | 20/22 (2 corrupt, caught) | 1,259 bit/s | 999 bit/s | 8PSK.2000 |
+| 10.8 dB | 50 KB | 18/18 (time-boxed) | 684 bit/s | 552 bit/s | 4PSK.2000 |
+| 10.8 dB | 5 KB | 30/30 | 752 bit/s | 499 bit/s | 4PSK.2000 |
+| 6.7 dB | 5 KB | 30/30 | 247 bit/s | 206 bit/s | 4PSK.1000/2000 |
+| 3.1 dB | 5 KB | 30/30 | 160 bit/s | 143 bit/s | 4PSK.500 |
+| −1.8 dB | 5 KB | 21/21 (time-boxed) | 84 bit/s | 69 bit/s | 4PSK.500, some 4FSK |
+| −6.0 dB | 5 KB | 0/6 started (3 sessions) | | 0 | |
+| below −6 dB | 5 KB | no connection | | | |
+
+- **Speed in good conditions:** 1,548 bit/s per message, and 1,259 bit/s net, at the
+  bench ceiling (22 dB).
+- **Robustness:** every message delivered from 22 dB down to −1.8 dB, except 2 at
+  15.4 dB, which were corrupted frames that Winlink caught. Nothing delivered at −6 dB,
+  and no connection below. **The reliability cliff lies between −1.8 and −6 dB.**
+- **Knee by the plan's definition** (success ≥ 90% and net ≥ 10% of the best, i.e.
+  ≥ 126 bit/s): **3.1 dB** (143 bit/s). At −1.8 dB it is still 100% reliable but nets
+  69 bit/s (5.5%). The net criterion mixes payload sets, so both numbers are reported.
+- **Data integrity:** 179 of 179 delivered attachments are byte-identical. The weak
+  ARDOP 1.0.2.9 CRC shows as caught corruption (4 at 18 dB in cal7wgn28, 2 at 15.4
+  dB here), never as bad data delivered.
+
+Charts: `hfbench report logs/archive/sweep-ardop-50k logs/archive/sweep-ardop-5k
+logs/archive/sweep-ardop-5k-low --ceiling 22`.
+Frame types from station 1's ARDOP debug log ("Frame Type OK") in runs 0001 (15.4 dB:
+8PSK.2000 309 of 313), 0003 (21.9 dB: 16QAM.2000 788 of 796) and 0004 (10.8 dB, 50 KB:
+4PSK.2000 536).
+
 ---
 
 ## Planned next
