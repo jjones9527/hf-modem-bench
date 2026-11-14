@@ -992,8 +992,19 @@ no operator action, and **no failed message**.
   The fixed per-message handover (about 20 s) costs more on a 4.3 KB transfer than on
   a 42 KB one. Net throughput is therefore only comparable within a payload set; the
   curves are compared between modems at equal payload.
-- **The steepest drop is 10.8 → 6.7 dB** (752 → 247 bit/s): ARDOP drops from its
-  4-carrier PSK modes to the narrower ones there.
+- **The steepest drop is 10.8 → 6.7 dB** (752 → 247 bit/s). Data frames decoded at
+  station 1 (ARDOP debug log, "Frame Type OK"; the archived log ends at 07:12, so
+  WGN 12 is from run 0005's first minutes only):
+
+  | point | frames decoded |
+  |---|---|
+  | 10.8 dB (0003) | 4PSK.2000.100 94, 4PSK.1000/500 4 |
+  | 6.7 dB (0005, partial) | 4PSK.1000.100 23, 4PSK.2000.100 13 |
+  | 3.1 dB (0001) | 4PSK.500.100 380, 4FSK.500 1 |
+  | −1.8 dB (0004) | 4PSK.500.100 546, 4FSK.500.100 41 |
+
+  ARDOP moves from 2000 Hz 4PSK to 1000 Hz around 7 dB, to 500 Hz 4PSK by 3 dB, and
+  begins to fall back to 4FSK at −1.8 dB.
 - **No knee yet.** ARDOP still delivers every message at −1.8 dB, at 84 bit/s.
 
 **IONOS noise is not linear in the setting.** Per-run noise floor and received signal
