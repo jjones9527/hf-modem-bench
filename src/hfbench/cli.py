@@ -363,7 +363,8 @@ def _listen_per_run(audio, series, ptt, campaign: Path, energy_sender: int | Non
     rows_out = []
     print(f"{'run':<22} {'setting':>7} {'payload':<10} {'data S:N (n)':>15} {'control S:N':>12} {'ARDOP-PTT data':>15}")
     for r in man:
-        if not r.get("end_utc"):
+        # Only each run's final attempt is a result (as in `hfbench results`).
+        if not r.get("end_utc") or r.get("final_attempt", "yes") != "yes":
             continue
         a = datetime.fromisoformat(r["start_utc"]).timestamp()
         b = datetime.fromisoformat(r["end_utc"]).timestamp()

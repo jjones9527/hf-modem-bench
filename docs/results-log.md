@@ -914,6 +914,62 @@ windows showed "Channel Free" at WGN 40.
 **Also seen:** `-0004` (WGN 17, about 10 dB) was the first time-boxed run: 6/10
 delivered at 683–701 bit/s in 60 min, cut cleanly, followed by a normal recovery.
 
+### sweep-ardop-50k results (13–14 Nov 2026, ended 04:02 UTC)
+
+All 9 runs ran unattended after the busy-detector fix. There were 4 automatic
+recoveries (after 3 time boxes and 2 failures), and none needed the operator.
+Goodput is the receiver's figure. S:N is the measured data-frame S:N
+(`listen-report --runs`, energy keying). Runs 0008 and 0009 started after the
+recording ended, so their points use the two recorded replicates.
+
+| IONOS setting | measured data S:N | runs | delivered / attempted | goodput median (range) | net throughput | outcomes |
+|---|---|---|---|---|---|---|
+| WGN 40 | **21.9 dB** (21.9–22.0) | 0002, 0003, 0005 | 30/30 | 1,548 bit/s (1,380–1,563) | 1,259 bit/s | 3 completed |
+| WGN 22 | **15.4 dB** (15.4, 15.4) | 0001, 0007, 0009 | 20/22 | 1,259 bit/s (1,161–1,295) | 999 bit/s | 1 completed, 2 dnc |
+| WGN 17 | **10.8 dB** (10.8, 10.8) | 0004, 0006, 0008 | 18/18 | 684 bit/s (665–723) | 552 bit/s | 3 time-boxed at 6/10 |
+
+- **Data integrity:** all 68 delivered attachments are byte-identical to the payload
+  (`results --verify`).
+- **The bench ceiling is about 22 dB, not 19.** WGN 40 gives 21.9 dB
+  measured data S:N on the 2 → 1 path. The earlier 18–19 dB came from WGN 28. The
+  charts mark 22 dB.
+- **Zero failures at 22 dB (30/30, 16QAM).** At about 18 dB (WGN 28, cal7) 16QAM lost
+  about 9%. This fits the CRC analysis: fewer symbol errors give the weak CRC fewer
+  chances to miss one.
+- **Two failures at 15.4 dB (8PSK), both corruption that Winlink caught:**
+  - `0007` KI7L6KOQNGPV: "Checksum error. Failed to assemble correct binary image."
+    `check_partial.py` finds 7 corrupted bytes within 78 bytes (stream offsets
+    27185–27263), with XOR patterns of 1–3 adjacent bits. That is the one-carrier,
+    few-symbol signature seen at 16QAM, so the CRC weakness also affects 8PSK.
+  - `0009` ERZXWBFBHD5G: "Received data stream not correct format.
+    ByteIndex=104679". Winlink's B2F block parser rejected the stream 2.5 min into
+    the message and disconnected. The partial is clean up to its last byte, so the
+    bad bytes landed in the block framing rather than the compressed data.
+    **`hfbench results` first classed this as a stall.** "not correct format" is now
+    a corruption marker (test fixture `tests/fixtures/sweep0009`). It also appears 5
+    times in the 10 Nov two-way logs, which predate `results`.
+- **About 10 dB is a clean slow regime:** 18/18 delivered and no errors. 60 min
+  holds 6 messages, so every run was time-boxed.
+- **Net vs goodput:** net is 80–81% of goodput where nothing failed (handover
+  and session set-up) and 79% at 15.4 dB, where two failed sessions cost time.
+
+Charts: `hfbench report logs/archive/sweep-ardop-50k --ceiling 22` (goodput, net,
+delivered; WGN).
+
+**Pre-check for sweep-ardop-5k (14 Nov 04:05 UTC):**
+- **Tone check:** transmit −0.2 / −0.3 dB against the reference (from WGN 20),
+  mismatch +0.1, receive mismatch +0.7. Unchanged.
+- **16QAM path check:** the Sabrent's capture has recovered since 13 Nov.
+
+| 16QAM path check, full level | 13 Nov 16:25 | 14 Nov 04:05 |
+|---|---|---|
+| Syba → Syba | 21.6 dB | 21.9 dB |
+| Syba → Sabrent | 14.7 | 15.2 |
+| Sabrent → Syba (data path) | 17.0 | **22.6** (tilt 8.2) |
+| Sabrent → Sabrent | 12.7 | 19.1 |
+
+sweep-ardop-5k started 04:13 UTC with listen `listen-20261114-0413-1…5`.
+
 ---
 
 ## Planned next

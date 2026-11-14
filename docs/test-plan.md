@@ -57,14 +57,16 @@ The full wording is in [test-protocol.md](test-protocol.md) §4.
 
 ## Bench
 
-- **Measured ceiling:** data S:N about 18–20 dB with the current adapters. The bench
+- **Measured ceiling:** data S:N about 22 dB with the current adapters (WGN 40 on the
+  2 → 1 path, 14 Nov; first estimated at 18–20 dB from WGN 28). The bench
   floor is 32 dB below the reference, and the 16QAM MER on Sabrent paths is 13–19 dB
   and varies. That's enough for ARDOP's top mode. It probably caps VARA HF below
   its fastest levels, which would understate exactly the "good conditions" answer.
 - **D1 (decided 13 Nov): keep the current adapters.** No second adapter is available.
   The ceiling is a stated bench limit: every chart marks the highest data S:N the
   bench reached, and the report says the fastest modes may be capped by it. The
-  data direction stays station 1 (Syba playback) → station 2 (Sabrent capture). The
+  data direction is station 2 (Sabrent playback) → station 1 (Syba capture) from 13 Nov,
+  when the Sabrent's capture was degrading. The
   16QAM path check before each campaign records the Sabrent's state that day.
 - Turn off USB selective suspend (still on).
 - **Level policy (D5, decided 13 Nov):** set each modem so its **average** power at the IONOS
@@ -170,7 +172,7 @@ pass and add replicates only where results are close.
 
 | # | Decision | Outcome |
 |---|---|---|
-| D1 | Replace the Sabrent | **No:** no second adapter. Keep the current adapters, report the ceiling, keep the direction 1 → 2. |
+| D1 | Replace the Sabrent | **No:** no second adapter. Keep the current adapters, report the ceiling, data direction 2 → 1 from 13 Nov. |
 | D2 | VARA HF registration at both ends | **At the VARA stage:** first test one key on both instances; else ask the author. No VARA results published until both ends are confirmed registered. |
 | D3 | Low-S:N run length | **60-min time box on every run**, plus **Text_5KB below 10 dB**, with an overlap point. Documented in test-protocol §4. |
 | D4 | ARDOP versions | **1.0.2.9 (release) now; Phil's updated build (1.0.3.x, development) last**, labelled as such. |

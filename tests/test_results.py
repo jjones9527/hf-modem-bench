@@ -96,3 +96,16 @@ def test_modem_colors_are_fixed_slots():
     from hfbench import report as rp
     assert rp.modem_color("ARDOP 1.0.2.9") == "#2a78d6" and rp.modem_color("VARA HF 4.09") == "#eb6834"
     __import__("pytest").raises(ValueError, rp.modem_color, "Pactor 4")
+
+
+def test_framing_error_is_corruption_not_stall():
+    """sweep-ardop-50k-0009: Winlink's B2F block parser rejected the stream
+    ('Received data stream not correct format'). That is bad data caught by
+    Winlink, so it counts as corrupted, not as a stall."""
+    fx = Path(__file__).parent / "fixtures" / "sweep0009"
+    rows = list(csv.DictReader(open(fx / "manifest.csv", encoding="utf-8")))
+    logs = {st: lp.parse_winlink_log(fx / f"station{st}-winlink.log") for st in (1, 2)}
+    (r,) = rs.campaign_results(rows, logs)
+    assert (r.delivered, r.corrupted, r.stall) == (2, 1, 0)
+    (bad,) = [m for m in r.messages if m.status == "corrupted"]
+    assert bad.mid == "ERZXWBFBHD5G" and "not correct format" in bad.error

@@ -1,0 +1,49 @@
+2026/11/14 03:44:47 1.8.6.0 *** Ardop P2P *** No radio has been selected.
+2026/11/14 03:44:47 1.8.6.0 *** Ardop P2P *** Waiting for TNC to initialize...
+2026/11/14 03:44:55 1.8.6.0 *** Ardop P2P *** Ready to start calling.
+2026/11/14 03:48:40 1.8.6.0 
+2026/11/14 03:48:40 1.8.6.0 *** Ardop P2P *** Connected to Peer: VE3XZQ @ 2026/11/14 03:48:40  USB Dial: 7098.500
+2026/11/14 03:48:41 1.8.6.0 *** Ardop P2P    ;FW: VA3ZTF
+2026/11/14 03:48:41 1.8.6.0 *** Ardop P2P    [RMS Express-1.8.6.0-B2FHM$]
+2026/11/14 03:48:41 1.8.6.0 *** Ardop P2P    VE3XZQ DE VA3ZTF >
+2026/11/14 03:49:09 1.8.6.0 *** Ardop P2P ;FW: VE3XZQ
+2026/11/14 03:49:09 1.8.6.0 *** Ardop P2P [RMS Express-1.8.6.0-B2FHM$]
+2026/11/14 03:49:09 1.8.6.0 *** Ardop P2P ; VA3ZTF DE VE3XZQ (AA00AA)
+2026/11/14 03:49:15 1.8.6.0 *** Ardop P2P ;PM: VA3ZTF 6WK9YTIQYWMK 42100 VE3XZQ hfbench sweep-ardop-50k-0009 6/10
+2026/11/14 03:49:15 1.8.6.0 *** Ardop P2P ;PM: VA3ZTF 8X4RK8CB22ED 42127 VE3XZQ hfbench sweep-ardop-50k-0009 4/10
+2026/11/14 03:49:20 1.8.6.0 *** Ardop P2P ;PM: VA3ZTF ERZXWBFBHD5G 42156 VE3XZQ hfbench sweep-ardop-50k-0009 10/10
+2026/11/14 03:49:20 1.8.6.0 *** Ardop P2P ;PM: VA3ZTF 7724CQPXSNF2 42163 VE3XZQ hfbench sweep-ardop-50k-0009 2/10
+2026/11/14 03:49:20 1.8.6.0 *** Ardop P2P ;PM: VA3ZTF W9SC4AVJCXPR 42168 VE3XZQ hfbench sweep-ardop-50k-0009 3/10
+2026/11/14 03:49:20 1.8.6.0 *** Ardop P2P ;PM: VA3ZTF QD6VFFTL0XFP 42170 VE3XZQ hfbench sweep-ardop-50k-0009 8/10
+2026/11/14 03:49:25 1.8.6.0 *** Ardop P2P ;PM: VA3ZTF RLH4Y4IQ251K 42171 VE3XZQ hfbench sweep-ardop-50k-0009 9/10
+2026/11/14 03:49:25 1.8.6.0 *** Ardop P2P ;PM: VA3ZTF G0JS6K3OB85R 42201 VE3XZQ hfbench sweep-ardop-50k-0009 7/10
+2026/11/14 03:49:25 1.8.6.0 *** Ardop P2P ;PM: VA3ZTF GYB30V9OPRQV 42202 VE3XZQ hfbench sweep-ardop-50k-0009 1/10
+2026/11/14 03:49:31 1.8.6.0 *** Ardop P2P ;PM: VA3ZTF HY550N8ZVJ1N 42207 VE3XZQ hfbench sweep-ardop-50k-0009 5/10
+2026/11/14 03:49:31 1.8.6.0 *** Ardop P2P FC EM 6WK9YTIQYWMK 51418 42100 0
+2026/11/14 03:49:31 1.8.6.0 *** Ardop P2P F> 6E
+2026/11/14 03:49:31 1.8.6.0 *** Ardop P2P    FS Y
+2026/11/14 03:49:54 1.8.6.0 *** Ardop P2P *** Receiving 6WK9YTIQYWMK
+2026/11/14 03:54:15 1.8.6.0 *** Stored unauthenticated P2P message 6WK9YTIQYWMK without performing automatic system or form-data actions.
+2026/11/14 03:54:15 1.8.6.0 *** Message 6WK9YTIQYWMK posted to InBox
+2026/11/14 03:54:15 1.8.6.0 *** Ardop P2P *** 6WK9YTIQYWMK - 51418/42100 bytes received
+2026/11/14 03:54:15 1.8.6.0 *** Ardop P2P *** Bytes: 42478,  Time: 04:20,  bytes/minute: 9775
+2026/11/14 03:54:15 1.8.6.0 *** Ardop P2P    FF
+2026/11/14 03:54:20 1.8.6.0 *** Logging to CMS P2P message 6WK9YTIQYWMK
+2026/11/14 03:54:29 1.8.6.0 *** Ardop P2P FC EM 8X4RK8CB22ED 51418 42127 0
+2026/11/14 03:54:29 1.8.6.0 *** Ardop P2P F> FA
+2026/11/14 03:54:29 1.8.6.0 *** Ardop P2P    FS Y
+2026/11/14 03:54:47 1.8.6.0 *** Ardop P2P *** Receiving 8X4RK8CB22ED
+2026/11/14 03:59:10 1.8.6.0 *** Stored unauthenticated P2P message 8X4RK8CB22ED without performing automatic system or form-data actions.
+2026/11/14 03:59:10 1.8.6.0 *** Message 8X4RK8CB22ED posted to InBox
+2026/11/14 03:59:10 1.8.6.0 *** Ardop P2P *** 8X4RK8CB22ED - 51418/42127 bytes received
+2026/11/14 03:59:10 1.8.6.0 *** Ardop P2P *** Bytes: 42505,  Time: 04:23,  bytes/minute: 9680
+2026/11/14 03:59:10 1.8.6.0 *** Ardop P2P    FF
+2026/11/14 03:59:11 1.8.6.0 *** Logging to CMS P2P message 8X4RK8CB22ED
+2026/11/14 03:59:33 1.8.6.0 *** Ardop P2P FC EM ERZXWBFBHD5G 51419 42156 0
+2026/11/14 03:59:33 1.8.6.0 *** Ardop P2P F> 90
+2026/11/14 03:59:33 1.8.6.0 *** Ardop P2P    FS Y
+2026/11/14 03:59:57 1.8.6.0 *** Ardop P2P *** Receiving ERZXWBFBHD5G
+2026/11/14 04:02:08 1.8.6.0 *** Ardop P2P *** *** Link Error - Received data stream not correct format. ByteIndex=104679
+2026/11/14 04:02:08 1.8.6.0 *** Ardop P2P *** Link Error - Received data stream not correct format. ByteIndex=104679
+2026/11/14 04:02:08 1.8.6.0 *** Ardop P2P *** Disconnected from Peer: VE3XZQ @ 2026/11/14 04:02:08
+2026/11/14 04:02:08 1.8.6.0 *** Ardop P2P *** Session: 13.5 min;  Avg Throughput: 7618 Bytes/min;   1 Min Peak Throughput: 7618 Bytes/min

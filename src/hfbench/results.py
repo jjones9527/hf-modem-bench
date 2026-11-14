@@ -24,7 +24,8 @@ from pathlib import Path
 from . import logparse as lp
 
 SLACK = timedelta(seconds=30)
-CORRUPT_MARKERS = ("checksum error", "unable to decompress", "failed to assemble")
+CORRUPT_MARKERS = ("checksum error", "unable to decompress", "failed to assemble",
+                   "not correct format")   # B2F block framing rejected the data
 
 
 @dataclass
