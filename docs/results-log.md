@@ -970,6 +970,60 @@ delivered; WGN).
 
 sweep-ardop-5k started 04:13 UTC with listen `listen-20261114-0413-1…5`.
 
+### sweep-ardop-5k results (14 Nov 2026, 04:13–12:10 UTC)
+
+12 runs, Text_5KB, one-way 2 → 1. Three automatic recoveries (all after time boxes),
+no operator action, and **no failed message**.
+
+| IONOS setting | measured data S:N | delivered / attempted | goodput median (range) | net throughput | outcomes |
+|---|---|---|---|---|---|
+| WGN 17 | **10.8 dB** | 30/30 | 752 bit/s (530–860) | 499 bit/s | 3 completed |
+| WGN 12 | **6.7 dB** (6.6, 6.7) | 30/30 | 247 bit/s (195–331) | 206 bit/s | 3 completed |
+| WGN 7 | **3.1 dB** | 30/30 | 160 bit/s (130–182) | 143 bit/s | 3 completed |
+| WGN 2 | **−1.8 dB** | 21/21 | 84 bit/s (76–87) | 69 bit/s | 3 time-boxed at 7/10 |
+
+- **Data integrity:** all 111 delivered attachments are byte-identical to the payload.
+- **S:N:** energy keying and ARDOP's PTT agree to 0.1 dB at every point, including
+  −1.8 dB. Run 0012 started 3 min before the recorder's third segment ended (5 bursts
+  recorded), so its reading is ignored. `hfbench report` now needs at least 30 data
+  bursts for a run's S:N (`MIN_SNR_BURSTS`), and the 12 dB point uses 0005 and 0009.
+- **The overlap point joins the two payload sets.** At 10.8 dB, Text_5KB goodput is
+  752 bit/s against 684 bit/s for Text_50KB, but net throughput is 499 against 552 bit/s.
+  The fixed per-message handover (about 20 s) costs more on a 4.3 KB transfer than on
+  a 42 KB one. Net throughput is therefore only comparable within a payload set; the
+  curves are compared between modems at equal payload.
+- **The steepest drop is 10.8 → 6.7 dB** (752 → 247 bit/s): ARDOP drops from its
+  4-carrier PSK modes to the narrower ones there.
+- **No knee yet.** ARDOP still delivers every message at −1.8 dB, at 84 bit/s.
+
+**IONOS noise is not linear in the setting.** Per-run noise floor and received signal
+level on station 1's microphone (2 → 1 path):
+
+| WGN setting | noise floor dBFS (3 kHz) | received signal dBFS | measured data S:N | setting − measured |
+|---|---|---|---|---|
+| 40 | −52.3 | −30.3 | 21.9 | (bench ceiling) |
+| 22 | −44.5 | −29.1 | 15.4 | 6.6 |
+| 17 | −40.3 | −29.4 | 10.8 | 6.2 |
+| 12 | −36.0 | −29.3 | 6.7 | 5.3 |
+| 7 | −31.9 | −28.7 | 3.1 | 3.9 |
+| 2 | −28.3 | −30.1 | −1.8 | 3.8 |
+| −5 | −24.4 (idle check) | | about −5 (expected) | |
+| −10 | −22.4 (idle check) | | about −7 (expected) | |
+
+The signal stays within 1.6 dB while each 5 dB step adds only 3.6–4.3 dB of noise, and
+less below WGN 2. This is why the chart axis is the measured S:N. It also means
+the setting-to-S:N offset can't be carried between settings (test-plan.md updated).
+The IONOS accepted WGN −5 and −10 (and the Lvl meter, which reads the input, is
+unaffected).
+
+Charts (both payload sets): `hfbench report logs/archive/sweep-ardop-50k
+logs/archive/sweep-ardop-5k --ceiling 22`.
+
+**Next: `sweep-ardop-5k-low`** (WGN −5 and −10, Text_5KB, 3 replicates, seed 14), started
+14 Nov 12:20 UTC after a fresh pre-check. Tone check: transmit −0.0 / −0.3 dB,
+mismatches unchanged. 16QAM data path 2 → 1: 20.7–22.0 dB MER. Listen
+`listen-20261114-1220-1…3`.
+
 ---
 
 ## Planned next

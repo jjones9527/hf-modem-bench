@@ -88,11 +88,17 @@ The full wording is in [test-protocol.md](test-protocol.md) §4.
    - **Validation:** on oneway28r, energy keying gave 18.3 dB against 18.4 dB from
      ARDOP's PTT, with burst starts within 0.06 s. In one run, gaps in ARDOP's PTT
      record around midnight made PTT keying read −10.7 dB.
-   - **Limit:** synthetic tests hold within 1 dB down to **0 dB**. Below that the
-     1 dB rise threshold misses bursts. For points under about 0 dB, ARDOP uses its PTT
-     log; other modems use their offset (measured S:N − setting) from the
-     higher-S:N points of the same campaign. The S:N lost there is IONOS noise, where
-     the relationship is linear.
+   - **Limit:** synthetic tests hold within 1 dB down to **0 dB**. On the bench,
+     energy keying still matched ARDOP's PTT at **−1.8 dB** (sweep-ardop-5k, WGN 2).
+     Below about −2 dB, ARDOP uses its PTT log. Other modems use their received
+     signal level from the higher-S:N points of the same campaign, minus the
+     noise floor measured at the setting (idle periods, always measurable).
+   - **The IONOS setting is not linear in noise (found 14 Nov).** The received signal
+     level is constant within 1.6 dB across settings, but each 5 dB step down in the
+     setting adds only 3.6–4.3 dB of noise, and less below WGN 2 (noise floor at WGN
+     2 / −5 / −10: −28.3 / −24.4 / −22.4 dBFS). The offset (setting − measured)
+     is therefore not constant (6.6 dB at WGN 22, 3.8 dB at WGN 2), and it can't be
+     carried from one setting to another. The bench's lowest data S:N is about −7 dB.
 4. **Done 13 Nov:** recovery and session start are modem-aware. `MODEM_PROFILES` in
    `bench.py` gives each modem's Winlink session type and each station's TNC program.
    The runner picks the profile from the run sheet's `modem`, and
@@ -118,7 +124,10 @@ The full wording is in [test-protocol.md](test-protocol.md) §4.
 **Stage 1: ARDOP 1.0.2.9 (the release from winlink.org), WGN sweep** (unattended, about 18 h)
 - One-way, recovery on, time-boxed. IONOS settings chosen to give data S:N of
   about 20, 15, 10, 5, 0 and −5 dB (exact settings from the listen check), or until
-  nothing is delivered. 3 replicates, then 5 at the two points around the knee.
+  nothing is delivered. **Run 13–14 Nov:** WGN 40, 22, 17 (Text_50KB) and 17, 12, 7, 2
+  (Text_5KB) gave 21.9, 15.4, 10.8, 6.7, 3.1 and −1.8 dB. ARDOP still delivered 100% at
+  −1.8 dB, so `sweep-ardop-5k-low` adds WGN −5 and −10 (about −5 and −7 dB, the
+  bench's floor). 3 replicates, then 5 at the two points around the knee.
 - WGN 22 and 28 are already done at cal7: 77 messages. They are re-run one-way
   only if Stage 0 changes the metrics.
 

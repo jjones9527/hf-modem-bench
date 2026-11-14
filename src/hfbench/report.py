@@ -36,6 +36,10 @@ INK = "#0b0b0b"
 INK2 = "#52514e"
 GRID = "#e4e3df"
 
+# Fewer data bursts than this in a run's S:N reading and the run gives no x value
+# (e.g. sweep-ardop-5k-0012: 5 bursts, recorder ended 27 min into the run).
+MIN_SNR_BURSTS = 30
+
 
 def modem_color(label: str) -> str:
     for i, name in enumerate(MODEM_SLOTS):
@@ -89,8 +93,10 @@ def build_points(campaign_dirs: list[str | Path]) -> list[Point]:
             g = groups.setdefault(key, {"runs": [], "snr": [], "good": [], "outcomes": []})
             g["runs"].append(r)
             g["outcomes"].append(r["outcome"])
-            if snr.get(r["run_id"], {}).get("data_snr_db"):
-                g["snr"].append(float(snr[r["run_id"]]["data_snr_db"]))
+            sr = snr.get(r["run_id"], {})
+            # a run only partly inside a recording gives too few bursts to trust
+            if sr.get("data_snr_db") and int(sr.get("data_n") or 0) >= MIN_SNR_BURSTS:
+                g["snr"].append(float(sr["data_snr_db"]))
             g["good"] += [float(m["goodput_bps"]) for m in msgs.get(r["run_id"], [])
                           if m["status"] == "delivered" and m["goodput_bps"]]
     points = []
