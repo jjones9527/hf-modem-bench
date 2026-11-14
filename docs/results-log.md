@@ -1035,6 +1035,29 @@ logs/archive/sweep-ardop-5k --ceiling 22`.
 mismatches unchanged. 16QAM data path 2 → 1: 20.7–22.0 dB MER. Listen
 `listen-20261114-1220-1…3`.
 
+### sweep-ardop-5k-low incident: failed calls were not retried (14 Nov)
+
+The operator saw a failed connection attempt during run 0003. The logs showed:
+
+- **0001 (WGN −10) and 0003 (WGN −10):** station 2 called once ("Calling VA3ZTF"), and
+  Winlink gave up 35–36 s later ("Failure connecting to VA3ZTF"). The runner then
+  waited out the 90-minute abort time with the bench idle. The protocol (§4) allows
+  `abort_retries` = 3 failed connects per run, but the runner never re-called. The
+  station 1 log it watches shows nothing for a failed call.
+- **0002 (WGN −5): a real result.** It connected at 13:57 after a 4-min call. The
+  B2F handshake took until 14:05, and the first 4.5 KB message was still incomplete
+  when the link dropped at 14:16 (19.4-min session, 0/10 delivered).
+
+**Fix:** while no session is detected, the runner reads the caller's session window
+every 30 s. Two readings in a row of "listening" (Start enabled, Abort disabled, not
+connected) mean the call failed. It presses Start again, and after `abort_retries`
+failed calls it ends the run as **`dnc` "no connection after N calls"**, within minutes.
+Tests: `test_failed_calls_are_retried_then_dnc`, `test_call_that_connects_on_retry_runs_normally`.
+
+0001 was marked **invalid** (runner fault: one call instead of three) and is re-run.
+0003 had recorded no start and is simply re-run. 0002 stands. Campaign restarted
+15:25 UTC with the fixed runner.
+
 ---
 
 ## Planned next

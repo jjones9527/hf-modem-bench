@@ -502,3 +502,47 @@ def test_prepare_uses_fresh_ids_when_winlink_skips_known_ones(tmp_path):
     finally:
         RecUI.import_xml = orig
     assert len(again) == 10 and not set(again) & known
+
+
+class CallingAutomation(FakeAutomation):
+    """The caller's window: each call fails after `fail_s` (back to listening) until
+    `connect_on` calls have been made; then it stays busy (the log shows the session)."""
+
+    def __init__(self, mids, clock, fail_s=36, connect_on=None):
+        super().__init__(mids)
+        self.clock, self.fail_s, self.connect_on, self.pressed = clock, fail_s, connect_on, []
+
+    def start(self):
+        super().start()
+        self.pressed.append(self.clock())
+
+    def call_idle(self):
+        if self.connect_on is not None and len(self.pressed) >= self.connect_on:
+            return False
+        return (self.clock() - self.pressed[-1]).total_seconds() >= self.fail_s
+
+
+def test_failed_calls_are_retried_then_dnc(tmp_path):
+    # sweep-ardop-5k-low-0001/0003 (14 Nov): one call failed after 36 s and the runner
+    # then sat out the 90-min abort time. Now: re-call, and dnc after abort_retries calls.
+    d, rows = _campaign(tmp_path, abort_minutes=90, abort_retries=3)
+    rp = Replay(FX / "winlink_ardop_p2p_20261110.log", T(18, 45))   # nothing connects
+    fa = CallingAutomation(["X"], rp.clock)
+    r = BenchRunner(d, rp.sessions, automation=fa, clock=rp.clock, sleep=rp.sleep,
+                    say=rp.said.append, poll_s=5).run_one(rows[0])
+    assert (r.outcome, r.note) == ("dnc", "no connection after 3 calls")
+    assert len(fa.pressed) == 3
+    assert rp.now - T(18, 45) < timedelta(minutes=6)                  # minutes, not 90
+    man = mf.build_manifest(mx.read_runsheet(d / "runsheet.csv"), mf.read_events(d / "events.jsonl"))
+    assert man[0]["outcome"] == "dnc" and "after 3 calls" in man[0]["notes"]
+
+
+def test_call_that_connects_on_retry_runs_normally(tmp_path):
+    # First call fails; the second is placed before the fixture's 17:49:28 session.
+    d, rows = _campaign(tmp_path, abort_minutes=60, abort_retries=3)
+    rp = Replay(FX / "winlink_ardop_p2p_20261110.log", T(17, 47, 30))
+    fa = CallingAutomation(SESSION6_MIDS, rp.clock, connect_on=2)
+    r = BenchRunner(d, rp.sessions, automation=fa, clock=rp.clock, sleep=rp.sleep,
+                    say=rp.said.append, poll_s=5).run_one(rows[0])
+    assert len(fa.pressed) == 2 and r.outcome == "completed"
+    assert any("calling again (2/3)" in s for s in rp.said)

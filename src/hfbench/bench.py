@@ -31,6 +31,7 @@ RUNSHEET = "runsheet.csv"
 EVENTS = "events.jsonl"
 
 CONNECT_SLACK = timedelta(seconds=5)  # log vs. arm-time skew allowed
+CALL_CHECK = timedelta(seconds=30)   # how often a pending call's state is read (failed call ~36 s)
 
 
 def latest_winlink_logs(install_dir: str | Path, n: int = 2) -> list[Path]:
@@ -144,6 +145,11 @@ class BenchRunner:
         session: lp.Session | None = None
         last_alert: datetime | None = None
         boxed_at: datetime | None = None
+        # Failed connects (test-protocol §4: abort after abort_retries failed connects).
+        max_calls = int(row.get("abort_retries") or 3)
+        calls, last_call, idle_seen = 1, armed, 0
+        can_watch_calls = (self.automation is not None and not resumed
+                           and callable(getattr(self.automation, "call_idle", None)))
         while True:
             k = (self.key() or "").lower()
             now = self.clock()
@@ -187,6 +193,31 @@ class BenchRunner:
                         self.automation.abort()
                     except Exception as e:
                         self.say(f"(automatic abort failed: {e})")
+
+            if session is None and can_watch_calls and now - last_call >= CALL_CHECK:
+                try:
+                    idle = self.automation.call_idle()
+                except Exception as e:
+                    idle = False
+                    self.say(f"(call state not readable: {e})")
+                # two idle readings in a row, so a window caught between states isn't a failure
+                idle_seen = idle_seen + 1 if idle else 0
+                if idle_seen >= 2:
+                    idle_seen = 0
+                    if calls >= max_calls:
+                        mf.start_run(self.events_path, rid, valid_ids=ids, retry=True, t=armed,
+                                     extra={"ionos_ack": ack_text})
+                        why = f"no connection after {calls} calls"
+                        mf.end_run(self.events_path, rid, "dnc", notes=why, t=now)
+                        self.say(f"{rid} -> dnc ({why})")
+                        return RunResult(rid, "dnc", None, why)
+                    calls += 1
+                    self.say(f"Call failed; calling again ({calls}/{max_calls}).")
+                    try:
+                        self.automation.start()
+                    except Exception as e:
+                        self.say(f"(could not press Start: {e})")
+                last_call = now
 
             ref = started_at or armed
             if now - ref > abort and (last_alert is None or now - last_alert >= timedelta(minutes=1)):
@@ -415,6 +446,12 @@ class WinlinkAutomation:
 
     def abort(self) -> None:
         self.ui[self.caller].abort()
+
+    def call_idle(self) -> bool:
+        """True when the caller's session window is back to listening (Start enabled,
+        Abort disabled, not connected): the last call failed ("Failure connecting")."""
+        st = self.ui[self.caller].status()
+        return not st.connected and st.can_start and not st.can_abort
 
     def recover(self, run_id: str) -> dict:
         """The operator's reset after a failed run, automated:
