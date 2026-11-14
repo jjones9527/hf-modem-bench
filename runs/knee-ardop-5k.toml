@@ -1,0 +1,34 @@
+# Stage 1 knee refinement (14 Nov 2026, operator approved): ARDOP 1.0.2.9 delivered 21/21 at -1.8 dB (WGN 2) and 0/6
+# at -6.0 dB (WGN -5). WGN 0 and -2 put points in that gap (expected about -3 to -4.5 dB; the IONOS noise is not
+# linear in the setting, so the measured S:N is the axis). Text_5KB, one-way 2 -> 1, recovery on, 60-min time box,
+# failed calls retried up to abort_retries.
+
+[campaign]
+name = "knee-ardop-5k"
+stage = "knee"
+replicates = 3
+profiles = ["WGN"]
+snr_db = [0, -2]
+order = "blocked-random"
+order_seed = 15
+abort_minutes = 90
+abort_retries = 3
+time_box_minutes = 60
+
+[ionos]
+bandwidth_hz = 3000
+multipaths = 2
+
+[payload]
+file = "Text_5KB"
+bytes = 5120
+sha256 = "85741279e9a689624407e58e599340c048a72fdd56c9695345c6a1ac827384d4"
+messages = 10
+
+[[modems]]
+name = "ARDOP"
+version = "1.0.2.9"
+bandwidth_hz = 2000
+
+[[impairments]]
+name = "none"

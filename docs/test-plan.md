@@ -149,6 +149,15 @@ nor a new adapter)
   for the second callsign or a bench licence. Unregistered VARA is speed-limited,
   so no VARA result is published until both ends are confirmed registered.
 
+**Stage 3b: Modem73** (added 14 Nov at the operator's request; not downloaded yet)
+- The operator downloads it when this stage comes up. Nothing about it is assumed
+  until then: version, licence, how it attaches to Winlink Express (session type,
+  TNC program and ports), and whether two instances can run on one PC.
+- Bring-up as for Stage 2: a profile in `MODEM_PROFILES` (unverified until tried),
+  its own TNC ports for each station, a UI survey, the drive level set to the
+  reference (D5), busy detection off if it has any, and a smoke test at about 18 dB.
+- Then the same WGN sweep as ARDOP. Its chart colour is fixed slot 6 (`#008300`).
+
 **Stage 4: fading profiles** (all modems)
 - MPG, MPM, MPP, MPD at three S:N points per modem: near its best, mid-range, and
   about 5 dB above its WGN knee. 3 replicates each, because the IONOS has no seed
@@ -175,7 +184,7 @@ low-S:N runs.
 | Fading (4 profiles × 3 S:N × 3) | 36 | about 35 |
 | Impairments | about 10 | about 9 |
 
-That's about 65 h per modem, about 260 h for four. Fading is the largest part. With
+That's about 65 h per modem, about 325 h for five (ARDOP 1.0.2.9, Data2G, Mercury, VARA HF, Modem73), plus Phil's ARDOP build on ARDOP's points. Fading is the largest part. With
 recovery working it can run overnight and across days. A second Windows machine
 or IONOS isn't needed. If time is short, use 2 replicates on the fading coarse
 pass and add replicates only where results are close.
