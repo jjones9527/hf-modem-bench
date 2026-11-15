@@ -1201,10 +1201,28 @@ plus `PTT ON/OFF` around every transmission (44 lines), `BITRATE`, `SN` and `IAM
 Winlink still sent `DISCONNECT` at 14:03:29, 5:00 after its last data-port write.
 **Winlink's 5-minute P2P inactivity timer is not reset by BUFFER, PTT, BITRATE or SN
 lines from the modem.** Winlink's own VARA command log does not record BUFFER or PTT
-lines at all, so it can't show this; the relay can. Not yet known: how real VARA HF
-avoids the timeout on long sends (whether Winlink then writes the message in smaller
-pieces, or something else resets the timer). Until that is solved, Mercury can't be
-swept fairly: every send longer than 5 minutes ends the session.
+lines at all, so it can't show this; the relay can. 
+
+**Same test with VARA HF 4.09.0001 (14:44-15:24 UTC, WGN 2, relay in front of station
+2's VARA).** VARA hits the same timer. Winlink again wrote the whole message (42,573
+bytes) in one go at 14:47:12, and VARA reported BUFFER every ~5 s (falling ~89 bytes per
+frame, about 1,150 bytes/min). Winlink sent `DISCONNECT` at 14:52:12 and every 5 min
+after. VARA answered only `OK` and kept the link (no `DISCONNECTED`), so Winlink stayed
+in the session and just logged "P2P session inactivity timeout. Disconnecting." each
+time. When the last byte was acknowledged (15:23:49, BUFFER 0) the receiver stored the
+message intact and answered `FF`, but VARA then carried out the pending disconnect
+(`DISCONNECTED` 15:23:51), so the `FF` never reached the sender: **station 2 has no
+"Completed send" and the delivered message is still in its Outbox, as with Mercury.**
+
+**Conclusion.** The 5-minute limit is Winlink Express's P2P inactivity timer, counted
+from the host's last data-port write; BUFFER/PTT/BITRATE lines don't reset it. Any
+VARA-protocol modem (VARA HF, Mercury, presumably Data2G) loses the session and the
+sender's receipt on a send longer than 5 minutes, after delivering it. VARA only delays
+the end until the current message is through; Mercury reports `DISCONNECTED` at once
+(while still sending), which is wrong by its own TNC.md but makes no difference to the
+outcome here. ARDOP isn't affected: 50 KB sends of 8-10 min ran in one session
+(sweep-ardop-50k at 10.8 dB). No setting for the timer was found in Winlink's ini
+files or documentation. How to handle it in the comparison is an open decision.
 
 ## Planned next
 
