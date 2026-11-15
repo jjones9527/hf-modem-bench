@@ -476,6 +476,20 @@ def test_modem_profiles_and_tnc_paths():
     assert any("VARA.exe" in q for q in seen)
 
 
+def test_mercury_runs_on_its_own_so_recovery_never_touches_it():
+    from hfbench.bench import modem_profile
+    from hfbench.winlink_ui import WinlinkProcesses
+    m = modem_profile("Mercury")
+    assert m.session_type == "Vara HF P2P" and m.tnc1 == m.tnc2 == ""
+    seen, killed = [], []
+    run = lambda args: (killed.append(args) if args[0] == "taskkill" else seen.append(args[-1])) or "123"
+    wp = WinlinkProcesses(run=run, tnc_exes={r"C:\RMS Express": m.tnc1})
+    paths = wp.paths(r"C:\RMS Express")
+    assert len(paths) == 1 and paths[0].endswith("RMS Express.exe")
+    wp.kill(r"C:\RMS Express")
+    assert not any("ercury" in q for q in seen) and len(killed) == 1   # Winlink only
+
+
 def test_recovery_opens_the_profiles_session_type(tmp_path):
     from hfbench.bench import MODEM_PROFILES
     wa, uis, log, camp = _recovery_bench(tmp_path)

@@ -394,7 +394,8 @@ class WinlinkProcesses:
 
     def __init__(self, run=None, tnc_exes: dict[str, str] | None = None):
         """tnc_exes maps an install folder to its TNC's full path; default
-        <install>\\ARDOP_Win.exe."""
+        <install>\\ARDOP_Win.exe. An empty path means the modem is not Winlink's
+        to start or stop (Mercury's GUI): it is never checked or killed."""
         import subprocess
         self._run = run or (lambda args: subprocess.run(args, capture_output=True, text=True, timeout=60).stdout)
         self.tnc_exes = tnc_exes or {}
@@ -403,8 +404,8 @@ class WinlinkProcesses:
         return self._run(["powershell", "-NoProfile", "-Command", script])
 
     def paths(self, install: str) -> list[str]:
-        return [str(Path(install) / "RMS Express.exe"),
-                self.tnc_exes.get(str(install), str(Path(install) / "ARDOP_Win.exe"))]
+        tnc = self.tnc_exes.get(str(install), str(Path(install) / "ARDOP_Win.exe"))
+        return [str(Path(install) / "RMS Express.exe")] + ([tnc] if tnc else [])
 
     def pids(self, install: str) -> dict[str, list[int]]:
         out = {}

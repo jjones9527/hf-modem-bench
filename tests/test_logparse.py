@@ -143,3 +143,22 @@ def test_parse_ardop_ptt(tmp_path):
     a, b = ivs[0]
     assert a == datetime(2026, 11, 10, 23, 45, 49, 420000, tzinfo=timezone.utc)
     assert (b - a).total_seconds() == pytest.approx(0.4)
+
+
+def test_vara_style_p2p_session_mercury():
+    """Winlink logs VARA-type sessions without the leading '***' (Mercury 1.9.23
+    through 'Vara HF P2P', 15 Nov 2026), and its summary says '1 Min Peak:'."""
+    from pathlib import Path
+    from hfbench import logparse as lp
+    d = Path(__file__).parent / "fixtures" / "vara_p2p"
+    s1, = lp.parse_winlink_log(d / "station1.log")
+    s2, = lp.parse_winlink_log(d / "station2.log")
+    assert s1.transport == s2.transport == "Vara HF P2P"
+    assert (s1.peer, s2.peer) == ("VE3XZQ", "VA3ZTF") and s1.closed and s2.closed
+    assert s2.dial_khz == 7098.5 and s2.sideband == "USB"
+    rx = {t.mid: t for t in s1.transfers if t.direction == "rx"}
+    t = rx["1LXNP3DKWQQB"]
+    assert t.completed and t.compressed_bytes == 42215 and t.winlink_time_s == 182
+    tx = {t.mid: t for t in s2.transfers if t.direction == "tx"}
+    assert tx["1LXNP3DKWQQB"].completed and tx["1LXNP3DKWQQB"].start_utc is not None
+    assert s1.avg_bytes_per_min == 12032

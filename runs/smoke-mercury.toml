@@ -1,0 +1,35 @@
+# Stage 2 bring-up smoke test (15 Nov 2026): Mercury 1.9.23 through Winlink Express "Vara HF P2P",
+# both GUIs started by hand (ports 8300 / 8310), tx_gain_db +3.5 (station 1) / +3.0 (station 2) for equal
+# average power at the IONOS reference (D5). WGN 18: Mercury sits at the tone reference, so its data S:N
+# should be close to the setting (tone S:N at WGN 20 = 19.7 dB); the listen recording gives the real value.
+# One run, Text_50KB, one-way 2 -> 1, recovery on. Also the first test of Winlink's 5-minute P2P inactivity
+# timeout on sends longer than 5 min, with "Log Vara commands" on at both stations.
+
+[campaign]
+name = "smoke-mercury"
+stage = "smoke"
+replicates = 1
+profiles = ["WGN"]
+snr_db = [18]
+order = "sequential"
+abort_minutes = 90
+abort_retries = 3
+time_box_minutes = 60
+
+[ionos]
+bandwidth_hz = 3000
+multipaths = 2
+
+[payload]
+file = "Text_50KB"
+bytes = 51200
+sha256 = "3ec10a0b30de0039bb0b949d7e160a5d4625c03ba2f245a60785d3973e0279f9"
+messages = 10
+
+[[modems]]
+name = "Mercury"
+version = "1.9.23"
+bandwidth_hz = 2750
+
+[[impairments]]
+name = "none"

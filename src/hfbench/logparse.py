@@ -27,6 +27,12 @@ from pathlib import Path
 _LINE_SPLIT = re.compile(r"\r\n|\r|\n")
 _WL_LINE = re.compile(r"^(\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2}) (\d+(?:\.\d+)+) ?(.*)$")
 _EVENT = re.compile(r"^\*\*\* (?P<tag>[^*]+?) \*\*\* (?P<ev>.*)$", re.S)
+# VARA-type sessions (VARA HF, and modems that speak its host protocol: Mercury,
+# Data2G) are logged without the leading "*** ":
+#   2026/11/15 03:15:05 1.8.6.0 Vara HF P2P *** Sending 1LXNP3DKWQQB.
+#   2026/11/15 03:14:41 1.8.6.0 Vara HF P2P    FC EM 1LXNP3DKWQQB 51439 42215 0
+# They are rewritten to the ARDOP form before parsing.
+_BARE_TAG = re.compile(r"^(?P<tag>Vara (?:HF|FM) P2P) (?P<rest>.*)$", re.S)
 
 
 def read_text(path: str | Path) -> list[str]:
@@ -111,7 +117,10 @@ _RX = {
     "msgs_sent": re.compile(r"^Messages sent: (?P<n>\d+)\.\s+Total bytes sent: (?P<b>[\d,]+),\s+Time: (?P<t>[\d:]+),\s+bytes/minute: (?P<bpm>[\d,]+)"),
     "msgs_recv": re.compile(r"^Messages Received: (?P<n>\d+)\.\s+Total bytes received: (?P<b>[\d,]+),\s+Total session time: (?P<t>[\d:]+),\s+bytes/minute: (?P<bpm>[\d,]+)"),
     "disconnected": re.compile(r"^Disconnected from (?:Peer: )?(?P<peer>\S+) @ (?P<ts>[\d/ :]+)"),
-    "summary": re.compile(r"^Session: (?P<min>[\d.]+) min;\s+Avg Throughput: (?P<avg>[\d,]+) Bytes/min;\s+1 Min Peak Throughput: (?P<peak>[\d,]+) Bytes/min"),
+    # ARDOP: "1 Min Peak Throughput: N Bytes/min"; VARA: "1 Min Peak: N Bytes/min; Average SNR: x dB"
+    "summary": re.compile(r"^Session: (?P<min>[\d.]+) min;\s+Avg Throughput: (?P<avg>[\d,]+) Bytes/min;\s+1 Min Peak(?: Throughput)?: (?P<peak>[\d,]+) Bytes/min"),
+    # VARA: "Peer-to-Peer Vara Connection to VA3ZTF @ 2026/11/15 03:14:17  USB Dial: 7098.500" (or "from")
+    "connected_vara": re.compile(r"^Peer-to-Peer \S+ Connection (?:to|from) (?P<peer>\S+) @ [\d/: ]+?(?:\s+(?P<sb>[A-Z]+) Dial: (?P<dial>[\d.]+))?\s*$"),
     "sending": re.compile(r"^Sending (?P<mid>\w+)\.?$"),
     "sent_done": re.compile(r"^Completed send of message (?P<mid>\w+)"),
     "sent_stats": re.compile(r"^Sent \d+ messages?\.\s+Bytes: (?P<b>[\d,]+),\s+Time: (?P<t>[\d:]+),\s+bytes/minute: (?P<bpm>[\d,]+)"),
@@ -130,7 +139,10 @@ def parse_winlink_log(path_or_lines) -> list[Session]:
     for line in lines:
         m = _WL_LINE.match(line)
         if m:
-            entries.append((_ts(m.group(1)), m.group(2), m.group(3)))
+            text = m.group(3)
+            if b := _BARE_TAG.match(text):
+                text = f"*** {b.group('tag')} {b.group('rest')}"
+            entries.append((_ts(m.group(1)), m.group(2), text))
         elif entries and line.strip():
             t, v, text = entries[-1]
             entries[-1] = (t, v, text + "\n" + line)
@@ -146,7 +158,7 @@ def parse_winlink_log(path_or_lines) -> list[Session]:
         m = _EVENT.match(text)
         if m:
             tag, ev = m.group("tag"), m.group("ev").strip()
-            c = _RX["connected"].match(ev)
+            c = _RX["connected"].match(ev) or _RX["connected_vara"].match(ev)
             if c:
                 if cur is not None:
                     sessions.append(cur)  # previous session never closed cleanly

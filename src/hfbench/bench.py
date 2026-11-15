@@ -319,8 +319,8 @@ class ModemProfile:
     the installs and must be confirmed at each modem's bring-up (test-plan Stage 2/3);
     override them with --session-type / --tnc1 / --tnc2."""
     session_type: str
-    tnc1: str        # station 1 TNC executable ({install} = station 1's Winlink folder)
-    tnc2: str
+    tnc1: str        # station 1 TNC executable ({install} = station 1's Winlink folder);
+    tnc2: str        # "" = the modem runs on its own and recovery never stops it
     verified: bool = False
 
 
@@ -329,8 +329,10 @@ MODEM_PROFILES = {
     "VARA HF": ModemProfile("Vara HF P2P", r"C:\VARA\VARA.exe", r"C:\VARA 2\VARA.exe"),
     "Data2G": ModemProfile("Vara HF P2P", r"C:\Program Files\Data2G\data2g-host.exe",
                            r"C:\Program Files\Data2G 2\data2g-host.exe"),
-    "Mercury": ModemProfile("Vara HF P2P", r"C:\Program Files\MercuryHF\mercury.exe",
-                            r"C:\Program Files\MercuryHF 2\mercury.exe"),
+    # Mercury 1.9.23: the GUI (mercury-ui.exe) is started by hand, not by Winlink
+    # (auto launch off), so recovery must leave it running: no TNC path. Verified
+    # 15 Nov 2026: session window readable, ports 8300/8310.
+    "Mercury": ModemProfile("Vara HF P2P", "", "", verified=True),
 }
 
 

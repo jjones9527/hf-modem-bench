@@ -1,0 +1,39 @@
+2026/11/15 03:13:54 1.8.6.0 *** Message USUFC1HEE206 posted to Outbox
+2026/11/15 03:13:56 1.8.6.0 *** Message USUFC1HEE206 has been viewed
+2026/11/15 03:14:22 1.8.6.0 
+2026/11/15 03:14:22 1.8.6.0 Vara HF P2P *** Peer-to-Peer Vara Connection from VE3XZQ @ 2026/11/15 03:14:22  USB Dial: 7098.500
+2026/11/15 03:14:23 1.8.6.0 Vara HF P2P    ;FW: VA3ZTF
+2026/11/15 03:14:23 1.8.6.0 Vara HF P2P    [RMS Express-1.8.6.0-B2FHM$]
+2026/11/15 03:14:23 1.8.6.0 Vara HF P2P    VE3XZQ DE VA3ZTF >
+2026/11/15 03:14:53 1.8.6.0 Vara HF P2P ;FW: VE3XZQ
+2026/11/15 03:14:53 1.8.6.0 Vara HF P2P [RMS Express-1.8.6.0-B2FHM$]
+2026/11/15 03:14:53 1.8.6.0 Vara HF P2P ; VA3ZTF DE VE3XZQ (AA00AA)
+2026/11/15 03:14:53 1.8.6.0 Vara HF P2P FC EM 1LXNP3DKWQQB 51439 42215 0
+2026/11/15 03:14:53 1.8.6.0 Vara HF P2P F> 94
+2026/11/15 03:14:53 1.8.6.0 Vara HF P2P    FS Y
+2026/11/15 03:15:11 1.8.6.0 Vara HF P2P *** Receiving 1LXNP3DKWQQB
+2026/11/15 03:18:13 1.8.6.0 *** Stored unauthenticated P2P message 1LXNP3DKWQQB without performing automatic system or form-data actions.
+2026/11/15 03:18:13 1.8.6.0 *** Message 1LXNP3DKWQQB posted to InBox
+2026/11/15 03:18:13 1.8.6.0 Vara HF P2P *** 1LXNP3DKWQQB - 51439/42215 bytes received
+2026/11/15 03:18:13 1.8.6.0 Vara HF P2P *** Bytes: 42564,  Time: 03:02,  bytes/minute: 14032
+2026/11/15 03:18:13 1.8.6.0 Vara HF P2P    ;PM: VE3XZQ USUFC1HEE206 42175 VA3ZTF Test
+2026/11/15 03:18:13 1.8.6.0 Vara HF P2P    FC EM USUFC1HEE206 51439 42175 0
+2026/11/15 03:18:13 1.8.6.0 Vara HF P2P    F> DE
+2026/11/15 03:18:16 1.8.6.0 *** Logging to CMS P2P message 1LXNP3DKWQQB
+2026/11/15 03:18:35 1.8.6.0 Vara HF P2P FS Y
+2026/11/15 03:18:35 1.8.6.0 Vara HF P2P *** Sending USUFC1HEE206.
+2026/11/15 03:21:20 1.8.6.0 Vara HF P2P FF
+2026/11/15 03:21:20 1.8.6.0 *** Message USUFC1HEE206 moved from Outbox to Sent Items
+2026/11/15 03:21:20 1.8.6.0 Vara HF P2P *** Completed send of message USUFC1HEE206
+2026/11/15 03:21:20 1.8.6.0 Vara HF P2P *** Sent 1 message.  Bytes: 42524,  Time: 02:45,  bytes/minute: 15426
+2026/11/15 03:21:20 1.8.6.0 Vara HF P2P    FQ
+2026/11/15 03:21:22 1.8.6.0 *** Logging to CMS P2P message USUFC1HEE206
+2026/11/15 03:21:24 1.8.6.0 *** Forced disconnect. B2 requested disconnect with break
+2026/11/15 03:21:24 1.8.6.0 *** Vara TNC reported disconnection
+2026/11/15 03:21:24 1.8.6.0 Vara HF P2P *** --- End of session with VE3XZQ at 2026/11/15 03:21:24 ---
+2026/11/15 03:21:24 1.8.6.0 Vara HF P2P *** Messages sent: 1.  Total bytes sent: 42524,  Time: 07:02,  bytes/minute: 6038
+2026/11/15 03:21:24 1.8.6.0 Vara HF P2P *** Messages Received: 1.  Total bytes received: 42564,  Total session time: 07:02,  bytes/minute: 6044
+2026/11/15 03:21:24 1.8.6.0 Vara HF P2P *** Disconnecting
+2026/11/15 03:21:24 1.8.6.0 Vara HF P2P *** Disconnected from Peer: VE3XZQ @ 2026/11/15 03:21:24
+2026/11/15 03:21:24 1.8.6.0 Vara HF P2P *** Session: 7.0 min;  Avg Throughput: 12032 Bytes/min; 1 Min Peak: 12032 Bytes/min; Average SNR: 21.3 dB
+2026/11/15 03:21:36 1.8.6.0 *** Vara TNC reported disconnection
