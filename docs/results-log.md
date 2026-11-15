@@ -1224,6 +1224,27 @@ outcome here. ARDOP isn't affected: 50 KB sends of 8-10 min ran in one session
 (sweep-ardop-50k at 10.8 dB). No setting for the timer was found in Winlink's ini
 files or documentation. How to handle it in the comparison is an open decision.
 
+**Workaround: relay holds the timer's DISCONNECT (17:08-17:23 UTC, Mercury, WGN 18).**
+The operator wants long sessions (performance measured over time, as with ARDOP), so
+`vara_relay.py --hold-timeout-disconnect` answers a DISCONNECT with `OK` itself and
+doesn't pass it on when the host has written nothing to the data port for >= 240 s and
+the modem's last BUFFER was above zero; any other DISCONNECT is passed through. Test:
+two 50 KB messages 2 -> 1 through the relay on station 2.
+- 17:12:35 message 1 handed over; 17:17:35 Winlink's timer fired ("P2P session
+  inactivity timeout. Disconnecting.") and the relay held it (Mercury BUFFER 12,632);
+  17:19:02 received intact (6:20, 6,704 bytes/min); **17:19:23 station 2 logged
+  "Completed send of message AY9TFXG6F1KU"** and message 2 started in the same session.
+  Winlink carries on normally once the modem keeps the link.
+- Message 2 did not finish, for a different reason: at 17:22:31 station 1's Winlink
+  logged "Link Error - Received data stream not correct format. ByteIndex=58923" and
+  aborted. The partial (16,250 bytes) matches the original for its first 16,238 bytes;
+  the **last 6 bytes Mercury handed to Winlink were wrong**: a corruption that Winlink
+  caught, the same class as ARDOP 1.0.2.9's CRC escapes. Unrelated to the relay (on the
+  sending station only, data passed through unchanged; message 2's timer would not
+  have fired until 17:24:36).
+- All delivered attachments checked byte-identical against the payload: AY9TFXG6F1KU,
+  5Q6A8Q2MUYKM (VARA), 1LXNP3DKWQQB, 4VB3S9EAD6GZ, 7OTX6QPRUVDY.
+
 ## Planned next
 
 > **Superseded 13 Nov 2026 by [test-plan.md](test-plan.md)**, which covers the remaining modems, the metric changes and the open decisions. The items below are kept for the record.

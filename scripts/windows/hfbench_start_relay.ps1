@@ -1,4 +1,6 @@
-# Start the VARA logging relay (8320/8321 -> Mercury 2 on 8310/8311) in the desktop session.
+param([string]$Extra = "")
+# Start the VARA logging relay (8320/8321 -> station 2 modem on 8310/8311) in the desktop session.
+# -Extra "--hold-timeout-disconnect" holds Winlink's 5-min P2P timer DISCONNECTs (see vara_relay.py).
 $dir = Join-Path $env:USERPROFILE 'hfbench'
 $stamp = (Get-Date).ToUniversalTime().ToString('yyyyMMdd-HHmm')
 $cmd = Join-Path $dir 'relay.cmd'
@@ -6,7 +8,7 @@ $cmd = Join-Path $dir 'relay.cmd'
 @echo off
 title VARA relay 8320 to Mercury 2 (8310) - close to stop
 cd /d "$dir"
-"C:\Program Files\Python312\python.exe" -I "$dir\vara_relay.py" --listen 8320 --target 8310 --log "$dir\relay-$stamp.log"
+"C:\Program Files\Python312\python.exe" -I "$dir\vara_relay.py" --listen 8320 --target 8310 --log "$dir\relay-$stamp.log" $Extra
 pause
 "@ | Set-Content -Encoding ASCII $cmd
 $action = New-ScheduledTaskAction -Execute $cmd -WorkingDirectory $dir
