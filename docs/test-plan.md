@@ -131,6 +131,10 @@ The full wording is in [test-protocol.md](test-protocol.md) §4.
   connection at WGN −10. Reliability cliff between −1.8 and −6 dB. The knee by the
   definition above is 3.1 dB; it is still 100% reliable at −1.8 dB. Summary in
   results-log.md, "Stage 1 summary". 3 replicates, then 5 at the two points around the knee.
+  **Knee runs (15 Nov):** WGN 0 (−0.8 dB) 24/24 and WGN −2 (−2.9 dB) 21/21, both
+  4FSK.500; cliff between −2.9 and −6.0 dB. Measured data S:N depends on the frame
+  type ARDOP chooses (PSK frames 2.7–6.2 dB weaker than 4FSK at the same drive), so
+  each point's frame mix is reported with it.
 - WGN 22 and 28 are already done at cal7: 77 messages. They are re-run one-way
   only if Stage 0 changes the metrics.
 

@@ -1079,6 +1079,49 @@ PTT log keys the connect requests at −10.3 to −10.7 dB. That is lower than t
 expected from the idle noise floor (−22.4 dBFS at WGN −10), so this point is reported
 only as "below −6 dB: no connection" and isn't plotted.
 
+### knee-ardop-5k results (14–15 Nov 2026, 18:14–00:52 UTC)
+
+WGN 0 and −2, 3 replicates each, Text_5KB, 60-min time box. Pre-checks: tone check
+−0.2 / −0.4 dB from the reference, 16QAM 20.2–21.9 dB MER on path 2→1. Every run
+connected on the first call and ran to the time box.
+
+| IONOS setting | measured data S:N | control S:N | runs | delivered | goodput median | net | main data frames |
+|---|---|---|---|---|---|---|---|
+| WGN 0 | **−0.8 dB** (−0.8 / −0.8 / −0.8) | −0.9 dB | 0002, 0005, 0006 | 24/24 (6 cut) | 95 bit/s | 79 bit/s | 4FSK.500 |
+| WGN −2 | **−2.9 dB** (−3.0 / −2.9 / −2.8) | −3.0 dB | 0001, 0003, 0004 | 21/21 (5 cut) | 91 bit/s | 69 bit/s | 4FSK.500 and 4FSK.500.100S |
+
+- 45 of 45 attachments byte-identical. No corruption, no stall.
+- At WGN −2, ARDOP spent more and more time in 4FSK.500.100S (short frames): 238 of
+  801 data frames in 0001, 638 of 944 in 0003, 1,020 of 1,065 in 0004. Run 0004 was
+  the slowest (72 bit/s median, 6 delivered). That is the first sign of the cliff.
+- **The cliff now lies between −2.9 dB (WGN −2, 100%) and −6.0 dB (WGN −5, 0%).**
+
+**Measured data S:N depends on ARDOP's frame type.** WGN 0 measured −0.8 dB, above
+WGN 2's −1.8 dB, although WGN 0 adds more noise. The noise is the same at a given
+setting, but ARDOP's bursts are not equally strong: at the same drive, its 4FSK
+frames arrive stronger than its PSK frames, and the wider the PSK frame, the weaker
+(peak-limited multi-carrier). The gap between control frames (always 4FSK) and data
+frames, averaged per setting:
+
+| setting | main data frames | data S:N | control S:N | gap |
+|---|---|---|---|---|
+| WGN 40 | 16QAM.2000 | 21.9 | 28.1 | 6.2 dB |
+| WGN 22 | 8PSK.2000 | 15.4 | 20.1 | 4.6 dB |
+| WGN 17 | 4PSK.2000 | 10.8 | 15.5 | 4.7 dB |
+| WGN 12 | 4PSK.1000/2000 | 6.7 | 10.7 | 4.0 dB |
+| WGN 7 | 4PSK.500 | 3.1 | 5.8 | 2.7 dB |
+| WGN 2 | 4PSK.500, some 4FSK | −1.8 | 0.9 | 2.7 dB |
+| WGN 0 | 4FSK.500 | −0.8 | −0.9 | 0 |
+| WGN −2 | 4FSK.500 | −2.9 | −3.0 | 0 |
+| WGN −5 | 4FSK | −6.0 | −6.0 | 0 |
+
+Control S:N falls steadily with the setting (+0.9, −0.9, −3.0, −6.0 dB at WGN 2, 0,
+−2, −5), so the bench is consistent. The charts keep data S:N, the S:N the receiver
+actually saw for each modem's own waveform (D5: equal average drive). Read the −1.8
+and −0.8 dB points as "ARDOP chose PSK and was weaker on the air" versus "ARDOP chose
+FSK", not as an S:N measurement error. This matters for every modem that changes
+waveform: each point's frame mix is reported with it.
+
 ### Stage 1 summary: ARDOP 1.0.2.9 on WGN (13–14 Nov 2026)
 
 | measured data S:N | payload | delivered | goodput median | net throughput | main data frames |
@@ -1090,6 +1133,8 @@ only as "below −6 dB: no connection" and isn't plotted.
 | 6.7 dB | 5 KB | 30/30 | 247 bit/s | 206 bit/s | 4PSK.1000/2000 |
 | 3.1 dB | 5 KB | 30/30 | 160 bit/s | 143 bit/s | 4PSK.500 |
 | −1.8 dB | 5 KB | 21/21 (time-boxed) | 84 bit/s | 69 bit/s | 4PSK.500, some 4FSK |
+| −0.8 dB | 5 KB | 24/24 (time-boxed) | 95 bit/s | 79 bit/s | 4FSK.500 |
+| −2.9 dB | 5 KB | 21/21 (time-boxed) | 91 bit/s | 69 bit/s | 4FSK.500 (+ short frames) |
 | −6.0 dB | 5 KB | 0/6 started (3 sessions) | | 0 | |
 | below −6 dB | 5 KB | no connection | | | |
 
@@ -1097,11 +1142,12 @@ only as "below −6 dB: no connection" and isn't plotted.
   bench ceiling (22 dB).
 - **Robustness:** every message delivered from 22 dB down to −1.8 dB, except 2 at
   15.4 dB, which were corrupted frames that Winlink caught. Nothing delivered at −6 dB,
-  and no connection below. **The reliability cliff lies between −1.8 and −6 dB.**
+  and no connection below. **The reliability cliff lies between −2.9 and −6 dB**
+  (knee-ardop-5k, 15 Nov).
 - **Knee by the plan's definition** (success ≥ 90% and net ≥ 10% of the best, i.e.
   ≥ 126 bit/s): **3.1 dB** (143 bit/s). At −1.8 dB it is still 100% reliable but nets
   69 bit/s (5.5%). The net criterion mixes payload sets, so both numbers are reported.
-- **Data integrity:** 179 of 179 delivered attachments are byte-identical. The weak
+- **Data integrity:** 224 of 224 delivered attachments are byte-identical. The weak
   ARDOP 1.0.2.9 CRC shows as caught corruption (4 at 18 dB in cal7wgn28, 2 at 15.4
   dB here), never as bad data delivered.
 
