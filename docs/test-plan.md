@@ -1,4 +1,4 @@
-# Test plan (revised 13 Nov 2026)
+# Test plan (revised 13 Nov 2026, updated 15 Nov 2026)
 
 This revises the staging in [test-protocol.md](test-protocol.md) §6 using what the
 ARDOP campaigns of 10–13 Nov taught us (see [results-log.md](results-log.md)). Items
@@ -102,11 +102,12 @@ The full wording is in [test-protocol.md](test-protocol.md) §4.
 4. **Done 13 Nov:** recovery and session start are modem-aware. `MODEM_PROFILES` in
    `bench.py` gives each modem's Winlink session type and each station's TNC program.
    The runner picks the profile from the run sheet's `modem`, and
-   `--modem/--session-type/--tnc1/--tnc2` override it. **ARDOP is verified; the VARA
-   HF, Data2G and Mercury entries are best guesses** (session type 'Vara HF P2P';
-   TNCs `C:\VARA\VARA.exe`, `…\Data2G\data2g-host.exe`, `…\MercuryHF\mercury.exe`
-   and their second installs). They are printed as UNVERIFIED until confirmed at
-   bring-up. Bring-up check for each modem: select the session type once by hand
+   `--modem/--session-type/--tnc1/--tnc2` override it. **ARDOP and Mercury are
+   verified** (Mercury, 15 Nov: session type 'Vara HF P2P', no TNC path, because its
+   GUI is started by hand and recovery must leave it running). **The VARA HF and
+   Data2G entries are best guesses** (session type 'Vara HF P2P'; TNCs
+   `C:\VARA\VARA.exe`, `…\Data2G\data2g-host.exe` and their second installs). They are
+   printed as UNVERIFIED until confirmed at bring-up. Bring-up check for each modem: select the session type once by hand
    at both stations, then try `hfbench_ui_do.ps1 … -Do open-session -Arg "<type>"`
    and a full `hfbench recover`.
 5. Time-boxed runs (D3).
@@ -138,20 +139,31 @@ The full wording is in [test-protocol.md](test-protocol.md) §4.
 - WGN 22 and 28 are already done at cal7: 77 messages. They are re-run one-way
   only if Stage 0 changes the metrics.
 
-**Stage 2: next modem: Data2G 0.4.2 or Mercury 1.9.23** (needs neither a licence
-nor a new adapter)
+**Stage 2: Mercury 1.9.23, then Data2G 0.4.2** (need neither a licence nor a new
+adapter)
 - Bring-up for each: both installs configured with their own TNC ports (8300/8301
-  for station 1, 8310/8311 for station 2 (Mercury, 15 Nov); the ARDOP TNCs closed); a UI survey of the
-  session window; the drive level set to the reference (D5); a smoke test at about
-  18 dB.
-- Then the same WGN sweep as ARDOP.
+  for station 1, 8310/8311 for station 2; the ARDOP session windows closed); station
+  2's Winlink on the relay (8320, D6); a UI survey of the session window; the drive
+  level set to the reference (D5); busy detection off; a smoke test at about 18 dB.
+- Then the same WGN sweep as ARDOP, on the same IONOS settings.
+- **Mercury (15 Nov):** brought up (results-log.md, "Stage 2: Mercury 1.9.23
+  bring-up"). Levels +3.5 / +3.0 dB `tx_gain_db`. The smoke test found Winlink
+  Express's 5-min P2P timer (D6); with the relay, smoke-mercury-r delivered 9/9 in one
+  session at 18.2 dB, 947 bit/s. **WGN sweep running** from 15 Nov 19:07 UTC:
+  `sweep-mercury-50k` (WGN 40, 22, 17) then `sweep-mercury-5k` (WGN 17, 12, 7, 2, −2,
+  −5, −10), 3 replicates each.
+- **Data2G:** not yet brought up.
 
 **Stage 3: VARA HF 4.09**
 - **D2 (decided 13 Nov): settle registration at the start of the VARA stage.** First
-  check whether one callsign's key registered on both instances gives full speed
-  (the operator may test this beforehand). If not, ask the VARA author about a key
-  for the second callsign or a bench licence. Unregistered VARA is speed-limited,
-  so no VARA result is published until both ends are confirmed registered.
+  check whether one callsign's key registered on both instances gives full speed.
+  **Checked 15 Nov by the operator: the same licence can't be used on both
+  stations.** So the next step is a key for the second callsign or a bench licence
+  from the VARA author. Unregistered VARA is speed-limited, so no VARA result is
+  published until both ends are confirmed registered.
+- Found in the 15 Nov relay test: both VARA installs are on the right ports (8300,
+  8310) and sound cards, ALC drive −5; **VARA's busy detector is on** (it sends BUSY
+  ON/OFF): turn it off, and set its level to the reference (D5), at bring-up.
 
 **Stage 3b: Modem73** (added 14 Nov at the operator's request; not downloaded yet)
 - The operator downloads it when this stage comes up. Nothing about it is assumed
@@ -218,7 +230,7 @@ recovery working it can run overnight and across days. A second Windows machine
 or IONOS isn't needed. If time is short, use 2 replicates on the fading coarse
 pass and add replicates only where results are close.
 
-## Decisions (13 Nov 2026)
+## Decisions (13–15 Nov 2026)
 
 | # | Decision | Outcome |
 |---|---|---|
@@ -227,3 +239,4 @@ pass and add replicates only where results are close.
 | D3 | Low-S:N run length | **60-min time box on every run**, plus **Text_5KB below 10 dB**, with an overlap point. Documented in test-protocol §4. |
 | D4 | ARDOP versions | **1.0.2.9 (release) now; Phil's updated build (1.0.3.x, development) last**, labelled as such. |
 | D5 | Level policy | **Equal average power** at the IONOS reference; Lvl never red; record the crest factor. |
+| D6 (15 Nov) | Winlink Express's 5-min P2P inactivity timer | In P2P sessions Winlink sends DISCONNECT after 5 min without writing to the modem's data port, even mid-message; VARA HF and Mercury then end the link and the receipt is lost (ARDOP isn't affected). **The operator wants long sessions, as with ARDOP: the bench relay (`vara_relay.py --hold-timeout-disconnect`) holds that DISCONNECT for every VARA-protocol modem**, and every such result is labelled with it. The timer itself is reported as a finding. |

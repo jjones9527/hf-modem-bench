@@ -11,17 +11,23 @@ events, manifest and console output, the S:N recordings (`listen-*.json`), the
 tone checks, and both stations' Winlink and ARDOP logs. Run it after every
 campaign. All times are UTC.
 
-**Stations.** Station 1 is VA3ZTF (`C:\RMS Express`, Sabrent USB adapter) and
-station 2 is VE3XZQ (`C:\RMS Express 2`, Syba USB adapter). Station 2 always
-places the call.
+**Stations.** Station 1 is VA3ZTF (`C:\RMS Express`) and station 2 is VE3XZQ
+(`C:\RMS Express 2`). Station 2 always places the call. Adapters: until 11 Nov
+station 1 used the Sabrent and station 2 the Syba; **from wgn25a (12 Nov) on they are
+swapped** (station 1 Syba/C-Media, station 2 Sabrent), for every modem since.
 
-**Workload.** The Text_50KB set (sha256 `3ec10a0b…279f9`). Each station sends
-5 messages, each with one 51,200-byte text attachment, which compresses to about
-42,100 bytes on the wire. Station 1 sends files 1–5 of the sorted set and
-station 2 sends files 6–10.
+**Workload.** Until 12 Nov: the Text_50KB set (sha256 `3ec10a0b…279f9`), 5 messages
+from each station, each with one 51,200-byte attachment (about 42,100 bytes on the
+wire). **From 13 Nov (oneway28 on): one way, 10 messages from station 2 to station 1,**
+Text_50KB at 10 dB and above and Text_5KB (`85741279…384d4`) below, with a 60-min time
+box per run.
 
-**Goodput.** Compressed (FC EM) bytes × 8 divided by the message's transfer time
-in the sender's Winlink log.
+**Goodput.** Compressed (FC EM) bytes × 8 divided by the message's transfer time.
+Until 13 Nov from the sender's Winlink log; **from 13 Nov from the receiver's**, which
+excludes the ~20 s handover and reads about 10% higher (test-plan.md).
+
+**VARA-protocol modems** (Mercury from 15 Nov) run with station 2's Winlink behind the
+bench relay, which holds Winlink Express's 5-min P2P inactivity DISCONNECT (D6).
 
 ---
 

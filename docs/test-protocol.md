@@ -1,6 +1,6 @@
 # Test protocol
 
-Status: **draft**. Items marked **TBD** depend on the open questions at the end.
+Status: **in use** (reviewed 15 Nov 2026). The current staging, metrics and decisions are in [test-plan.md](test-plan.md), which takes precedence where the two differ; results are in [results-log.md](results-log.md).
 
 Simulator references are to the *Teensy IONOS HF/VHF-UHF Channel Simulator* manual, rev 2.03 (KN6KB, 25 Nov 2020), and to N5TW's *A comparison of Winlink digital mode performance… Take Three* (Nov 2020). Both are available from winlink.org/content/ionos_simulator.
 
@@ -8,7 +8,7 @@ Simulator references are to the *Teensy IONOS HF/VHF-UHF Channel Simulator* manu
 
 The aim is to compare software HF modems used with Winlink Express on a repeatable bench. Two Winlink Express instances run peer-to-peer sessions through one IONOS simulator. Between runs only two things change: the modem and the simulator settings. This is the method N5TW used, which makes his published curves a useful sanity check.
 
-**Modems in scope:** VARA HF, ARDOP, Data2G (through its VARA-compatible TNC) and possibly Mercury. Versions are TBD and are recorded per run. Pactor is out of scope because it needs dedicated hardware and can't be tested with sound cards.
+**Modems in scope:** ARDOP 1.0.2.9 (and later a 1.0.3.x development build), Mercury 1.9.23, Data2G 0.4.2, VARA HF 4.09, and on the operator's request Modem73, Aether HF and ULTRA. Data2G, Mercury and VARA connect through the VARA host interface. Versions are recorded per run. Pactor is out of scope because it needs dedicated hardware and can't be tested with sound cards.
 
 ### Limitations (state these in every report)
 
@@ -22,12 +22,9 @@ The aim is to compare software HF modems used with Winlink Express on a repeatab
 
 ## 2. Bench setup
 
-- **Wiring and levels:** follow [bench-setup.md](bench-setup.md). Use one IONOS in a half-duplex, symmetric setup, with modem 1 on Ch1 and modem 2 on Ch2. Fit isolation transformers if any hum or ground-loop noise appears; N5TW used them on every connection. Use 3 kHz bandwidth for all HF testing.
-- **Record the full chain once per campaign** in `runs/<campaign>/bench.md`:
-  - sound devices, Windows sample rates and levels
-  - IONOS firmware revision and serial number, and its Ch1/Ch2 IN and OUT gains
-  - Winlink Express version
-- **Clocks:** Winlink and ARDOP log in **UTC** to the second, and `hfbench` stamps in UTC. The Windows machine has no Python, so the stamps can come from another machine as long as both clocks use NTP. On 10 Nov 2026 the Mac and the Windows bench machine agreed to within about 0.5 s. Recheck the offset at the start of each session.
+- **Wiring and levels:** follow [bench-setup.md](bench-setup.md). Use one IONOS in a half-duplex, symmetric setup, one station per channel (current mapping in [test-environment.md](test-environment.md)). Fit isolation transformers if any hum or ground-loop noise appears; N5TW used them on every connection. Use 3 kHz bandwidth for all HF testing.
+- **Record the bench state with every campaign:** the tone check (`levels-tonecheck.json`) and 16QAM path check (`qam-precheck.json`) are copied into the campaign folder before it starts, and [test-environment.md](test-environment.md) and the results log record devices, levels, IONOS gains and software versions.
+- **Clocks:** Winlink and ARDOP log in **UTC** to the second, and `hfbench` stamps in UTC. The runner now runs on the Windows bench machine itself (Python 3.12), so its stamps share the logs' clock. The Windows Time service is stopped, so that clock can drift from true UTC (about 0.5 s on 10 Nov), which doesn't affect matching.
 - **Two Winlink instances:** both run on one Windows machine from separate installs, `C:\RMS Express` and `C:\RMS Express 2`. Each install has its own callsign and its own logs, so every session is logged from **both ends**. Because both instances share one clock, the two logs line up to within a few seconds. See [log-formats.md](log-formats.md).
 
 ## 3. Levels and SNR calibration
@@ -172,15 +169,15 @@ Once per campaign, on the Windows bench machine:
 
 ```text
 hfbench sheet runs\<campaign>.toml
-hfbench messages build -d runs\<campaign> --payloads <folder with Text_50KB> --s1-call VA3ZTF --s2-call VE3XZQ --s1-messages 10 --s2-messages 0
+hfbench messages build -d runs\<campaign> --payloads <folder with Text_50KB> --s1-call VA3ZTF --s2-call VE3XZQ --s1-messages 0 --s2-messages 10
 ```
 
-`messages build` writes `messages\station1.template.xml` and `station2.template.xml`. Each holds that station's five messages with their attachments already encoded. Per run, only the Message-IDs, the date and the run ID in the subject change, so every run's messages are byte-identical in size. Fresh IDs are needed because a receiving station rejects IDs it has already seen.
+`messages build` writes `messages\station1.template.xml` and `station2.template.xml`. Each holds that station's messages (all 10 at station 2 for the one-way workload) with their attachments already encoded. Per run, only the Message-IDs, the date and the run ID in the subject change, so every run's messages are byte-identical in size. Fresh IDs are needed because a receiving station rejects IDs it has already seen.
 
-Then, with both Winlink Express instances open and **both Peer-to-Peer Session windows open and listening**, with station 2's set to call VA3ZTF, run this in a desktop Command Prompt:
+Then, with both Winlink Express instances open and **both Peer-to-Peer Session windows open and listening**, with station 2's set to call VA3ZTF, start the runner in the desktop session. Over SSH this is `hfbench_start_campaign.ps1 -Campaign <campaign> -MaxRuns N -AutoContinue -Recover` (add `-Relay` for VARA-protocol modems), which runs:
 
 ```text
-hfbench run -d runs\<campaign> --automate --auto-continue 60
+hfbench run -d runs\<campaign> --automate --auto-continue 120 --recover
 ```
 
 For each run, the runner:
@@ -189,13 +186,16 @@ For each run, the runner:
 3. Imports both stations' messages for the run.
 4. Sets the IONOS.
 5. Presses **Start** in station 2's session window.
-6. Detects the session from the log.
-7. Presses **Abort** past the abort time.
-8. Records the outcome from the run's own 10 Message-IDs.
+6. Detects the session from station 1's log. If the call fails (the session window
+   returns to Listening with no session), it calls again, up to `abort_retries` calls,
+   then records `dnc`.
+7. Presses **Abort** at the 60-minute time box (`timeboxed`) or past the abort time.
+8. Records the outcome from the run's own 10 Message-IDs, and after a failure runs the
+   recovery below.
 
 Keep the mouse and keyboard off the Winlink windows while it runs. Press `q` during the pause between runs to stop.
 
-### Semi-automatic (recommended)
+### Semi-automatic (used before the automation; still works)
 
 Open a Command Prompt **on the Windows bench desktop** and run:
 
@@ -223,10 +223,30 @@ While a run is waiting, press **`i`** to mark it `invalid` (a bench fault) or **
 
 ### Which modem ran
 
-VARA HF, Data2G and Mercury all connect to Winlink Express through the VARA interface, so the Winlink log calls all three "VARA HF P2P". The modem is therefore taken from the run sheet. Before a campaign block, also:
-- **Start only that modem's TNCs.** Never leave two VARA-type modems running at once.
-- **Check the TNC version** shown on screen against the run sheet.
-- **Give each station's modem its own TCP ports.** Station 2's ARDOP TNC already uses 8300, the VARA default.
+VARA HF, Data2G and Mercury all connect to Winlink Express through the VARA interface, so the Winlink log calls all three "Vara HF P2P". The modem is therefore taken from the run sheet. Before a campaign block, also:
+- **Start only that modem's programs, one copy per station.** Never leave two VARA-type modems running at once. Mercury's GUI can keep running after its window is closed, so check the process list (the campaign start script refuses to start with other than one `mercury-ui.exe` per station).
+- **Check the version** shown on screen against the run sheet.
+- **Ports:** station 1's modem on 8300/8301, station 2's on 8310/8311, with station 2's Winlink on the relay at 8320/8321. Close the Ardop P2P session windows first (station 2's ARDOP TNC uses 8300).
+
+### Winlink Express's P2P inactivity timer and the bench relay (15 Nov 2026)
+
+In a P2P session Winlink Express sends `DISCONNECT` to a VARA-protocol modem 5 minutes
+after its last write to the modem's data port, and logs "P2P session inactivity
+timeout. Disconnecting." It hands the modem the whole message in one write, so any
+message that takes more than 5 minutes to send triggers it; BUFFER, PTT, BITRATE and SN
+reports don't reset it. VARA HF then ends the link once the current message is
+through; Mercury reports `DISCONNECTED` at once and finishes on the air. Either way the
+receiver's receipt never reaches the sender, the delivered message stays in the
+sender's Outbox, and the rest of the run's messages aren't sent. ARDOP sessions don't
+see it. No setting for it was found. Evidence: results-log.md, "Relay trace".
+
+For VARA-protocol modems the bench therefore runs station 2's Winlink through
+`scripts/vara_relay.py --hold-timeout-disconnect` (D6 in test-plan.md). The relay
+passes every byte unchanged and logs the control port, and answers a `DISCONNECT`
+with `OK` itself when the host has written nothing for at least 240 s and the modem
+still reports bytes to send; any other `DISCONNECT` goes through. Winlink then carries
+on normally ("Completed send", next message). Every held DISCONNECT is in the relay
+log, and every VARA-protocol result is labelled with the relay.
 
 ### Manual (no serial, or for debugging)
 
@@ -243,13 +263,14 @@ Close and restart **both** Winlink Express instances, including their TNC window
 
 ### Abort rule
 
-Abort a run after `abort_minutes` (default 30) or `abort_retries` failed connects (default 3), whichever comes first. N5TW reports that ARDOP often dropped links on MPP at low S:N. Record those runs as `dnc` rather than rerunning them until one succeeds.
+Every run is time-boxed at `time_box_minutes` (60). As a safety net, a run is aborted after `abort_minutes` (90 in the current matrices) or `abort_retries` failed calls (3), whichever comes first. N5TW reports that ARDOP often dropped links on MPP at low S:N. Record those runs as `dnc` rather than rerunning them until one succeeds.
 
 ### Outcomes
 
 | Outcome | Meaning |
 | --- | --- |
 | `completed` | The payload was delivered within the abort rule. |
+| `timeboxed` | The 60-minute time box ended the session; the messages delivered are counted. Not a failure. |
 | `dnc` | Did not complete under the abort rule. This is a **result**, and it counts against completion rate. |
 | `invalid` | Bench fault, such as a wrong setting, a red level warning or operator error. It is excluded from results. Repeat the run with `hfbench start --retry`. |
 
@@ -259,23 +280,27 @@ Every attempt is kept in the event log (`events.jsonl`, append-only). The manife
 
 | Status | Item |
 | --- | --- |
-| Done | IONOS serial control, log-based stamping, the abort rule and outcomes (`hfbench run`) |
+| Done | IONOS serial control, log-based stamping, the abort rule, time box and outcomes (`hfbench run`) |
+| Done | Winlink Express automation: message import, Start/Abort, failed-call re-calls, automatic recovery (`--automate --recover`) |
+| Done | Tone check, 16QAM path check and S:N recording (`hfbench audio check / qam / listen`); see bench-setup.md |
+| Done | Bench relay for VARA-protocol modems (`scripts/vara_relay.py`) |
 | Next | A timed mid-run SNR step, for the `snr-step` impairment |
-| Done | Tone-based level check (`hfbench audio check`); see bench-setup.md |
-| Next | Running the tone check automatically before each run in `hfbench run` |
-| Later | Starting the Winlink session itself, either by scripting the Winlink Express window or with Pat |
+| Next | Running the pre-checks automatically before each campaign |
 
 Audio and GUI automation have to run in the desktop session. SSH sessions on Windows are session 0, which can't use the sound devices or windows.
 
 **Serial link (IONOS firmware 2.03):** the unit ignores lines ending in a bare CR, although the manual says CR. A line ending in LF or CR+LF works, so `hfbench` sends CR+LF. Replies are `OK` or `?`. The baud rate makes no difference.
 
-### S:N axis for the report (to decide)
+### S:N axis for the report (decided 13 Nov 2026)
 
-Each modem puts out a different average power at a given drive level. On this bench ARDOP's 2000 Hz data frames are 6 dB below the IONOS setting.
-- **Option A, the IONOS setting**, with each modem's drive set to the same *peak* level. This mirrors a transmitter limited by peak power: a modem with high peaks pays for them in S:N. It's the convention in N5TW's published curves.
-- **Option B, measured S:N**, the modem's average signal-to-noise from `hfbench audio listen`.
-
-Recommendation: plot against **A**, and report each modem's measured offset (B − A) in a table. That needs a rule for setting each modem's drive, which is still to be agreed.
+Each modem puts out a different average power at a given drive level, and ARDOP's
+own varies with the frame type it picks (its PSK frames arrive 2.7–6.2 dB below its
+4FSK frames). Two options were considered: the IONOS setting with equal *peak* drive
+(N5TW's convention), or the measured S:N. **Decided:** each modem's drive is set for
+**equal average power** at the IONOS reference (D5), and every chart uses the
+**measured data S:N** from `hfbench audio listen-report` (test-plan.md). The IONOS
+noise isn't linear in the setting, so the setting is recorded but not used as the axis.
+Each point's frame or mode mix is reported with it.
 
 ### Automatic recovery after a failed run (`--recover`, built and tried on the bench 12 Nov 2026)
 
@@ -290,8 +315,9 @@ reset and then carries on:
 3. close both session windows (**Exit**), then both Winlink Express instances;
    any process of that install still running after 60 s is force-stopped;
 4. move partial files to `quarantine/<run_id>` (kept for `scripts/check_partial.py`);
-5. start both instances, open **Ardop P2P** from **Open Session:** (the ARDOP TNC
-   starts with it), and wait until **Start** is enabled;
+5. start both instances, open the modem's session type from **Open Session:**
+   (Ardop P2P: the ARDOP TNC starts with it; Vara HF P2P for VARA-protocol modems, whose
+   programs are never stopped by recovery), and wait until **Start** is enabled;
 6. check both Outboxes are empty.
 
 Each recovery is recorded as a `recover` event and shows in the manifest's
@@ -333,7 +359,7 @@ every call. **Run each modem with its busy detector off** (ARDOP: BusyDet = 0, s
 | **Completion rate** | Completed runs ÷ (completed + dnc) at each point. Timeboxed runs are counted separately and are not failures (§4). Per-message success and net throughput are the main reliability measures; see [test-plan.md](test-plan.md). |
 | **Messages delivered** | Per run, if the workload is split into messages. |
 | **Retries** | Winlink logs don't record them. For ARDOP, the ARQ session statistics give failed decodes and mode shifts, and the debug log gives a per-frame timeline with ACK/NAK records. Other modems need their own logs. |
-| **Knee SNR** | The lowest S:N where the completion rate is at least 90%. With 3 replicates this means 3 out of 3, so use 5 replicates near the knee. |
+| **Knee SNR** | Superseded by test-plan.md: the lowest measured S:N with message success ≥ 90% and net throughput ≥ 10% of the modem's best. Use 5 replicates near the knee. |
 | **Shannon efficiency** | Goodput (bit/s) ÷ C, where C = B·log₂(1 + SNR) and B = 3000 Hz, matching the IONOS reference bandwidth. Results may also be quoted against each modem's occupied bandwidth, labelled as such. |
 
 Report the **median and range** (or IQR when n ≥ 5) for each point, along with n.
@@ -344,9 +370,9 @@ Real logs contain callsigns, grid squares and subjects. `logs/`, `runs/<campaign
 
 ## Open questions
 
-1. Which modems and versions are in the comparison? Installed: ARDOP 1.0.2.9, VARA HF 4.09 (not yet registered; see [test-environment.md](test-environment.md)), Data2G 0.4.2 and Mercury 1.9.23.
-2. What firmware does the IONOS unit run (shown at power-on)? Is its USB port connected to the Windows machine, which would allow serial automation?
+1. ~~Which modems and versions?~~ See §1 and test-plan.md. Still open: VARA HF registration for the second station (D2).
+2. ~~IONOS firmware and serial?~~ Firmware 2.03; USB serial on COM3, used for all automation.
 3. ~~Are the two Winlink Express instances on one Windows machine or two?~~ One machine, with two installs.
-4. ~~What is the payload?~~ 5 × 50 KB attachments from each station; see §4.
+4. ~~What is the payload?~~ 10 messages one way per run, Text_50KB or Text_5KB; see §4.
 5. ~~Personal or published?~~ **Published.** Callsigns VA3ZTF and VE3XZQ may appear. Report replicates, spread and calibration in full.
 6. Are CW-interferer and QRN tests wanted badly enough to build external audio injection?

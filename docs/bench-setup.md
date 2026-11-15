@@ -2,7 +2,29 @@
 
 Steps marked **[Manual]** are from the *Teensy IONOS manual rev 2.03*. Steps marked **[N5TW]** are from N5TW's *Take Three* appendix, and **[C-Media]** from the Masters Communications FAQ. Steps marked **[Added]** are not in any of these sources. They come from first principles or from our own logs, so check them on the bench.
 
-## Our bench (checked from Windows on 10 Nov 2026)
+## Current bench (cal7 levels from 12 Nov; reviewed 15 Nov 2026)
+
+| | Station 1 (VA3ZTF, `C:\RMS Express`) | Station 2 (VE3XZQ, `C:\RMS Express 2`) |
+| --- | --- | --- |
+| Sound device | "C-Media USB Audio Device" (Syba), PID 0008 | "(3-) USB Audio Device" (Sabrent), PID 0014 |
+| Windows speaker | 17%, **left only** | 50%, **right only** |
+| Windows microphone | 35%, AGC off, mono | 75%, AGC off, mono |
+| IONOS channel / gain | Ch2, CH2 IN 2 | Ch1, CH1 IN 50 |
+| Role in the one-way workload | receives | sends |
+
+The Windows volume and balance belong to the device, so every modem on a station uses
+them unchanged; each modem's own level control sets it to the reference (D5):
+
+| Modem | Level setting | Result vs the tone reference |
+| --- | --- | --- |
+| ARDOP 1.0.2.9 | `DriveLevel` 90 on both | 4FSK frames at the reference; PSK frames 2.7–6.2 dB below (frame-type dependent) |
+| Mercury 1.9.23 | `tx_gain_db` +3.5 (station 1), +3.0 (station 2) | −0.4 / 0.0 dB; IONOS Lvl 650–750 mV p-p |
+
+Pre-checks before every campaign (latest 15 Nov 17:34): tone check −0.2 / −0.3 dB vs
+the reference at WGN 20, mismatches +0.1 dB transmit and +0.7 dB receive; 16QAM path
+2 → 1 22.6–23.1 dB MER. Each microphone's own noise is 33 dB below the reference.
+
+## Our bench as first checked (10 Nov 2026; history)
 
 | | Station 1 (`C:\RMS Express`) | Station 2 (`C:\RMS Express 2`) |
 | --- | --- | --- |
@@ -66,7 +88,7 @@ The check:
 
 To re-read saved results without playing anything: `hfbench audio report levels.json`.
 
-### Calibration record (10 Nov 2026, headphone-splitter cables)
+### Calibration record (10 Nov 2026, headphone-splitter cables; superseded by cal7, see "Current bench")
 
 | Setting | Station 1 (IONOS Ch2) | Station 2 (IONOS Ch1) |
 | --- | --- | --- |
@@ -203,7 +225,7 @@ Use the IONOS's own 1500 Hz tone, which reaches both microphones identically. Us
 
 ### Modem level vs the test tone
 
-The tone check matches the stations to each other, but a modem's real S:N also depends on its own signal power, which differs from the test tone's. Every modem and drive setting therefore needs an offset, measured with real traffic. `hfbench audio listen` records both microphones during a session and measures each direction's S:N from the frames themselves. For ARDOP at DriveLevel 90 the offset is about 0 dB; see the table below.
+The tone check matches the stations to each other, but a modem's real S:N also depends on its own signal power, which differs from the test tone's. Every modem and drive setting therefore needs an offset, measured with real traffic. `hfbench audio listen` records both microphones during a session and measures each direction's S:N from the frames themselves. For ARDOP at DriveLevel 90 the offset depends on the frame type (about 0 dB for 4FSK and narrow frames, down to −6 dB for the 2000 Hz PSK/QAM frames; see the ARDOP checks above and the results log). For a modem with its own level control (Mercury's `tx_gain_db`), record a short session at WGN 40 with `hfbench audio listen`, compare its received burst level with the tone's on the same path, and set the control so they match.
 
 
 ### How much device noise is acceptable [Added]
