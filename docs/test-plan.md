@@ -158,6 +158,31 @@ nor a new adapter)
   reference (D5), busy detection off if it has any, and a smoke test at about 18 dB.
 - Then the same WGN sweep as ARDOP. Its chart colour is fixed slot 6 (`#008300`).
 
+**Stage 3c: Aether HF** (added 14 Nov at the operator's request; not downloaded yet)
+- github.com/KK4ODA/aether-hf, MIT or Apache-2.0. On 14 Nov the latest release was
+  0.2.0-beta.159, with a Windows installer (`x64-setup.exe`, not Authenticode-signed)
+  and a headless `aetherd` zip. OFDM plus a 16-FSK floor, 2300 Hz or 500 Hz wide,
+  36 bit/s to about 5.5 kbit/s (author's figures, not measured here).
+- Its README says it attaches to Winlink Express as a VARA HF session with automatic
+  launch off (host ports 8300/8301). Not verified here, and not yet known whether two
+  instances run on one PC with separate ports.
+- Releases come several times a day and both ends must run the same link protocol:
+  pin one release for the whole stage and record it in every result.
+- Bring-up and the WGN sweep as for Stage 3b. Chart colour fixed slot 7 (`#6250d6`).
+
+**Stage 3d: ULTRA (ProjectUltra)** (added 14 Nov at the operator's request; not downloaded yet)
+- github.com/secup/ProjectUltra, MIT. On 14 Nov the latest release was
+  v0.6.2-pre-alpha, with `projectultra-windows.zip`. OFDM/OTFS and multi-carrier
+  DPSK, 2.8 kHz, 2.4 kHz or 500 Hz wide (author's figures, not measured here).
+- It offers TCP ports 8300/8301, but its README doesn't name VARA, ARDOP or Winlink
+  Express, so whether Winlink Express can drive it is the first thing to establish.
+- Pre-alpha: the on-air protocol can change between versions. Pin one release and
+  label every result with it. Tested after the more mature modems.
+- Bring-up and the WGN sweep as for Stage 3b. Chart colour fixed slot 8 (`#e34948`).
+
+**Quick Silver**: requested 14 Nov, not found (no modem by that name turned up).
+Waiting for a link or author from the operator.
+
 **Stage 4: fading profiles** (all modems)
 - MPG, MPM, MPP, MPD at three S:N points per modem: near its best, mid-range, and
   about 5 dB above its WGN knee. 3 replicates each, because the IONOS has no seed
@@ -184,7 +209,7 @@ low-S:N runs.
 | Fading (4 profiles × 3 S:N × 3) | 36 | about 35 |
 | Impairments | about 10 | about 9 |
 
-That's about 65 h per modem, about 325 h for five (ARDOP 1.0.2.9, Data2G, Mercury, VARA HF, Modem73), plus Phil's ARDOP build on ARDOP's points. Fading is the largest part. With
+That's about 65 h per modem, about 455 h for seven (ARDOP 1.0.2.9, Data2G, Mercury, VARA HF, Modem73, Aether HF, ULTRA), plus Phil's ARDOP build on ARDOP's points. Fading is the largest part. With
 recovery working it can run overnight and across days. A second Windows machine
 or IONOS isn't needed. If time is short, use 2 replicates on the fading coarse
 pass and add replicates only where results are close.
