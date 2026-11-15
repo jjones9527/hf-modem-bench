@@ -1249,6 +1249,30 @@ two 50 KB messages 2 -> 1 through the relay on station 2.
 - All delivered attachments checked byte-identical against the payload: AY9TFXG6F1KU,
   5Q6A8Q2MUYKM (VARA), 1LXNP3DKWQQB, 4VB3S9EAD6GZ, 7OTX6QPRUVDY.
 
+### smoke-mercury-r: Mercury 1.9.23 through the bench relay (15 Nov 2026, 17:34-18:38 UTC)
+
+Same as smoke-mercury (WGN 18, Text_50KB x 10, one-way 2 -> 1, 60-min time box) with
+station 2's Winlink on the relay (8320 -> 8310, holding the 5-min timer's DISCONNECT).
+Exactly one Mercury process per station (checked; the start script now refuses
+otherwise). Pre-checks: tone -0.2 / -0.3 dB vs the reference; 16QAM 2 -> 1 22.6-23.1 dB.
+
+| item | value |
+|---|---|
+| outcome | **timeboxed, 9/10 delivered** in one session (the 10th not started at 60 min) |
+| failures | 0 corrupted, 0 stalled; **9/9 attachments byte-identical** |
+| sender | 9 x "Completed send"; Winlink's timer fired 9 times, all 9 held by the relay |
+| goodput per message | median **947 bit/s** (812-1,054) |
+| net throughput | **839 bit/s** over the 60-min session |
+| measured data S:N | **18.2 dB** (234 bursts, energy-keyed; 18.7 dB from bursts matched to Mercury's PTT log) |
+| Mercury level | +0.5 dB (2 -> 1) / -0.4 dB (1 -> 2) vs the tone reference |
+
+For scale, ARDOP 1.0.2.9 with Text_50KB gave 1,259 bit/s at 15.4 dB and 1,548 bit/s at
+21.9 dB. Mercury's sweep will give the curve; one point is not a comparison.
+
+The run ended on the time box: the runner pressed Abort, recovery cleared the one
+remaining Outbox message, restarted both Winlinks and reopened both sessions with the
+Mercury GUIs left running. Mercury is ready for the WGN sweep with the relay in place.
+
 ## Planned next
 
 > **Superseded 13 Nov 2026 by [test-plan.md](test-plan.md)**, which covers the remaining modems, the metric changes and the open decisions. The items below are kept for the record.
