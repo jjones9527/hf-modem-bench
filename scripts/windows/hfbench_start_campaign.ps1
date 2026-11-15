@@ -1,10 +1,30 @@
-param([int]$MaxRuns = 1, [switch]$AutoContinue, [switch]$Recover, [string]$Campaign = "pilot01")
+param([int]$MaxRuns = 1, [switch]$AutoContinue, [switch]$Recover, [string]$Campaign = "pilot01", [switch]$Relay)
+# -Relay: VARA-type modems. Makes sure the bench relay (hfbench_start_relay.ps1, holding
+# Winlink's 5-min P2P timer DISCONNECTs) is running in front of station 2's modem, and
+# writes its state into the campaign folder (relay.txt). Station 2's Winlink must use port 8320.
 $ac = if ($AutoContinue) { ' --auto-continue 120' } else { '' }
 if ($Recover) { $ac += ' --recover' }
 $ErrorActionPreference = "Stop"
 $dir = Join-Path $env:USERPROFILE 'hfbench'
 $stamp = (Get-Date).ToUniversalTime().ToString('yyyyMMdd-HHmm')
 $out = "runs\$Campaign\console-$stamp.txt"
+# Mercury's GUI can keep running after its window is closed (15 Nov: three station-2
+# copies on one sound card). If any Mercury runs, require exactly one per station.
+$merc = @(Get-CimInstance Win32_Process -Filter "Name='mercury-ui.exe'")
+if ($merc.Count) {
+    foreach ($d in 'C:\Program Files\MercuryHF\', 'C:\Program Files\MercuryHF 2\') {
+        $n = @($merc | Where-Object { $_.ExecutablePath -eq ($d + 'mercury-ui.exe') }).Count
+        if ($n -ne 1) { throw "$n Mercury processes from $d (need exactly 1): end the extra ones in Task Manager" }
+    }
+}
+if ($Relay) {
+    $r = & (Join-Path $env:USERPROFILE 'hfbench_start_relay.ps1')
+    $state = "$stamp UTC: $r"
+    Add-Content -Path (Join-Path $dir "runs\$Campaign\relay.txt") -Value $state
+    $state
+    Start-Sleep 3
+    if (-not (Get-NetTCPConnection -LocalPort 8320 -State Listen -ErrorAction SilentlyContinue)) { throw "relay is not listening on 8320" }
+}
 $cmd = Join-Path $dir 'pilot.cmd'
 @"
 @echo off

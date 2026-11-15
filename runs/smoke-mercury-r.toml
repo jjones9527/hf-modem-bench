@@ -1,0 +1,33 @@
+# Stage 2 bring-up smoke test, re-run (15 Nov 2026): as smoke-mercury (Mercury 1.9.23, "Vara HF P2P", ports
+# 8300 / 8310, tx_gain_db +3.5 / +3.0, WGN 18, Text_50KB, one-way 2 -> 1), but station 2's Winlink connects
+# through the bench relay (8320 -> 8310) holding Winlink Express's 5-min P2P timer DISCONNECTs, so sends
+# longer than 5 minutes keep the session (results-log.md, "Workaround: relay holds the timer's DISCONNECT").
+# smoke-mercury-0001 (without the relay) ended after 1/10 when the timer fired.
+[campaign]
+name = "smoke-mercury-r"
+stage = "smoke"
+replicates = 1
+profiles = ["WGN"]
+snr_db = [18]
+order = "sequential"
+abort_minutes = 90
+abort_retries = 3
+time_box_minutes = 60
+
+[ionos]
+bandwidth_hz = 3000
+multipaths = 2
+
+[payload]
+file = "Text_50KB"
+bytes = 51200
+sha256 = "3ec10a0b30de0039bb0b949d7e160a5d4625c03ba2f245a60785d3973e0279f9"
+messages = 10
+
+[[modems]]
+name = "Mercury"
+version = "1.9.23"
+bandwidth_hz = 2750
+
+[[impairments]]
+name = "none"

@@ -1238,10 +1238,14 @@ two 50 KB messages 2 -> 1 through the relay on station 2.
 - Message 2 did not finish, for a different reason: at 17:22:31 station 1's Winlink
   logged "Link Error - Received data stream not correct format. ByteIndex=58923" and
   aborted. The partial (16,250 bytes) matches the original for its first 16,238 bytes;
-  the **last 6 bytes Mercury handed to Winlink were wrong**: a corruption that Winlink
-  caught, the same class as ARDOP 1.0.2.9's CRC escapes. Unrelated to the relay (on the
-  sending station only, data passed through unchanged; message 2's timer would not
-  have fired until 17:24:36).
+  the **last 6 bytes Mercury handed to Winlink were wrong**. Unrelated to the relay (on
+  the sending station only, data passed through unchanged; message 2's timer would not
+  have fired until 17:24:36). **Not counted as a Mercury result:** at 17:40 three
+  `MercuryHF 2\mercury-ui.exe` processes were found running on station 2's sound card
+  (one left from 14 Nov 21:35, still busy after its window was closed for the VARA
+  test, 5.4 h CPU; two started 30 s apart at 12:09). Overlapping instances can garble
+  the audio. All three were stopped; from now on the bench check counts Mercury
+  processes (exactly one per station) before every run.
 - All delivered attachments checked byte-identical against the payload: AY9TFXG6F1KU,
   5Q6A8Q2MUYKM (VARA), 1LXNP3DKWQQB, 4VB3S9EAD6GZ, 7OTX6QPRUVDY.
 
