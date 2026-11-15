@@ -141,7 +141,7 @@ The full wording is in [test-protocol.md](test-protocol.md) §4.
 **Stage 2: next modem: Data2G 0.4.2 or Mercury 1.9.23** (needs neither a licence
 nor a new adapter)
 - Bring-up for each: both installs configured with their own TNC ports (8300/8301
-  for station 1, 8400/8401 for station 2; the ARDOP TNCs closed); a UI survey of the
+  for station 1, 8310/8311 for station 2 (Mercury, 15 Nov); the ARDOP TNCs closed); a UI survey of the
   session window; the drive level set to the reference (D5); a smoke test at about
   18 dB.
 - Then the same WGN sweep as ARDOP.

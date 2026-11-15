@@ -1159,6 +1159,53 @@ Frame types from station 1's ARDOP debug log ("Frame Type OK") in runs 0001 (15.
 
 ---
 
+## Stage 2: Mercury 1.9.23 bring-up (15 Nov 2026)
+
+**Setup.** Two installs, `C:\Program Files\MercuryHF` (station 1) and `MercuryHF 2`
+(station 2), both 1.9.23 (git 09f258f8), GUI `mercury-ui.exe` started by hand (desktop
+icons "Mercury HF Modem" and "Mercury HF 2"). Each GUI reads `mercury.ini` from its own
+folder and writes its settings back to it. Station 2's ini: `arq_tcp_base_port = 8310`,
+`broadcast_tcp_port = 8110`, `ui_port = 10010`, `[store] enabled = false` (original
+kept as `mercury.ini.orig`). Winlink Express: session type "Vara HF P2P", VARA TNC
+port 8300 (station 1) / 8310 (station 2), auto launch off, "Log Vara commands" on.
+Sound cards as for ARDOP (station 1 C-Media, station 2 USB Audio Device); Windows
+levels unchanged from cal7 (speakers: C-Media 17% left only, USB Audio 50% right only;
+microphones 35% / 75%, mono). Mercury writes the same signal to both output channels,
+so the Windows balance routes it as for ARDOP; its capture-channel setting has no
+effect on a mono microphone. `busy_detect = false` (default). Winlink's `CWID ON` is
+rejected by Mercury (no Morse ID), harmless.
+
+**Drive level (D5).** At `tx_gain_db = 0`, Mercury's bursts arrived 3.1 dB (2 -> 1) and
+3.4 dB (1 -> 2) below the tone reference (listen-20261115-0248, WGN 40, ~28 bursts each,
+matched to Mercury's own PTT log). Set to +3.0 (station 2) and +3.5 (station 1), the GUI's
+0.5 dB steps: then -0.4 and 0.0 dB vs the reference (listen-20261115-0311). IONOS Lvl
+about 550 mV p-p at 0 dB, 650-750 mV p-p after: no red. Against the tone (400 mV p-p at
+the reference) that puts Mercury's peak-to-average about 6 dB above a sine's.
+
+**Pre-checks (smoke-mercury).** Tone check -0.3 / -0.3 dB vs the reference at WGN 20;
+16QAM 2 -> 1 22.8 dB MER at full level.
+
+**smoke-mercury-0001 (WGN 18, Text_50KB, 2 -> 1): dnc, 1/10.** The first message was
+delivered intact (6:20, 886 bit/s), but station 2's Winlink logged "P2P session
+inactivity timeout" exactly 5:00 after "Sending" and disconnected; Mercury kept sending
+until the receiver had it, so the sender never saw the receipt. The runner then
+recovered the bench correctly with Mercury left running. Same failure in the manual
+session at 02:53 (WGN 40, before the gain change, 6:27 send). Sends under 5 min
+(03:14, 3:02 and 2:32 at the corrected level) completed normally.
+
+**Relay trace (13:57-14:05 UTC).** A logging relay (`scripts/vara_relay.py`, station 2's
+Winlink on 8320 -> Mercury 8310) shows Mercury follows the VARA host protocol:
+Winlink handed all 42,527 bytes to Mercury in one write at 13:58:29; Mercury reported
+`BUFFER 42527`, then `31027` (14:00:39), `19527` (14:02:16), `14927`, `12627` (14:03:14),
+plus `PTT ON/OFF` around every transmission (44 lines), `BITRATE`, `SN` and `IAMALIVE`.
+Winlink still sent `DISCONNECT` at 14:03:29, 5:00 after its last data-port write.
+**Winlink's 5-minute P2P inactivity timer is not reset by BUFFER, PTT, BITRATE or SN
+lines from the modem.** Winlink's own VARA command log does not record BUFFER or PTT
+lines at all, so it can't show this; the relay can. Not yet known: how real VARA HF
+avoids the timeout on long sends (whether Winlink then writes the message in smaller
+pieces, or something else resets the timer). Until that is solved, Mercury can't be
+swept fairly: every send longer than 5 minutes ends the session.
+
 ## Planned next
 
 > **Superseded 13 Nov 2026 by [test-plan.md](test-plan.md)**, which covers the remaining modems, the metric changes and the open decisions. The items below are kept for the record.
