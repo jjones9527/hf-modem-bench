@@ -1,0 +1,4 @@
+run_id,outcome,attempted,delivered,corrupted,stall,cut,not_reached,delivered_bytes,integrity_bad,session_s,net_bps,goodput_median_bps
+oneway28-0001,dnc,2,1,1,0,0,8,42096,0,601,560.3460898502495,1510.1704035874438
+oneway28-0002,dnc,5,4,1,0,0,5,168516,0,1411,955.4415308291991,1539.304086738949
+oneway28-0003,completed,10,10,0,0,0,0,421583,0,2734,1233.6005852231162,1547.6799865328367

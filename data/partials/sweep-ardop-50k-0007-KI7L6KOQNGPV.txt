@@ -1,0 +1,19 @@
+MID: KI7L6KOQNGPV
+Date: 2026/11/14 01:49
+Type: Private
+From: VE3XZQ
+To: VA3ZTF
+Subject: hfbench sweep-ardop-50k-0007 7/10
+X-P2P: True
+Body: 19
+File: 51200 File-gkTVB.txt
+compressed bytes in partial: 41994; uncompressed message length 51418
+decoded attachment matches the original for the first 32850 of 51200 bytes
+compressed stream re-built from the original: 42195 bytes; compared 41994 received bytes: 7 differ
+  offset 27185 (B2F stream 27191): sent 11000010 got 11010000  xor 00010010
+  offset 27192 (B2F stream 27198): sent 10101000 got 10101111  xor 00000111
+  offset 27205 (B2F stream 27211): sent 10001011 got 10001010  xor 00000001
+  offset 27206 (B2F stream 27212): sent 01100010 got 11100010  xor 10000000
+  offset 27227 (B2F stream 27233): sent 00110000 got 00100000  xor 00010000
+  offset 27233 (B2F stream 27239): sent 10101000 got 10100110  xor 00001110
+  offset 27263 (B2F stream 27269): sent 01100001 got 01000001  xor 00100000

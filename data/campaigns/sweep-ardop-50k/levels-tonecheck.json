@@ -1,0 +1,152 @@
+[
+  {
+    "ionos_setting": "WGN:20",
+    "floor_dbfs_3k": {
+      "1": -42.94887015752562,
+      "2": -43.64708682762915
+    },
+    "paths": {
+      "1->1": {
+        "tone_dbfs": -23.22290282331629,
+        "noise_dbfs_3k": -42.8911514503234,
+        "snr_db": 19.66824862700711,
+        "h2_dbc": -38.50459377942988,
+        "h3_dbc": -70.76397891351847,
+        "peak_dbfs": -19.255634376950496,
+        "clipped": false
+      },
+      "1->2": {
+        "tone_dbfs": -23.878257656642013,
+        "noise_dbfs_3k": -43.592549010927684,
+        "snr_db": 19.71429135428567,
+        "h2_dbc": -38.45639406809405,
+        "h3_dbc": -70.16501283584074,
+        "peak_dbfs": -21.573028494558287,
+        "clipped": false
+      },
+      "2->1": {
+        "tone_dbfs": -23.321502513666488,
+        "noise_dbfs_3k": -42.92707819822616,
+        "snr_db": 19.605575684559675,
+        "h2_dbc": -37.4293841611034,
+        "h3_dbc": -69.62405040660506,
+        "peak_dbfs": -19.368280704394152,
+        "clipped": false
+      },
+      "2->2": {
+        "tone_dbfs": -23.97058957051776,
+        "noise_dbfs_3k": -43.61512531647796,
+        "snr_db": 19.644535745960198,
+        "h2_dbc": -37.61225783810201,
+        "h3_dbc": -69.52451975525894,
+        "peak_dbfs": -21.772269623124195,
+        "clipped": false
+      }
+    },
+    "mismatch": {
+      "tx_db": 0.0954658021129724,
+      "rx_db": 0.6675528534268432,
+      "tx_spread_db": 0.006267776474452091,
+      "rx_spread_db": 0.04912961325226206,
+      "consistent": true,
+      "n_tx": 2,
+      "n_rx": 3
+    },
+    "advice": [
+      "Transmit, station 1: at the IONOS reference (-0.3 dB). Leave it.",
+      "Transmit, station 2: at the IONOS reference (-0.4 dB). Leave it.",
+      "Receive levels match (+0.7 dB)."
+    ],
+    "devices": {
+      "station1": {
+        "play": "Speakers (C-Media USB Audio Device   )",
+        "rec": "Microphone (C-Media USB Audio Device   )",
+        "api": "Windows WASAPI"
+      },
+      "station2": {
+        "play": "Speakers (3- USB Audio Device)",
+        "rec": "Microphone (3- USB Audio Device)",
+        "api": "Windows WASAPI"
+      }
+    },
+    "tx_ref_db": {
+      "1": -0.28570864571432963,
+      "2": -0.3944243154403253
+    }
+  },
+  {
+    "ionos_setting": "WGN:40",
+    "floor_dbfs_3k": {
+      "1": -55.02471515622406,
+      "2": -55.74019008487079
+    },
+    "paths": {
+      "1->1": {
+        "tone_dbfs": -22.74399361863004,
+        "noise_dbfs_3k": -55.29985641393406,
+        "snr_db": 32.55586279530402,
+        "h2_dbc": -51.826625503998706,
+        "h3_dbc": -71.1597640684403,
+        "peak_dbfs": -19.787384863153758,
+        "clipped": false
+      },
+      "1->2": {
+        "tone_dbfs": -23.395152960401706,
+        "noise_dbfs_3k": -55.96291947553918,
+        "snr_db": 32.56776651513748,
+        "h2_dbc": -52.016617594097326,
+        "h3_dbc": -70.93082184717315,
+        "peak_dbfs": -22.39897621308184,
+        "clipped": false
+      },
+      "2->1": {
+        "tone_dbfs": -22.83730865462641,
+        "noise_dbfs_3k": -55.24465789845695,
+        "snr_db": 32.40734924383054,
+        "h2_dbc": -48.21792434106027,
+        "h3_dbc": -70.8754684115716,
+        "peak_dbfs": -19.946619756331298,
+        "clipped": false
+      },
+      "2->2": {
+        "tone_dbfs": -23.48664600357958,
+        "noise_dbfs_3k": -55.90131492281983,
+        "snr_db": 32.41466891924024,
+        "h2_dbc": -48.44069316570341,
+        "h3_dbc": -70.78938881855582,
+        "peak_dbfs": -22.4761846293466,
+        "clipped": false
+      }
+    },
+    "mismatch": {
+      "tx_db": 0.09240403958712129,
+      "rx_db": 0.671990539790522,
+      "tx_spread_db": 0.0018219928184954881,
+      "rx_spread_db": 0.0661375796935566,
+      "consistent": true,
+      "n_tx": 2,
+      "n_rx": 3
+    },
+    "advice": [
+      "Transmit, station 1: 7.4 dB below the IONOS reference, so its real S:N is -7.4 dB off the setting. Raise station 1's level into the IONOS by 7.4 dB (Windows speaker level; for more than ~6 dB use one IONOS CH IN step).",
+      "Transmit, station 2: 7.6 dB below the IONOS reference, so its real S:N is -7.6 dB off the setting. Raise station 2's level into the IONOS by 7.6 dB (Windows speaker level; for more than ~6 dB use one IONOS CH IN step).",
+      "Receive levels match (+0.7 dB)."
+    ],
+    "devices": {
+      "station1": {
+        "play": "Speakers (C-Media USB Audio Device   )",
+        "rec": "Microphone (C-Media USB Audio Device   )",
+        "api": "Windows WASAPI"
+      },
+      "station2": {
+        "play": "Speakers (3- USB Audio Device)",
+        "rec": "Microphone (3- USB Audio Device)",
+        "api": "Windows WASAPI"
+      }
+    },
+    "tx_ref_db": {
+      "1": -7.432233484862522,
+      "2": -7.592650756169462
+    }
+  }
+]

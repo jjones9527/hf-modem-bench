@@ -1,0 +1,2 @@
+run_id,outcome,attempted,delivered,corrupted,stall,cut,not_reached,delivered_bytes,integrity_bad,session_s,net_bps,goodput_median_bps
+smoke-mercury-r-0001,timeboxed,9,9,0,0,0,1,379452,0,3619,838.7996684166897,947.4157303370787

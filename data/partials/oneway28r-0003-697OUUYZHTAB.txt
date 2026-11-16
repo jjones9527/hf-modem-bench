@@ -1,0 +1,16 @@
+MID: 697OUUYZHTAB
+Date: 2026/11/12 23:58
+Type: Private
+From: VE3XZQ
+To: VA3ZTF
+Subject: hfbench oneway28r-0003 6/10
+X-P2P: True
+Body: 19
+File: 51200 File-bOgW3.txt
+compressed bytes in partial: 41994; uncompressed message length 51412
+decoded attachment matches the original for the first 13582 of 51200 bytes
+compressed stream re-built from the original: 42085 bytes; compared 41994 received bytes: 4 differ
+  offset 11405 (B2F stream 11411): sent 10010101 got 10000101  xor 00010000
+  offset 11414 (B2F stream 11420): sent 00111010 got 00101010  xor 00010000
+  offset 11432 (B2F stream 11438): sent 10111110 got 10111111  xor 00000001
+  offset 11451 (B2F stream 11457): sent 10011111 got 10011110  xor 00000001

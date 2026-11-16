@@ -1,0 +1,13 @@
+run_id,setting_db,data_snr_db,data_n,control_snr_db,keyed_by,ardop_ptt_data
+sweep-ardop-5k-0001,7,3.13,459,5.77,energy (sender 2),3.1 dB (441)
+sweep-ardop-5k-0002,7,3.12,447,5.80,energy (sender 2),3.1 dB (430)
+sweep-ardop-5k-0003,17,10.84,125,15.52,energy (sender 2),10.9 dB (107)
+sweep-ardop-5k-0004,2,-1.77,627,0.97,energy (sender 2),-1.8 dB (606)
+sweep-ardop-5k-0005,12,6.64,315,10.66,energy (sender 2),6.7 dB (293)
+sweep-ardop-5k-0006,17,10.83,125,15.35,energy (sender 2),10.9 dB (108)
+sweep-ardop-5k-0007,7,3.17,458,5.78,energy (sender 2),3.2 dB (441)
+sweep-ardop-5k-0008,2,-1.78,630,0.93,energy (sender 2),-1.8 dB (609)
+sweep-ardop-5k-0009,12,6.68,320,10.72,energy (sender 2),6.7 dB (296)
+sweep-ardop-5k-0010,17,10.84,118,15.51,energy (sender 2),10.9 dB (105)
+sweep-ardop-5k-0011,2,-1.78,629,0.92,energy (sender 2),-1.8 dB (609)
+sweep-ardop-5k-0012,12,8.14,5,10.60,energy (sender 2),-2.4 dB (3)

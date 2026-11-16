@@ -17,3 +17,6 @@ payloads/*
 !payloads/.gitkeep
 !payloads/Text_50KB/
 !payloads/Text_5KB/
+
+# private strings for scripts/export_audit_data.py
+redact.local

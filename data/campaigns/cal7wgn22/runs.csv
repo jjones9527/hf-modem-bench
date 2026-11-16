@@ -1,0 +1,3 @@
+run_id,outcome,attempted,delivered,corrupted,stall,cut,not_reached,delivered_bytes,integrity_bad,session_s,net_bps,goodput_median_bps
+cal7wgn22-0001,completed,10,10,0,0,0,0,421594,0,3014,1119.0285335102853,1282.403041825095
+cal7wgn22-0002,completed,10,10,0,0,0,0,421593,0,3081,1094.6913339824732,1247.6558134448728

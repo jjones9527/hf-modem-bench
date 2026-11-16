@@ -1,0 +1,5 @@
+run_id,setting_db,data_snr_db,data_n,control_snr_db,keyed_by,ardop_ptt_data
+oneway28r-0001,28,18.31,243,24.47,energy (sender 2),18.2 dB (228)
+oneway28r-0002,28,18.30,487,24.46,energy (sender 2),18.4 dB (453)
+oneway28r-0003,28,18.27,52,24.54,energy (sender 2),-10.7 dB (47)
+oneway28r-0004,28,18.32,478,24.49,energy (sender 2),18.4 dB (445)

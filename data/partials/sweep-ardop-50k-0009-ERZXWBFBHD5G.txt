@@ -1,0 +1,13 @@
+MID: ERZXWBFBHD5G
+Date: 2026/11/14 03:47
+Type: Private
+From: VE3XZQ
+To: VA3ZTF
+Subject: hfbench sweep-ardop-50k-0009 10/10
+X-P2P: True
+Body: 19
+File: 51200 File-z7j7V.txt
+compressed bytes in partial: 19494; uncompressed message length 51419
+decoded attachment matches the original for the first 23463 of 51200 bytes
+compressed stream re-built from the original: 42148 bytes; compared 19494 received bytes: 1 differ
+  offset 19493 (B2F stream 19499): sent 10110010 got 10110001  xor 00000011

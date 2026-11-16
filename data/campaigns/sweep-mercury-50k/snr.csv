@@ -1,0 +1,7 @@
+run_id,setting_db,data_snr_db,data_n,control_snr_db,keyed_by,ardop_ptt_data
+sweep-mercury-50k-0001,40,25.54,86,,Mercury PTT (sender),
+sweep-mercury-50k-0002,17,17.83,146,,Mercury PTT (sender),
+sweep-mercury-50k-0003,22,17.51,176,,Mercury PTT (sender),
+sweep-mercury-50k-0004,17,17.81,146,,Mercury PTT (sender),
+sweep-mercury-50k-0005,40,25.53,51,,Mercury PTT (sender),
+sweep-mercury-50k-0006,17,17.82,145,,Mercury PTT (sender),

@@ -1,0 +1,7 @@
+run_id,setting_db,data_snr_db,data_n,control_snr_db,keyed_by,ardop_ptt_data
+knee-ardop-5k-0001,-2,-3.04,838,-2.99,energy (sender 2),-2.8 dB (821)
+knee-ardop-5k-0002,0,-0.78,751,-0.90,energy (sender 2),-0.8 dB (729)
+knee-ardop-5k-0003,-2,-2.89,978,-3.00,energy (sender 2),-2.9 dB (961)
+knee-ardop-5k-0004,-2,-2.82,1111,-3.00,energy (sender 2),-2.8 dB (1092)
+knee-ardop-5k-0005,0,-0.77,822,-0.96,energy (sender 2),-1.0 dB (798)
+knee-ardop-5k-0006,0,-0.77,751,-0.86,energy (sender 2),-0.9 dB (722)

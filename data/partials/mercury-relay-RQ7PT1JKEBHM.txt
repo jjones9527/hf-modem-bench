@@ -1,0 +1,18 @@
+MID: RQ7PT1JKEBHM
+Date: 2026/11/15 17:11
+Type: Private
+From: VE3XZQ
+To: VA3ZTF
+Subject: P2P 2
+X-P2P: True
+Body: 19
+File: 51200 File-FJYnL.txt
+compressed bytes in partial: 16244; uncompressed message length 51440
+decoded attachment matches the original for the first 19420 of 51200 bytes
+compressed stream re-built from the original: 42178 bytes; compared 16244 received bytes: 6 differ
+  offset 16238 (B2F stream 16244): sent 01101110 got 00010000  xor 01111110
+  offset 16239 (B2F stream 16245): sent 11101111 got 10111111  xor 01010000
+  offset 16240 (B2F stream 16246): sent 01110101 got 11111001  xor 10001100
+  offset 16241 (B2F stream 16247): sent 11111000 got 00100110  xor 11011110
+  offset 16242 (B2F stream 16248): sent 11000111 got 10101110  xor 01101001
+  offset 16243 (B2F stream 16249): sent 01111110 got 01101111  xor 00010001

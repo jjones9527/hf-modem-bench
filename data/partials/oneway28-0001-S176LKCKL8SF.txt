@@ -1,0 +1,14 @@
+MID: S176LKCKL8SF
+Date: 2026/11/12 20:44
+Type: Private
+From: VA3ZTF
+To: VE3XZQ
+Subject: hfbench oneway28-0001 4/10
+X-P2P: True
+Body: 19
+File: 51200 File-NqdBp.txt
+compressed bytes in partial: 41994; uncompressed message length 51411
+decoded attachment matches the original for the first 40539 of 51200 bytes
+compressed stream re-built from the original: 42109 bytes; compared 41994 received bytes: 2 differ
+  offset 33402 (B2F stream 33408): sent 10100110 got 10010110  xor 00110000
+  offset 33465 (B2F stream 33471): sent 10011010 got 10011001  xor 00000011

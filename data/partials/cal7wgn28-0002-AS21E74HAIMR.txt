@@ -1,0 +1,13 @@
+MID: AS21E74HAIMR
+Date: 2026/11/12 19:11
+Type: Private
+From: VA3ZTF
+To: VE3XZQ
+Subject: hfbench cal7wgn28-0002 2/5
+X-P2P: True
+Body: 19
+File: 51200 File-A9TS9.txt
+compressed bytes in partial: 34494; uncompressed message length 51411
+decoded attachment matches the original for the first 41838 of 51200 bytes
+compressed stream re-built from the original: 42149 bytes; compared 34494 received bytes: 0 differ
+no corruption in what was received; the transfer stopped early

@@ -1,0 +1,3 @@
+run_id,setting_db,data_snr_db,data_n,control_snr_db,keyed_by,ardop_ptt_data
+cal7wgn22-0001,22,15.37,551,20.06,energy (sender 2),15.5 dB (276)
+cal7wgn22-0002,22,15.36,559,20.00,energy (sender 2),15.5 dB (283)

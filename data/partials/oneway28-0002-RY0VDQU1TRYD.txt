@@ -1,0 +1,16 @@
+MID: RY0VDQU1TRYD
+Date: 2026/11/12 21:05
+Type: Private
+From: VA3ZTF
+To: VE3XZQ
+Subject: hfbench oneway28-0002 3/10
+X-P2P: True
+Body: 19
+File: 51200 File-FJYnL.txt
+compressed bytes in partial: 41994; uncompressed message length 51411
+decoded attachment matches the original for the first 25833 of 51200 bytes
+compressed stream re-built from the original: 42150 bytes; compared 41994 received bytes: 4 differ
+  offset 21443 (B2F stream 21449): sent 10111001 got 10111000  xor 00000001
+  offset 21501 (B2F stream 21507): sent 10011011 got 10001011  xor 00010000
+  offset 21545 (B2F stream 21551): sent 01011100 got 01011011  xor 00000111
+  offset 21546 (B2F stream 21552): sent 11110111 got 10000111  xor 01110000
