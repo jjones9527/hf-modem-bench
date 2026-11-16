@@ -1,0 +1,4 @@
+run_id,mid,sender,receiver,status,compressed_bytes,start_utc,end_utc,seconds,goodput_bps,error,integrity
+pr581-short-0001,K6EZ5PF3OJY9,2,1,delivered,4501,2026-11-16T22:43:49+00:00,2026-11-16T22:44:06+00:00,16,2250.5,,ok
+pr581-short-0001,8HZZ93TUT3WB,2,1,delivered,4505,2026-11-16T22:44:06+00:00,2026-11-16T22:44:20+00:00,13,2772.3076923076924,,ok
+pr581-short-0001,8U06AM410H6Q,2,1,delivered,4511,2026-11-16T22:44:59+00:00,2026-11-16T22:44:59+00:00,0,,,ok

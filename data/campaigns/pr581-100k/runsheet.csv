@@ -1,0 +1,2 @@
+run_id,campaign,stage,seq,modem,modem_version,modem_bandwidth_hz,profile,doppler_hz,delay_ms,multipaths,sim_bandwidth_hz,snr_db,impairment,impairment_notes,ionos_commands,replicate,payload_file,payload_bytes,payload_sha256,payload_messages,abort_minutes,abort_retries,time_box_minutes
+pr581-100k-0001,pr581-100k,pr581,1,Mercury,1.9.24+pr581,2750,WGN,0.0,0.0,1,3000,17,none,,BANDWIDTH:3000; MULTIPATH:2; OFFSET:0; FADE DEPTH:0; FADE FREQ:0; FM DEVIATION:0; FM RATE:0; WGN:17,1,Text_100KB,102400,4555502b3db7fe961d77cfacf462dd8b413f70328e117b17a49caeef9109f64f,3,90,3,60

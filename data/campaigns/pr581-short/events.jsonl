@@ -1,0 +1,2 @@
+{"event": "start", "host": "BENCH-PC", "ionos_ack": "BANDWIDTH:3000=OK; MULTIPATH:2=OK; OFFSET:0=OK; FADE DEPTH:0=OK; FADE FREQ:0=OK; FM DEVIATION:0=OK; FM RATE:0=OK; WGN:40=OK", "log_connected_utc": "2026-11-16T22:43:07+00:00", "mids": "K6EZ5PF3OJY9 8HZZ93TUT3WB 8U06AM410H6Q", "run_id": "pr581-short-0001", "t_local": "2026-11-16T17:43:07-05:00", "t_utc": "2026-11-16T22:43:07+00:00"}
+{"event": "end", "host": "BENCH-PC", "notes": "", "outcome": "completed", "run_id": "pr581-short-0001", "t_local": "2026-11-16T17:45:30-05:00", "t_utc": "2026-11-16T22:45:30+00:00"}

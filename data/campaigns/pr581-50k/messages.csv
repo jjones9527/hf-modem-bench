@@ -1,0 +1,11 @@
+run_id,mid,sender,receiver,status,compressed_bytes,start_utc,end_utc,seconds,goodput_bps,error,integrity
+pr581-50k-0001,S5CWYHYFEJRM,,,not_reached,,,,,,,
+pr581-50k-0001,2UZPUYACOVWZ,,,not_reached,,,,,,,
+pr581-50k-0001,NEQ6ZEU7WP5O,,,not_reached,,,,,,,
+pr581-50k-0001,TQLJBFGL0XK3,2,1,delivered,42122,2026-11-16T22:55:45+00:00,2026-11-16T23:02:19+00:00,393,857.4452926208652,,ok
+pr581-50k-0001,C3LETINE743D,,,not_reached,,,,,,,
+pr581-50k-0001,IQR4XWF3WUJI,2,1,delivered,42093,2026-11-16T22:48:46+00:00,2026-11-16T22:55:07+00:00,380,886.1684210526316,,ok
+pr581-50k-0001,WMJBU3O4CJEE,,,not_reached,,,,,,,
+pr581-50k-0001,OPDHK8D1OPZT,,,not_reached,,,,,,,
+pr581-50k-0001,26VKVFFBERVP,,,not_reached,,,,,,,
+pr581-50k-0001,S3ENROG8FZTW,,,not_reached,,,,,,,
