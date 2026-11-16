@@ -1297,6 +1297,18 @@ Mercury GUIs left running. Mercury is ready for the WGN sweep with the relay in 
   sweep resumed 00:17 UTC. **A Mercury stability finding, not counted as a
   link result.** From now on a watcher alerts if either Mercury log is quiet for
   more than 3 min during a session.
+- **0007 again, twice more (16 Nov): station 1's Mercury froze both times.** 02:02:33 UTC
+  (37 min into the session; Mercury up 1.8 h) and 12:24:23 UTC (44 min in; up 5.9 h).
+  Same signature each time: the last log lines are a burst of received frames
+  (`car_rx`), then nothing; CPU near idle (0.27 s per 5 s against 3.0 s for station
+  2). The frozen copy's audio capture kept running: its log later filled with "[WRN]
+  [audio-cap] Buffer full in capture buffer!" at about 100 lines/s until it was
+  stopped, so the processing side hung, not the audio input. All three freezes were at
+  the receiving station (direct connection to Winlink, no relay) and in WGN 22 runs,
+  where a 50 KB message takes about 5 min. The repeat of 0003 (WGN 22) completed 10/10
+  in between. Each run was marked `invalid`; station 1's Mercury was restarted
+  (16 Nov 12:28 UTC by `hfbench_restart_mercury.ps1`, operator-approved for hangs), the
+  bench recovered and the sweep resumed.
 - **0005 (WGN 40): 6/10, `dnc`, a real result.** Station 1's Winlink logged "Link
   Error - Received data stream not correct format. ByteIndex=271584" at 22:31:04:
   corrupted data from Mercury, caught by Winlink, at the bench's best S:N.
