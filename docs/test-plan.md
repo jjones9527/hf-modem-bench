@@ -165,15 +165,17 @@ adapter)
   1. Operator: install 1.9.24 on both stations (installer for station 1, the release
      zip over `MercuryHF 2`), keep both `mercury.ini`; re-check the levels against the
      tone reference (D5).
-  2. `retest-mercury-1924`: 3 sessions at WGN 22, 50 KB, relay holding (D6), where
-     1.9.23 froze in 5 of 7. Answers #579.
-  3. PR #581 on station 2 (the sender), with `absorb_idle_disconnect_s = 240` and the
+  2. PR #581 on station 2 (the sender), with `absorb_idle_disconnect_s = 240` and the
      relay only logging (`hfbench_start_relay.ps1 -Restart -Extra '""'`). The Windows
      GUI has the engine built in, so the branch runs either as a `mercury-ui.exe` built
      from it or as its standalone `mercury.exe`
      (`hfbench_start_mercury_engine.ps1 -Station 2`). Then `pr581-short` (Q3: 5 KB at
      WGN 40, no timer), `pr581-50k` (Q1: one timer DISCONNECT per 6–7-min message) and
      `pr581-100k` (Q2: `Text_100KB`, ~14 min a message, two per message).
+  3. `retest-mercury-1924` (operator, 16 Nov: after the PR questions are answered):
+     3 sessions at WGN 22, 50 KB, relay holding (D6), where 1.9.23 froze in 5 of 7.
+     Answers #579. If 1.9.24 runs clean there, repeat the other settings where 1.9.23
+     froze (WGN 40).
   4. Relay logs (both ports), Winlink logs and Mercury logs to the developers on #581
      and #579; then back to the relay-holding setup for everything else.
   What the existing relay logs already show (results log, 16 Nov) goes to them first, as
