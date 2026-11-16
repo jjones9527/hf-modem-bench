@@ -1328,9 +1328,9 @@ Mercury GUIs left running. Mercury is ready for the WGN sweep with the relay in 
   messages, again right after a burst of `car_rx bytes=2300` frames (six within 62 ms);
   CPU 0.23 s per 5 s. Recorded `dnc` as a Mercury failure, not retried. Mercury restarted
   by script (13:58:45), bench recovered.
-- **sweep-mercury-50k final (16 Nov):** 9 runs, 15 sessions. **Mercury's receiver froze
-  in 6 sessions**: 5 of 7 at WGN 22, 1 of 4 at WGN 40, 0 of 3 at WGN 17 (one more
-  session ended early by the relay bug). 64/68 messages delivered; 64/64 attachments
+- **sweep-mercury-50k final (16 Nov):** 9 runs, 13 sessions. **Mercury's receiver froze
+  in 6 of 13 sessions**: 5 of 7 at WGN 22 (one of the other two was ended early by the
+  relay bug), 1 of 3 at WGN 40, 0 of 3 at WGN 17. 64/68 messages delivered; 64/64 attachments
   identical; failures: 1 corrupted (caught by Winlink, WGN 40), 3 lost to freezes.
   `sweep-mercury-5k` started 17:13 UTC.
 - **0005 (WGN 40): 6/10, `dnc`, a real result.** Station 1's Winlink logged "Link
