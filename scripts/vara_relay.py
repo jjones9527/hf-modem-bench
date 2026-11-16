@@ -17,9 +17,12 @@ nothing to the data port for 5 min, even while the modem is still sending the
 message it was given (its P2P inactivity timer). VARA and Mercury then end the
 link once the message is through, before the receiver's receipt can come back. With
 this option the relay answers such a DISCONNECT with OK itself and does not pass it
-on, when (a) the host's last data-port write was at least --idle-s seconds ago and
-(b) the modem's last BUFFER report was above zero. Any other DISCONNECT (the real
-end of a session comes seconds after the host's last write) is passed through.
+on, when the host's last data-port write was at least --idle-s seconds ago. Any
+other DISCONNECT (the real end of a session comes seconds after the host's last
+write, its FQ) is passed through; Abort sends ABORT, which is never held.
+(15 Nov: the first version also required the modem's BUFFER to be above zero, and
+let through a timer DISCONNECT that came 0.6 s after BUFFER 0, before the receipt:
+sweep-mercury-50k-0003.)
 This changes the system under test; record it with every result.
 """
 from __future__ import annotations
@@ -72,7 +75,7 @@ async def pump(reader, writer, log: Log, port: str, direction: str, lines: bool,
                     st.buffer = int(m.group(1))
                 idle = time.monotonic() - st.last_host_data
                 if (direction == "host>modem" and ln == "DISCONNECT" and st.hold
-                        and st.buffer > 0 and idle >= st.idle_s and back is not None):
+                        and idle >= st.idle_s and back is not None):
                     back.write(b"OK\r")
                     await back.drain()
                     log.write(port, direction, f"DISCONNECT [HELD: host idle {idle:.0f} s, modem BUFFER "
