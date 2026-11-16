@@ -1291,14 +1291,14 @@ Mercury GUIs left running. Mercury is ready for the WGN sweep with the relay in 
 - **0007 (WGN 22, from 23:41 UTC): station 1's Mercury froze.** At 00:10:57 UTC its
   engine log stopped mid-reception and its CPU went idle (0.2 s per 5 s, against
   2.5 s for station 2), with no crash or error; Windows still showed it responding.
-  It had been running about 12 h (started 12:09 local). The operator noticed the
+  It had been running about 7 h (started 12:09 local). The operator noticed the
   waterfall had stopped. Campaign stopped by hand, run marked `invalid`; station 1's
   Mercury restarted (operator), relay restarted with the fixed rule, bench recovered,
   sweep resumed 00:17 UTC. **A Mercury stability finding, not counted as a
   link result.** From now on a watcher alerts if either Mercury log is quiet for
   more than 3 min during a session.
 - **0007 again, twice more (16 Nov): station 1's Mercury froze both times.** 02:02:33 UTC
-  (37 min into the session; Mercury up 1.8 h) and 12:24:23 UTC (44 min in; up 5.9 h).
+  (37 min into the session; Mercury up 1.8 h) and 12:24:23 UTC (44 min in; up 0.8 h).
   Same signature each time: the last log lines are a burst of received frames
   (`car_rx`), then nothing; CPU near idle (0.27 s per 5 s against 3.0 s for station
   2). The frozen copy's audio capture kept running: its log later filled with "[WRN]
