@@ -1279,6 +1279,28 @@ The run ended on the time box: the runner pressed Abort, recovery cleared the on
 remaining Outbox message, restarted both Winlinks and reopened both sessions with the
 Mercury GUIs left running. Mercury is ready for the WGN sweep with the relay in place.
 
+### sweep-mercury-50k: two bench faults (15-16 Nov 2026)
+
+- **0003 (WGN 22, 20:48 UTC): relay rule gap.** Winlink's 5-min timer fired at
+  20:59:02.678, 0.6 s after Mercury reported BUFFER 0 (message sent, receipt not yet
+  back). The relay then held only while BUFFER > 0, so it passed the DISCONNECT and the
+  session ended after 1 delivered message (`dnc`). Fixed: the relay now holds any
+  DISCONNECT after >= 240 s of host data-port silence (Abort sends `ABORT`, never held;
+  a real end of session comes seconds after the host's FQ). Marked `invalid`, re-run.
+  WGN 22 is the setting where a 50 KB message takes almost exactly 5 minutes.
+- **0007 (WGN 22, from 23:41 UTC): station 1's Mercury froze.** At 00:10:57 UTC its
+  engine log stopped mid-reception and its CPU went idle (0.2 s per 5 s, against
+  2.5 s for station 2), with no crash or error; Windows still showed it responding.
+  It had been running about 12 h (started 12:09 local). The operator noticed the
+  waterfall had stopped. Campaign stopped by hand, run marked `invalid`; station 1's
+  Mercury restarted (operator), relay restarted with the fixed rule, bench recovered,
+  sweep resumed 00:17 UTC. **A Mercury stability finding, not counted as a
+  link result.** From now on a watcher alerts if either Mercury log is quiet for
+  more than 3 min during a session.
+- **0005 (WGN 40): 6/10, `dnc`, a real result.** Station 1's Winlink logged "Link
+  Error - Received data stream not correct format. ByteIndex=271584" at 22:31:04:
+  corrupted data from Mercury, caught by Winlink, at the bench's best S:N.
+
 ## Planned next
 
 > **Superseded 13 Nov 2026 by [test-plan.md](test-plan.md)**, which covers the remaining modems, the metric changes and the open decisions. The items below are kept for the record.
