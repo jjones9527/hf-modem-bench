@@ -1410,6 +1410,24 @@ tests are in test-plan.md ("Mercury 1.9.24 and PR #581"). The branch's engine wa
 built locally from 7dd5c40 (MinGW GCC 16.2, `mercury.exe` sha256 cafa4f89…84f),
 because the Windows GUI has the engine built in and CI keeps no Windows build.
 
+### PR #581 tested on the bench (16 Nov 2026, 22:43-23:20 UTC)
+
+Mercury 1.9.24 installed first (results log above; after a PC restart every sound-card
+endpoint had a new Windows ID, so both `mercury.ini` were updated; Windows levels
+unchanged). Station 2 (sender) ran the branch's standalone engine (7dd5c40, MinGW
+build, sha256 cafa4f89…84f) with `[tnc] absorb_idle_disconnect_s = 240`; station 1
+the 1.9.24 GUI; relay logging only (`relay-20261116-2236.log`).
+
+| Campaign | Test | Result |
+|---|---|---|
+| pr581-short | 3 × 5 KB, WGN 40: normal end (Q3) | completed 3/3, identical; DISCONNECT 4 s after the last write passed on, closed 11 s later |
+| pr581-50k | 10 × 50 KB, WGN 17: carry on after an absorb (Q1) | **dnc 2/10.** Message 1's timer DISCONNECT absorbed and Winlink sent message 2; message 2's DISCONNECT (the session's second) ended the session after a 103-s drain. Message 2 reached station 1 but stayed in station 2's Outbox |
+| pr581-100k | 3 × 100 KB, WGN 17: message over 10 min (Q2) | **dnc 0/3.** Absorbed at 300 s; Winlink's second DISCONNECT at 600 s ended the session; partial file at station 1 |
+
+So the developer's three questions are answered yes, yes, yes, and the once-per-session
+absorb still loses multi-message and long sessions, as the code predicted. No freeze on
+station 1 (1.9.24) in about 30 min of sessions. Report drafted for #581.
+
 ## Planned next
 
 > **Superseded 13 Nov 2026 by [test-plan.md](test-plan.md)**, which covers the remaining modems, the metric changes and the open decisions. The items below are kept for the record.
