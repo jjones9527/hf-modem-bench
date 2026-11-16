@@ -9,12 +9,14 @@ $dir = Join-Path $env:USERPROFILE 'hfbench'
 $stamp = (Get-Date).ToUniversalTime().ToString('yyyyMMdd-HHmm')
 $out = "runs\$Campaign\console-$stamp.txt"
 # Mercury's GUI can keep running after its window is closed (15 Nov: three station-2
-# copies on one sound card). If any Mercury runs, require exactly one per station.
-$merc = @(Get-CimInstance Win32_Process -Filter "Name='mercury-ui.exe'")
+# copies on one sound card). If any Mercury runs, require exactly one per station: the
+# GUI, or a standalone engine (mercury*.exe, hfbench_start_mercury_engine.ps1).
+$merc = @(Get-CimInstance Win32_Process | Where-Object { $_.Name -like 'mercury*.exe' })
 if ($merc.Count) {
     foreach ($d in 'C:\Program Files\MercuryHF\', 'C:\Program Files\MercuryHF 2\') {
-        $n = @($merc | Where-Object { $_.ExecutablePath -eq ($d + 'mercury-ui.exe') }).Count
-        if ($n -ne 1) { throw "$n Mercury processes from $d (need exactly 1): end the extra ones in Task Manager" }
+        $mine = @($merc | Where-Object { $_.ExecutablePath -and (Split-Path $_.ExecutablePath) -eq $d.TrimEnd('\') })
+        if ($mine.Count -ne 1) { throw "$($mine.Count) Mercury processes from $d (need exactly 1): end the extra ones in Task Manager" }
+        "Mercury in ${d}: $($mine[0].Name) (pid $($mine[0].ProcessId))"
     }
 }
 if ($Relay) {

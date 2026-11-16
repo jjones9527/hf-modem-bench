@@ -19,8 +19,8 @@ if ($Gui) {
     return
 }
 if (-not (Test-Path $path)) { throw "$path not found" }
-$gui = @(Get-CimInstance Win32_Process -Filter "Name='mercury-ui.exe'" | Where-Object { $_.ExecutablePath -eq (Join-Path $d 'mercury-ui.exe') })
-if ($gui) { throw "station $Station's Mercury GUI is running (pid $(($gui | ForEach-Object ProcessId) -join ',')): close it first" }
+$guiProcs = @(Get-CimInstance Win32_Process -Filter "Name='mercury-ui.exe'" | Where-Object { $_.ExecutablePath -eq (Join-Path $d 'mercury-ui.exe') })
+if ($guiProcs) { throw "station $Station's Mercury GUI is running (pid $(($guiProcs | ForEach-Object ProcessId) -join ',')): close it first" }
 foreach ($p in $engines) { Stop-Process -Id $p.ProcessId -Force }
 $action = New-ScheduledTaskAction -Execute $path -Argument '-C mercury.ini' -WorkingDirectory $d
 $principal = New-ScheduledTaskPrincipal -UserId ([Security.Principal.WindowsIdentity]::GetCurrent().Name) -LogonType Interactive
