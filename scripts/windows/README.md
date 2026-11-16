@@ -23,6 +23,8 @@ windows. Run one over SSH with
 | `hfbench_run_task.ps1` + `audio_check.cmd` | Tone check at WGN 20 and 40 (`hfbench audio check --snr 20 40`). Writes `hfbench\levels.json` and `check.txt`, ending with `EXIT n`. Reads the sound devices from the ARDOP_Win TNC ini files. |
 | `hfbench_desktop.ps1 -HfArgs "..." -Out FILE` | Runs any `hfbench` command in the desktop session and waits, e.g. the 16QAM path check `-HfArgs "audio qam --snr 40 40 --json qam.json" -Out qam.txt`. |
 | `hfbench_live_levels.ps1 [-Snr S]` | Opens a console on the bench desktop that repeats the tone check every few seconds, for trimming levels live. |
+| `hfbench_mstale.ps1` | Seconds since each Mercury engine log was written, and whether a session is in progress. Used by `scripts/watch-mercury-sweep.sh` to spot a Mercury freeze. |
+| `hfbench_restart_mercury.ps1 -Station N` | Stops that station's `mercury-ui.exe` and starts one again in the desktop session, then waits for its control port. Only for a frozen Mercury (operator-approved 16 Nov 2026); each restart is logged to `hfbench\mercury-restarts.log`. |
 | `hfbench_fmt.ps1`, `hfbench_fx.ps1` | Show each active audio device's shared-mode format, and whether enhancements are disabled on the USB devices. |
 
 ## ARDOP settings

@@ -1,0 +1,12 @@
+modem,profile,payload,setting_db,snr_db,snr_runs,runs,attempted,delivered,success,goodput_median,goodput_min,goodput_max,net_bps,session_min,outcomes,run_ids
+ARDOP 1.0.2.9,WGN,Text_50KB,17.0,10.83,2,3,18,18,1.0,684.2352941176471,665.214990138067,723.1931330472103,551.8217857792326,183.3,timeboxed timeboxed timeboxed,sweep-ardop-50k-0004 sweep-ardop-50k-0006 sweep-ardop-50k-0008
+ARDOP 1.0.2.9,WGN,Text_50KB,22.0,15.41,2,3,22,20,0.9090909090909091,1259.2537313432836,1161.1862068965518,1295.3846153846155,999.1088727595911,112.5,completed dnc dnc,sweep-ardop-50k-0001 sweep-ardop-50k-0007 sweep-ardop-50k-0009
+ARDOP 1.0.2.9,WGN,Text_50KB,40.0,21.95,3,3,30,30,1.0,1547.5045871559632,1380.1639344262296,1562.888888888889,1259.1225581684707,133.9,completed completed completed,sweep-ardop-50k-0002 sweep-ardop-50k-0003 sweep-ardop-50k-0005
+ARDOP 1.0.2.9,WGN,Text_5KB,-10.0,,0,3,0,0,,,,,,0.0,dnc dnc dnc,sweep-ardop-5k-low-0001 sweep-ardop-5k-low-0003 sweep-ardop-5k-low-0005
+ARDOP 1.0.2.9,WGN,Text_5KB,-5.0,-6.01,3,3,6,0,0.0,,,,0.0,44.0,dnc dnc dnc,sweep-ardop-5k-low-0002 sweep-ardop-5k-low-0004 sweep-ardop-5k-low-0006
+ARDOP 1.0.2.9,WGN,Text_5KB,-2.0,-2.89,3,3,21,21,1.0,91.26075949367089,68.12854442344046,101.98300283286119,68.86636950786864,183.2,timeboxed timeboxed timeboxed,knee-ardop-5k-0001 knee-ardop-5k-0003 knee-ardop-5k-0004
+ARDOP 1.0.2.9,WGN,Text_5KB,0.0,-0.77,3,3,24,24,1.0,95.27176781002638,79.73451327433628,104.25433526011561,78.67903255137297,183.3,timeboxed timeboxed timeboxed,knee-ardop-5k-0002 knee-ardop-5k-0005 knee-ardop-5k-0006
+ARDOP 1.0.2.9,WGN,Text_5KB,2.0,-1.78,3,3,21,21,1.0,83.83255813953488,75.65618448637316,86.71153846153847,68.89362089362089,183.2,timeboxed timeboxed timeboxed,sweep-ardop-5k-0004 sweep-ardop-5k-0008 sweep-ardop-5k-0011
+ARDOP 1.0.2.9,WGN,Text_5KB,7.0,3.13,3,3,30,30,1.0,160.49944444444446,130.10830324909747,182.46464646464648,143.2334568554791,125.9,completed completed completed,sweep-ardop-5k-0001 sweep-ardop-5k-0002 sweep-ardop-5k-0007
+ARDOP 1.0.2.9,WGN,Text_5KB,12.0,6.66,2,3,30,30,1.0,247.15068493150685,194.89729729729729,331.3761467889908,205.60942249240122,87.7,completed completed completed,sweep-ardop-5k-0005 sweep-ardop-5k-0009 sweep-ardop-5k-0012
+ARDOP 1.0.2.9,WGN,Text_5KB,17.0,10.84,3,3,30,30,1.0,751.8333333333334,530.0,860.3809523809524,498.52049746660526,36.2,completed completed completed,sweep-ardop-5k-0003 sweep-ardop-5k-0006 sweep-ardop-5k-0010

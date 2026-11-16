@@ -20,6 +20,8 @@ Documents:
 | [docs/test-environment.md](docs/test-environment.md) | Hardware, software and settings of the bench |
 | [docs/log-formats.md](docs/log-formats.md) | Winlink, ARDOP, VARA-protocol and Mercury log formats |
 | [scripts/windows/README.md](scripts/windows/README.md) | Helper scripts on the Windows bench machine |
+| [docs/charts/](docs/charts/) | Published charts: ARDOP 1.0.2.9 WGN sweep (goodput, net throughput, delivery vs measured S:N; `points.csv`) |
+| [docs/bug-reports/](docs/bug-reports/) | Reports sent upstream: ARDOP 1.0.2.9 carrier check, Mercury 1.9.23 receiver freeze (#579), Winlink P2P timer (Mercury #392) |
 
 ## Status (15 Nov 2026)
 
@@ -74,7 +76,7 @@ To parse logs on their own: `hfbench parse "RMS Express 20261110.log" --ardop AR
 | `src/hfbench/` | `matrix` (TOML to run sheet), `manifest`, `bench` (runner, recovery, modem profiles), `winlink_ui` (Winlink Express automation), `ionos`, `audio` and `qamtest` (level, path and S:N checks), `logparse`, `results`, `report`, `messages`, `payload`, `cli` |
 | `runs/` | Matrix files, one per campaign. Campaign directories (run sheet, events, manifest, results) are git-ignored. |
 | `payloads/` | The fixed payload sets `Text_50KB` and `Text_5KB` |
-| `scripts/` | Bench helpers: partial-file check, relay, archive script, Windows scripts |
+| `scripts/` | Bench helpers: partial-file check, ARDOP CRC simulation, VARA-protocol relay, Mercury level and S:N scripts (`mercury_level.py`, `mercury_snr.py`), sweep watcher, archive script, Windows scripts |
 | `logs/`, `reports/` | Archived bench data and generated reports (git-ignored) |
 | `docs/` | Plan, protocol, results log and bench records |
 | `tests/` | Unit tests. Log fixtures must be redacted. |
