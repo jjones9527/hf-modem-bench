@@ -51,3 +51,25 @@ about 100 lines per second, until it rotated the log past 20 MB (twice) and the 
 - the sending side: station 2 kept transmitting and logging normally each time.
 
 **Not yet tried:** 1.9.24. Its changelog doesn't mention anything like this, but we'll retest on 1.9.24 if you think it might be fixed there. We can provide the full engine logs, Winlink logs and S:N recordings for the three sessions.
+
+---
+
+**Follow-up comment (16 Nov 2026):**
+
+A fourth freeze, same station (the receiver) and same channel setting, this time much sooner after a fresh start:
+
+| # | Last log line (local, UTC−5) | Time into session | Mercury uptime | `rx_total` at the last line |
+|---|---|---|---|---|
+| 4 | 2026-11-16 07:41:47 | ~8 min | 13 min (`+780.689s`) | 50,272 |
+
+Same signature: the log stops right after a burst of full received frames, the process stays alive, and CPU drops to about 0.23 s per 5 s (the sending station's: 2.48 s).
+
+```
+2026-11-16 07:41:39.605 [+772.572s] [INF] [radio] TX enabled (PTT ON)
+2026-11-16 07:41:43.342 [+776.309s] [INF] [radio] TX disabled (PTT OFF)
+2026-11-16 07:41:47.722 [+780.689s] [TMG] [arq-timing] car_rx bytes=2252 rx_total=45672
+2026-11-16 07:41:47.722 [+780.689s] [TMG] [arq-timing] car_rx bytes=2300 rx_total=47972
+2026-11-16 07:41:47.722 [+780.689s] [TMG] [arq-timing] car_rx bytes=2300 rx_total=50272
+```
+
+So it doesn't need hours of uptime or a large amount of data: this one came 13 minutes after start and after about 50 KB received. All four ended right after a burst of `car_rx` lines for full 2,300-byte frames, three or more logged within about a millisecond of each other. At this setting, one session has completed without a freeze and four have frozen.
