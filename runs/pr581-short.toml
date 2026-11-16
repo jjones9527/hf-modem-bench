@@ -1,0 +1,36 @@
+# PR #581 (absorb Winlink's P2P idle DISCONNECT), Q3: a normal end of session still closes. 5 KB at WGN 40 takes well
+# under 5 minutes a message, so no timer fires and Winlink's own DISCONNECT, ~4 s after its last write, must go through.
+# Station 2 (the sender, whose Winlink sends the timer DISCONNECT) runs the PR's engine with [tnc]
+# absorb_idle_disconnect_s = 240; station 1 runs 1.9.24. The relay only logs (hfbench_start_relay.ps1 -Restart -Extra '""'),
+# so nothing on the bench holds a DISCONNECT and the relay log shows both ports, as the developer asked.
+# docs/test-plan.md, "Mercury 1.9.24 and PR #581"; record the PR build's sha256 in the results log.
+
+[campaign]
+name = "pr581-short"
+stage = "pr581"
+replicates = 1
+profiles = ["WGN"]
+snr_db = [40]
+order = "sequential"
+order_seed = 581
+abort_minutes = 90
+abort_retries = 3
+time_box_minutes = 20
+
+[ionos]
+bandwidth_hz = 3000
+multipaths = 2
+
+[payload]
+file = "Text_5KB"
+bytes = 5120
+sha256 = "85741279e9a689624407e58e599340c048a72fdd56c9695345c6a1ac827384d4"
+messages = 3
+
+[[modems]]
+name = "Mercury"
+version = "1.9.24+pr581"
+bandwidth_hz = 2750
+
+[[impairments]]
+name = "none"

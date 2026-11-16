@@ -1,0 +1,37 @@
+# PR #581, Q2: a message that takes more than 10 minutes. Text_100KB (hfbench payload join Text_50KB Text_100KB: each
+# file followed by the next) at WGN 17 is ~85 KB compressed, ~14 min a message, so Winlink should send DISCONNECT at
+# 300 s and again at 600 s after each write (as it did every 300 s during the 5 KB WGN -10 runs).
+# Station 2 (the sender, whose Winlink sends the timer DISCONNECT) runs the PR's engine with [tnc]
+# absorb_idle_disconnect_s = 240; station 1 runs 1.9.24. The relay only logs (hfbench_start_relay.ps1 -Restart -Extra '""'),
+# so nothing on the bench holds a DISCONNECT and the relay log shows both ports, as the developer asked.
+# docs/test-plan.md, "Mercury 1.9.24 and PR #581"; record the PR build's sha256 in the results log.
+
+[campaign]
+name = "pr581-100k"
+stage = "pr581"
+replicates = 1
+profiles = ["WGN"]
+snr_db = [17]
+order = "sequential"
+order_seed = 581
+abort_minutes = 90
+abort_retries = 3
+time_box_minutes = 60
+
+[ionos]
+bandwidth_hz = 3000
+multipaths = 2
+
+[payload]
+file = "Text_100KB"
+bytes = 102400
+sha256 = "4555502b3db7fe961d77cfacf462dd8b413f70328e117b17a49caeef9109f64f"
+messages = 3
+
+[[modems]]
+name = "Mercury"
+version = "1.9.24+pr581"
+bandwidth_hz = 2750
+
+[[impairments]]
+name = "none"

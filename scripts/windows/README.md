@@ -25,6 +25,7 @@ windows. Run one over SSH with
 | `hfbench_live_levels.ps1 [-Snr S]` | Opens a console on the bench desktop that repeats the tone check every few seconds, for trimming levels live. |
 | `hfbench_mstale.ps1` | Seconds since each Mercury engine log was written, and whether a session is in progress. Used by `scripts/watch-mercury-sweep.sh` to spot a Mercury freeze. |
 | `hfbench_restart_mercury.ps1 -Station N` | Stops that station's `mercury-ui.exe` and starts one again in the desktop session, then waits for its control port. Only for a frozen Mercury (operator-approved 16 Nov 2026); each restart is logged to `hfbench\mercury-restarts.log`. |
+| `hfbench_start_mercury_engine.ps1 -Station N [-Exe mercury-pr581.exe] [-Gui]` | Runs that station's Mercury as the standalone engine (a development build's `mercury.exe`, same `mercury.ini`) instead of the GUI, which has the release engine built in. Refuses while the GUI is open; `-Gui` stops the engine and starts the GUI again. Logged to `hfbench\mercury-restarts.log` with the build's sha256. |
 | `hfbench_fmt.ps1`, `hfbench_fx.ps1` | Show each active audio device's shared-mode format, and whether enhancements are disabled on the USB devices. |
 
 ## ARDOP settings

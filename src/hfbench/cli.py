@@ -559,6 +559,11 @@ def cmd_payload_derive(args):
     print(f"{args.dst}: first {args.bytes} bytes of each of {len(per)} files in {args.src}\nset sha256 = {digest}")
 
 
+def cmd_payload_join(args):
+    digest, per = pl.derive_join_set(args.src, args.dst)
+    print(f"{args.dst}: each of {len(per)} files in {args.src} followed by the next\nset sha256 = {digest}")
+
+
 def cmd_payload_hash(args):
     if Path(args.path).is_dir():
         digest, per = pl.sha256_set(args.path)
@@ -740,6 +745,10 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("dst")
     s.add_argument("--bytes", type=int, required=True)
     s.set_defaults(func=cmd_payload_derive)
+    s = pay.add_parser("join", help="double-length set: each file followed by the next (Text_100KB from Text_50KB)")
+    s.add_argument("src")
+    s.add_argument("dst")
+    s.set_defaults(func=cmd_payload_join)
     return p
 
 

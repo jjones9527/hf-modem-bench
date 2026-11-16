@@ -1342,6 +1342,65 @@ Mercury GUIs left running. Mercury is ready for the WGN sweep with the relay in 
   Error - Received data stream not correct format. ByteIndex=271584" at 22:31:04:
   corrupted data from Mercury, caught by Winlink, at the bench's best S:N.
 
+### sweep-mercury-5k results (16 Nov 2026, 17:13-21:46 UTC, trimmed: one run per setting)
+
+`hfbench results --verify`: **50/50 delivered, 50/50 attachments identical, no
+corruption, no freeze** (7 sessions, 245 min). Goodput is the median per message
+(receiver side); net includes session overhead. Settings are IONOS WGN; the measured
+data S:N follows when the S:N recording is analysed.
+
+| Run | WGN | Outcome | Delivered | Goodput | Net |
+|---|---|---|---|---|---|
+| 0002 | 17 | completed | 10/10 | 810 bit/s | 557 bit/s |
+| 0001 | 12 | completed | 10/10 | 821 | 611 |
+| 0012 | 7 | completed | 10/10 | 926 | 606 |
+| 0004 | 2 | completed | 10/10 | 216 | 186 |
+| 0013 | −2 | timeboxed | 4/10 | 50 | 40 |
+| 0007 | −5 | timeboxed | 3/10 | 40 | 30 |
+| 0003 | −10 | timeboxed | 3/10 | 37 | 30 |
+
+- From 7 dB up, 5 KB messages run at 800-930 bit/s, below the 50 KB rate at the same
+  setting (961 at WGN 17), because each message is short against the session's fixed
+  handshakes.
+- **Mercury kept delivering, byte-perfect, down to WGN −10**, at 37-50 bit/s: 3-4
+  messages an hour, each taking 15-36 min. On the same IONOS settings ARDOP 1.0.2.9
+  delivered nothing at WGN −5 (−6.0 dB measured) and didn't connect below. At WGN −2,
+  though, ARDOP was faster: 91 bit/s, every message, against Mercury's 50. The
+  comparison on measured S:N waits for the S:N analysis, since Mercury's burst power
+  varies with its mode.
+- Each of those slow messages had Winlink's timer DISCONNECT every 300 s, up to six
+  per message, all held by the relay (next section).
+
+### Winlink's timer DISCONNECT in the relay logs, for Mercury PR #581 (16 Nov 2026)
+
+The developers opened draft PR #581: an opt-in `[tnc] absorb_idle_disconnect_s` that
+answers the first timer DISCONNECT of a session with OK, if bytes are still queued
+(`BUFFER` > 0) and the host has been idle that long. Across two days of Mercury relay
+logs (`relay-20261115-1250`, `-1708`, `relay-20261116-0015`), there were 112
+DISCONNECTs:
+- **Timer DISCONNECTs (106)** all came 300 s or more after the host's last data write.
+- **Real ends (6)** all came at most 4.1 s after it. So idle time alone separates them.
+- **Winlink repeats the DISCONNECT every 300 s for as long as a message takes**:
+  300, 600, 900, 1201, 1501, 1801 s during one 5 KB message at WGN −10. VARA HF
+  (`relay-20261115-1439`) did the same: 300, 600 … 2101 s.
+- **The timer restarts with each data write**, so every message over 5 minutes gets
+  one. A 50 KB session at WGN 17-22 had up to 9 (one per message).
+- **Three came with BUFFER 0** (data sent, the receiver's answer not back yet):
+  15 Nov 20:59:02, 16 Nov 01:31:00 and 01:36:53. The first, passed on by the relay's
+  first rule, ended that session (sweep-mercury-50k-0003, invalid).
+- **What followed the 104 held ones:**
+  - 72: the next message;
+  - 23: another timer DISCONNECT in the same message;
+  - 6: sessions where the receiver had already frozen;
+  - 3: time-boxed sessions.
+
+So, as written, the PR would end a session at its second long message, at the second
+DISCONNECT of a message over 10 minutes, and at a DISCONNECT with BUFFER 0. Drafted as
+a comment on #581, with a suggestion to decide on idle time alone, every time. The
+tests are in test-plan.md ("Mercury 1.9.24 and PR #581"). The branch's engine was
+built locally from 7dd5c40 (MinGW GCC 16.2, `mercury.exe` sha256 cafa4f89…84f),
+because the Windows GUI has the engine built in and CI keeps no Windows build.
+
 ## Planned next
 
 > **Superseded 13 Nov 2026 by [test-plan.md](test-plan.md)**, which covers the remaining modems, the metric changes and the open decisions. The items below are kept for the record.

@@ -156,6 +156,28 @@ adapter)
   freeze as Rhizomatica/mercury#579, and the Winlink 5-min P2P timer with the relay
   traces as a comment on #392. Mercury 1.9.24 (13 Nov) is out; the sweep stays on
   1.9.23, and key points may be repeated on 1.9.24 afterwards.
+- **Mercury 1.9.24 and PR #581 (requested by the developers, 16 Nov).** On #579 they
+  asked for a re-test on 1.9.24; on #392 they opened draft PR #581, an opt-in
+  `[tnc] absorb_idle_disconnect_s` that answers Winlink's timer DISCONNECT with OK, and
+  asked for it to be tried without the relay: (1) does Winlink carry on after an
+  absorbed DISCONNECT, (2) on a message over 10 minutes, does Winlink send DISCONNECT
+  again, (3) does a normal end still close. Order, after the 5 KB sweep:
+  1. Operator: install 1.9.24 on both stations (installer for station 1, the release
+     zip over `MercuryHF 2`), keep both `mercury.ini`; re-check the levels against the
+     tone reference (D5).
+  2. `retest-mercury-1924`: 3 sessions at WGN 22, 50 KB, relay holding (D6), where
+     1.9.23 froze in 5 of 7. Answers #579.
+  3. PR #581 on station 2 (the sender), with `absorb_idle_disconnect_s = 240` and the
+     relay only logging (`hfbench_start_relay.ps1 -Restart -Extra '""'`). The Windows
+     GUI has the engine built in, so the branch runs either as a `mercury-ui.exe` built
+     from it or as its standalone `mercury.exe`
+     (`hfbench_start_mercury_engine.ps1 -Station 2`). Then `pr581-short` (Q3: 5 KB at
+     WGN 40, no timer), `pr581-50k` (Q1: one timer DISCONNECT per 6–7-min message) and
+     `pr581-100k` (Q2: `Text_100KB`, ~14 min a message, two per message).
+  4. Relay logs (both ports), Winlink logs and Mercury logs to the developers on #581
+     and #579; then back to the relay-holding setup for everything else.
+  What the existing relay logs already show (results log, 16 Nov) goes to them first, as
+  it predicts that the PR as written ends most long sessions.
 - **Data2G:** not yet brought up.
 
 **Stage 3: VARA HF 4.09**

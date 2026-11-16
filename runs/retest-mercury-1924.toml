@@ -1,0 +1,36 @@
+# Mercury 1.9.24 re-test for the receiver freeze (Rhizomatica/mercury#579; the developers asked for it on 16 Nov).
+# Release 1.9.24 on both stations (installer on station 1, the release zip over "MercuryHF 2", mercury.ini kept),
+# levels re-checked against the tone reference first. Everything else as sweep-mercury-50k: one-way 2 -> 1, Text_50KB,
+# 10 messages, relay holding the timer DISCONNECTs (start with hfbench_start_campaign.ps1 -Relay), 60-min time box.
+# WGN 22 is where 1.9.23 froze in 5 of 7 sessions: three clean sessions would make "same bug" unlikely (2/7 cubed ~2%).
+# A freeze is recorded as dnc and not retried (operator, 16 Nov).
+
+[campaign]
+name = "retest-mercury-1924"
+stage = "retest"
+replicates = 3
+profiles = ["WGN"]
+snr_db = [22]
+order = "sequential"
+order_seed = 22
+abort_minutes = 90
+abort_retries = 3
+time_box_minutes = 60
+
+[ionos]
+bandwidth_hz = 3000
+multipaths = 2
+
+[payload]
+file = "Text_50KB"
+bytes = 51200
+sha256 = "3ec10a0b30de0039bb0b949d7e160a5d4625c03ba2f245a60785d3973e0279f9"
+messages = 10
+
+[[modems]]
+name = "Mercury"
+version = "1.9.24"
+bandwidth_hz = 2750
+
+[[impairments]]
+name = "none"

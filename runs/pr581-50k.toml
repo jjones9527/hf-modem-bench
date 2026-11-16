@@ -1,0 +1,38 @@
+# PR #581, Q1 and the once-per-session limit: 50 KB at WGN 17 takes 6-7 min a message (sweep-mercury-50k), so every
+# message gets exactly one timer DISCONNECT, 300 s after its data write. Q1: after the first is absorbed, does Winlink
+# carry on ("Completed send", the next message)? As written (one absorb per session) the second message's DISCONNECT
+# should end the session; with a per-write reset all 10 should go. WGN 17: no 1.9.23 freezes there (0 of 3).
+# Station 2 (the sender, whose Winlink sends the timer DISCONNECT) runs the PR's engine with [tnc]
+# absorb_idle_disconnect_s = 240; station 1 runs 1.9.24. The relay only logs (hfbench_start_relay.ps1 -Restart -Extra '""'),
+# so nothing on the bench holds a DISCONNECT and the relay log shows both ports, as the developer asked.
+# docs/test-plan.md, "Mercury 1.9.24 and PR #581"; record the PR build's sha256 in the results log.
+
+[campaign]
+name = "pr581-50k"
+stage = "pr581"
+replicates = 1
+profiles = ["WGN"]
+snr_db = [17]
+order = "sequential"
+order_seed = 581
+abort_minutes = 90
+abort_retries = 3
+time_box_minutes = 80
+
+[ionos]
+bandwidth_hz = 3000
+multipaths = 2
+
+[payload]
+file = "Text_50KB"
+bytes = 51200
+sha256 = "3ec10a0b30de0039bb0b949d7e160a5d4625c03ba2f245a60785d3973e0279f9"
+messages = 10
+
+[[modems]]
+name = "Mercury"
+version = "1.9.24+pr581"
+bandwidth_hz = 2750
+
+[[impairments]]
+name = "none"
