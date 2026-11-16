@@ -152,6 +152,10 @@ adapter)
   session at 18.2 dB, 947 bit/s. **WGN sweep running** from 15 Nov 19:07 UTC:
   `sweep-mercury-50k` (WGN 40, 22, 17) then `sweep-mercury-5k` (WGN 17, 12, 7, 2, −2,
   −5, −10), 3 replicates each.
+- **Reported upstream (16 Nov, with the operator's approval):** the receiving-station
+  freeze as Rhizomatica/mercury#579, and the Winlink 5-min P2P timer with the relay
+  traces as a comment on #392. Mercury 1.9.24 (13 Nov) is out; the sweep stays on
+  1.9.23, and key points may be repeated on 1.9.24 afterwards.
 - **Data2G:** not yet brought up.
 
 **Stage 3: VARA HF 4.09**
