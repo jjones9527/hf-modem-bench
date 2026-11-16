@@ -1316,6 +1316,13 @@ Mercury GUIs left running. Mercury is ready for the WGN sweep with the relay in 
   freezes stated. Station 1's Mercury restarted by script (12:46:55), bench recovered,
   0008 and 0009 started 12:48. Freezes so far: 4, all on the receiving station, all in
   run 0007 at WGN 22.
+- **0008 (WGN 22, from 12:50 UTC): fifth freeze.** Station 1's Mercury stopped at
+  13:30:58 UTC, about 41 min into the session, after 6 messages delivered, with the same
+  signature (`car_rx bytes=2300` ×3 in one millisecond, then nothing; CPU 0.33 s per 5 s).
+  Recorded `dnc` as a Mercury failure and not retried, as agreed for 0007. Mercury
+  restarted by script (13:35:10), bench recovered, 0009 (WGN 40) started 13:36. **At
+  WGN 22 Mercury froze in 5 of 7 sessions; none of the 5 other sessions in the sweep
+  froze.** Totals so far: 60/63 messages delivered, 60/60 attachments identical.
 - **0005 (WGN 40): 6/10, `dnc`, a real result.** Station 1's Winlink logged "Link
   Error - Received data stream not correct format. ByteIndex=271584" at 22:31:04:
   corrupted data from Mercury, caught by Winlink, at the bench's best S:N.
