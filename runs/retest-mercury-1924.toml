@@ -3,15 +3,16 @@
 # levels re-checked against the tone reference first. Everything else as sweep-mercury-50k: one-way 2 -> 1, Text_50KB,
 # 10 messages, relay holding the timer DISCONNECTs (start with hfbench_start_campaign.ps1 -Relay), 60-min time box.
 # WGN 22 is where 1.9.23 froze in 5 of 7 sessions: three clean sessions would make "same bug" unlikely (2/7 cubed ~2%).
-# A freeze is recorded as dnc and not retried (operator, 16 Nov).
+# Widened 16 Nov (operator): the settings where 1.9.23 froze, WGN 22 (5 of 7) and WGN 40 (1 of 3), 3 sessions each.
+# A freeze is recorded as dnc and not retried. Stop at 3 receiver freezes: then 1.9.24 is called as having the same bug.
 
 [campaign]
 name = "retest-mercury-1924"
 stage = "retest"
 replicates = 3
 profiles = ["WGN"]
-snr_db = [22]
-order = "sequential"
+snr_db = [22, 40]
+order = "blocked-random"
 order_seed = 22
 abort_minutes = 90
 abort_retries = 3
