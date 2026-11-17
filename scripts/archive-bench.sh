@@ -6,7 +6,7 @@
 #
 # With no dates, the Winlink/ARDOP logs for today and yesterday (UTC) are copied.
 # Campaign folders (run sheet, events, manifest, console output, relay.txt), listen
-# recordings, tone-check results, bench-relay logs and Mercury's engine logs are
+# recordings, tone-check results, bench-relay logs Mercury's engine logs and Data2G's host logs are
 # always copied in full. Dates are YYYYMMDD (the Winlink log file names).
 set -euo pipefail
 : "${HFBENCH_HOST:?set HFBENCH_HOST=user@host of the bench machine}"
@@ -37,7 +37,10 @@ echo "listen: $(ls "$A/listen" | wc -l | tr -d ' ') files"
 scp -q "$HFBENCH_HOST:hfbench/relay-*.log" "$A/relay/" 2>/dev/null || true
 scp -q "$HFBENCH_HOST:C:/Program Files/MercuryHF/logs/mercury_engine.log" "$A/mercury/station1_engine.log" 2>/dev/null || true
 scp -q "$HFBENCH_HOST:C:/Program Files/MercuryHF 2/logs/mercury_engine.log" "$A/mercury/station2_engine.log" 2>/dev/null || true
-echo "relay: $(ls "$A/relay" | wc -l | tr -d ' ') files, mercury: $(ls "$A/mercury" | wc -l | tr -d ' ') files"
+# Data2G host logs (hfbench_start_data2g.ps1: stderr, local time) and its start/stop log
+mkdir -p "$A/data2g"
+scp -q "$HFBENCH_HOST:hfbench/data2g/*.log" "$A/data2g/" 2>/dev/null || true
+echo "relay: $(ls "$A/relay" | wc -l | tr -d ' ') files, mercury: $(ls "$A/mercury" | wc -l | tr -d ' ') files, data2g: $(ls "$A/data2g" | wc -l | tr -d ' ') files"
 
 # Winlink session logs and ARDOP TNC logs, both installs
 for d in "${dates[@]}"; do

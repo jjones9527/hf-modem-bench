@@ -1513,6 +1513,57 @@ operator; recomputable for every past run from the Winlink logs).
 Next: the plan's WGN sweep, `sweep-data2g-50k` (WGN 40/22/17 × 3) then `sweep-data2g-5k`
 (17 … -10 × 3), started 02:02 UTC 17 Nov with listen-20261117-0202 (5 × 150 min).
 
+### Data2G 0.5.1 WGN sweep results (17 Nov 2026, 02:02-10:20 UTC)
+
+`sweep-data2g-50k` (9 runs) then `sweep-data2g-5k` (21 runs), unattended, relay holding,
+`output_volume -1.0` (D5). **300 of 300 messages delivered, 300/300 attachments
+byte-identical; no corruption, no stall, no failed session, no hang, no restart.**
+
+Measured data S:N: `scripts/data2g_snr.py`, keyed by the sender's own `TX ... data` lines.
+Noise is taken in the 2-min quiet gap after each run (the IONOS still at the run's
+setting, nobody transmitting), because Data2G's traffic is too dense for the in-run
+estimate at most settings. Where both exist they agree within 0.1 dB, except at WGN −10
+(in-run 0.6 dB noisier: faint bursts the energy detector misses). A campaign's last run
+uses the in-run noise, or the campaign's other runs at the same setting.
+
+| measured data S:N | setting | payload | delivered | net throughput (3 runs) | main data modes |
+|---|---|---|---|---|---|
+| 29.4 dB (ceiling) | WGN 40 | 50 KB | 30/30 | **5,180-5,270 bit/s** | w48-256l-r5/8 |
+| 21.3 dB | WGN 22 | 50 KB | 30/30 | 4,940-5,010 bit/s | w48-256l-r5/8 (95 %), w48-64l-r2/3 |
+| 17.4 dB | WGN 17 | 50 KB | 30/30 | 3,855-3,895 bit/s | w48-64l-r7/12 (98 %) |
+| 17.5 dB | WGN 17 | 5 KB | 30/30 | 2,440-2,470 bit/s | w48-64l-r7/12, r1/2 |
+| 14.1 dB | WGN 12 | 5 KB | 30/30 | 1,860-2,020 bit/s | w48-16qam-r2/3, r1/2 |
+| 9.2 dB | WGN 7 | 5 KB | 30/30 | 1,600-1,620 bit/s | w48-16qam-r1/2, r1/3 |
+| 5.3 dB | WGN 2 | 5 KB | 30/30 | 986-989 bit/s | w48-qpsk-r1/2 |
+| 1.3 dB | WGN −2 | 5 KB | 30/30 | 660-690 bit/s | w48-qpsk-r1/3 |
+| −2.7 dB | WGN −5 | 5 KB | 30/30 | 324-326 bit/s | qpsk-r1/3 (narrow) |
+| −3.5 dB | WGN −10 | 5 KB | 30/30 | 111 bit/s | fsk32r62-r1/2 |
+
+- Runs repeat closely: net throughput within 2 % between replicates at most settings,
+  S:N within 0.3 dB.
+- **Against ARDOP 1.0.2.9 at equal measured S:N** (its summary above): at the ceiling
+  5,200 vs 1,259 bit/s net; around 15-17 dB 3,870 (50 KB) vs 999 (at 15.4); about 9 dB
+  1,610 vs 499 (at 10.8) and 206 (at 6.7); about 3 dB, ARDOP 143 bit/s (3.1 dB) while
+  Data2G gives 986 at 5.3 and 675 at 1.3; at about −3 dB, ARDOP 69 bit/s (−2.9, time-boxed,
+  21/21) vs Data2G 111-326 bit/s (−3.5 / −2.7, 10/10 every run).
+- **Low S:N edge not reached.** WGN −10 is the bench's lowest setting, and Data2G
+  delivered everything there. ARDOP failed by −6.0 dB. A cliff search lowering
+  Data2G's own level at WGN −10 is running (`knee-data2g-v*`, operator, 17 Nov).
+- **Measured S:N depends on Data2G's waveform, as for ARDOP.** WGN −5 and −10 measured
+  only 0.8 dB apart: part is the IONOS's compression at the bottom of its range, part
+  is the mode change to constant-envelope FSK at WGN −10, which carries more average
+  power for the same peak (`output_volume` sets the peak). The acks (ack-1f) arrived
+  2.3 dB above the OFDM data at the same setting (cal-data2g).
+- **Per-message goodput is not usable for Data2G** (bring-up section): besides the late
+  window start, at 5 KB Data2G often carries two messages in one burst, so the second
+  is logged as received in the second it started (0-s window, no figure). Net throughput
+  is the comparison until the metric is changed.
+- At the same setting, Data2G's measured S:N is higher than Mercury's and ARDOP's
+  (e.g. WGN 7: Data2G 9.2, ARDOP 3.1, Mercury 7.7; WGN 2: 5.3, −1.8, 1.0). ARDOP's PSK
+  peak limits explain its part (above). The Data2G-Mercury gap at the low end (up to
+  4 dB at WGN −10: −3.5 vs −9.9) is not explained yet; Mercury's figures are keyed by
+  its PTT log, whose windows may hold silence. To check before the comparison charts.
+
 ## Planned next
 
 > **Superseded 13 Nov 2026 by [test-plan.md](test-plan.md)**, which covers the remaining modems, the metric changes and the open decisions. The items below are kept for the record.

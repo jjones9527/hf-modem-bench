@@ -1,0 +1,32 @@
+# Data2G 0.5.1 cliff search (operator, 17 Nov 2026): sweep-data2g-5k delivered 10/10 at the bench's lowest
+# setting (WGN -10, measured -3.5 dB), so the signal is lowered instead: output_volume -10 on BOTH stations
+# (3 dB steps from the D5 level of -1.0), IONOS fixed at WGN -10, Text_5KB x 10 one-way 2 -> 1, relay, 60-min
+# time box. The measured data S:N (data2g_snr.py) is the axis; this point is NOT at the D5 reference level.
+[campaign]
+name = "knee-data2g-v10"
+stage = "knee"
+replicates = 2
+profiles = ["WGN"]
+snr_db = [-10]
+order = "sequential"
+abort_minutes = 90
+abort_retries = 3
+time_box_minutes = 60
+
+[ionos]
+bandwidth_hz = 3000
+multipaths = 2
+
+[payload]
+file = "Text_5KB"
+bytes = 5120
+sha256 = "85741279e9a689624407e58e599340c048a72fdd56c9695345c6a1ac827384d4"
+messages = 10
+
+[[modems]]
+name = "Data2G"
+version = "0.5.1"
+bandwidth_hz = 2750
+
+[[impairments]]
+name = "none"
