@@ -183,7 +183,7 @@ adapter)
      release data-20261117). Next: Data2G bring-up.
   What the existing relay logs already show (results log, 16 Nov) goes to them first, as
   it predicts that the PR as written ends most long sessions.
-- **Data2G:** brought up 17 Nov on 0.5.1 (operator chose the update from 0.4.2): headless
+- **Data2G:** done 17 Nov (sweeps, cliff search at WGN -5, crest runs). Brought up 17 Nov on 0.5.1 (operator chose the update from 0.4.2): headless
   host per station with its own `--config`, `output_volume -1.0` (D5), smoke 10/10 at WGN 18,
   4,291 bit/s net (results log). Sweeps `sweep-data2g-50k` then `sweep-data2g-5k` running.
 
@@ -274,3 +274,4 @@ pass and add replicates only where results are close.
 | D5 | Level policy | **Equal average power** at the IONOS reference; Lvl never red; record the crest factor. |
 | D6 (15 Nov) | Winlink Express's 5-min P2P inactivity timer | In P2P sessions Winlink sends DISCONNECT after 5 min without writing to the modem's data port, even mid-message; VARA HF and Mercury then end the link and the receipt is lost (ARDOP isn't affected). **The operator wants long sessions, as with ARDOP: the bench relay (`vara_relay.py --hold-timeout-disconnect`) holds that DISCONNECT for every VARA-protocol modem**, and every such result is labelled with it. The timer itself is reported as a finding. |
 | D7 | Reporting (17 Nov) | **Headline: net throughput** (delivered bytes / connect-to-disconnect time: what an operator sees), stated with its workload (5 KB = everyday email, 50 KB = attachments). Beside it: the **transfer rate per proposal batch** (receiver's `FS` to the batch's last message; replaces the older "Receiving" window, which overstated modems with long bursts) and the **time to connect**. Every comparison in two views: **equal average power** (as tested, D5) and **equal peak power** (x = measured S:N − (transmitted PAPR at 0.01 % − 3 dB)), which is closer to a peak-limited transmitter. Results are white-noise results until the fading stage. |
+| D2 update (17 Nov) | VARA HF without a second licence | **Test VARA HF 4.09 now, unregistered at one end** (the licence covers one station). Every VARA result is labelled speed-limited; its full-speed potential is inferred from the measured S:N and VARA's own speed levels, and stated as an inference. Then an interim report (ARDOP, Mercury, Data2G, VARA HF); Modem73, Aether HF, ULTRA and ARDOP 1.0.3 are not planned before it. |
