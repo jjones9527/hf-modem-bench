@@ -327,8 +327,10 @@ class ModemProfile:
 MODEM_PROFILES = {
     "ARDOP": ModemProfile("Ardop P2P", r"{install}\ARDOP_Win.exe", r"{install}\ARDOP_Win.exe", verified=True),
     "VARA HF": ModemProfile("Vara HF P2P", r"C:\VARA\VARA.exe", r"C:\VARA 2\VARA.exe"),
-    "Data2G": ModemProfile("Vara HF P2P", r"C:\Program Files\Data2G\data2g-host.exe",
-                           r"C:\Program Files\Data2G 2\data2g-host.exe"),
+    # Data2G 0.5.1: data2g-host runs on its own (hfbench_start_data2g.ps1, one
+    # --config file per station), not launched by Winlink, so recovery leaves it
+    # running: no TNC path. Ports 8300/8310 (bring-up 17 Nov 2026).
+    "Data2G": ModemProfile("Vara HF P2P", "", "", verified=True),
     # Mercury 1.9.23: the GUI (mercury-ui.exe) is started by hand, not by Winlink
     # (auto launch off), so recovery must leave it running: no TNC path. Verified
     # 15 Nov 2026: session window readable, ports 8300/8310.

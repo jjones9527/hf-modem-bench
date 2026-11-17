@@ -1,0 +1,31 @@
+# Data2G 0.5.1 bring-up smoke test (17 Nov 2026): as smoke-mercury-r (WGN 18, 10 x Text_50KB one-way
+# 2 -> 1, station 2 through the holding relay, 60-min time box), output_volume -1.0 on both stations
+# (cal-data2g: data bursts +1.1 / about +0.8 dB vs the tone reference at 0).
+[campaign]
+name = "smoke-data2g"
+stage = "smoke"
+replicates = 1
+profiles = ["WGN"]
+snr_db = [18]
+order = "sequential"
+abort_minutes = 90
+abort_retries = 3
+time_box_minutes = 60
+
+[ionos]
+bandwidth_hz = 3000
+multipaths = 2
+
+[payload]
+file = "Text_50KB"
+bytes = 51200
+sha256 = "3ec10a0b30de0039bb0b949d7e160a5d4625c03ba2f245a60785d3973e0279f9"
+messages = 10
+
+[[modems]]
+name = "Data2G"
+version = "0.5.1"
+bandwidth_hz = 2750
+
+[[impairments]]
+name = "none"

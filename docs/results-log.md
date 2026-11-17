@@ -1463,6 +1463,56 @@ the second, and the 1.9.24 question is answered.**
   (installer.iss `[Files]` has `ignoreversion` and no `onlyifdoesntexist`), so an
   update resets a station's settings (ports, sound card).
 
+## Stage 2b: Data2G 0.5.1 bring-up (17 Nov 2026)
+
+**Version.** Both installs were 0.4.2 (3 Nov). The operator chose to update to **0.5.1**
+(14 Nov; installer sha256 7aa03e27…ae6c over `C:\Program Files\Data2G`, portable zip
+8c6ce0ba…47bf unpacked over `Data2G 2`; identical binaries, `data2g-host.exe` fd8d7edc…0d5c;
+0.4.2 kept in `hfbench\data2g-0.4.2-*-backup`). Two reasons: 0.5.0 gives each copy its own
+settings file (`--config`; in 0.4.2 every copy on the machine shares one registry store),
+and adds low-S:N changes (coherent FSK detection, "nods").
+
+**Setup.** `data2g-host` (headless) runs per station from `hfbench_start_data2g.ps1`, with
+`--config hfbench\data2g\station<N>.conf`, logging stderr to `station<N>_host.log` (local
+time; Data2G logs only to stderr). Station 1 VA3ZTF, ports 8300/8301, KISS 8100, C-Media;
+station 2 VE3XZQ, 8310/8311, KISS 8110, "3- USB Audio Device"; 48 kHz; rig control off
+(no PTT needed on the bench); CW ID off. Winlink unchanged ("Vara HF P2P", station 2 on the
+relay, 8320 -> 8310). The runner's Data2G profile now has no TNC path, so recovery leaves
+the host running (as for Mercury). Handshake: Winlink's `PUBLIC ON`, `CWID ON` and
+`COMPRESSION ON` are accepted but not implemented; `BW2750`, `MYCALL`, `LISTEN ON` taken;
+Data2G answers `REGISTERED`. **Data2G has no switch for its busy detector**; it holds new
+calls while BUSY is lit. The tone check's tones were heard as a CW ID ("CW ID heard:
+holding"), harmless.
+
+**Drive level (D5).** Tone check 17 Nov 01:12 UTC: -0.2 / -0.3 dB vs the reference at
+WGN 20, as before. `cal-data2g` (WGN 40, 3 × 50 KB 2 -> 1, `output_volume` 0,
+listen-20261117-0114, `scripts/data2g_level.py` keyed by Data2G's own `TX` lines): station 2's
+data bursts (w48-256l-r5/8, 12 s) arrived at -21.7 dBFS against the tone's -22.8, **+1.1 dB**;
+its acks (ack-1f, 1 s) 2.3 dB hotter again (less crest). Station 1 sends almost only acks
+one way (-20.3 dBFS; tone -23.4): with the same ack-data gap its data sits about **+0.8 dB**.
+Both set to **`output_volume = -1.0`** (peak 1 dB below full scale). Equal average power is
+set on the data bursts; acks run about 2 dB above the reference.
+
+| Run | Setting | Result | Per message (receiver log) | Net | Notes |
+|---|---|---|---|---|---|
+| cal-data2g-0001 | WGN 40, vol 0 | completed 3/3, identical | 8,650-8,880 bit/s | 5,138 bit/s | Data2G's own S:N 23-26 dB, all data in w48-256l-r5/8, 0 % resends |
+| smoke-data2g-0001 | WGN 18, vol -1 | **completed 10/10, identical** | 6,138-6,620 (median 6,486) | **4,291 bit/s** | one 13-min session, 0 % resends, 0 control lost |
+
+For scale, Mercury 1.9.23 at WGN 18: 9/10 in 60 min, 947 bit/s per message, 839 net.
+
+**The per-message goodput overstates Data2G.** Winlink's "Receiving" line (the window's
+start) comes when the first data reaches it, i.e. at the end of Data2G's first 12-s burst;
+ARDOP and Mercury bursts are 1-4 s, so their windows lose much less. In smoke-data2g messages
+start every ~75 s and each takes 52 s by the window: 42 KB in 75 s is about 4,500 bit/s, which
+matches Data2G's own stats lines (4,050-5,700 bit/s acked) and the net figure. In cal-data2g,
+from the receiver's `FS Y` (it accepts the message) to "received" is 56 s for a 38-s window,
+about 6,000 bit/s instead of 8,880. **Until the metric is settled, compare Data2G on net
+throughput**, or on a window that starts at the receiver's `FS` line (open question for the
+operator; recomputable for every past run from the Winlink logs).
+
+Next: the plan's WGN sweep, `sweep-data2g-50k` (WGN 40/22/17 × 3) then `sweep-data2g-5k`
+(17 … -10 × 3), started 02:02 UTC 17 Nov with listen-20261117-0202 (5 × 150 min).
+
 ## Planned next
 
 > **Superseded 13 Nov 2026 by [test-plan.md](test-plan.md)**, which covers the remaining modems, the metric changes and the open decisions. The items below are kept for the record.

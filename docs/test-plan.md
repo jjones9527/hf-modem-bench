@@ -183,7 +183,9 @@ adapter)
      release data-20261117). Next: Data2G bring-up.
   What the existing relay logs already show (results log, 16 Nov) goes to them first, as
   it predicts that the PR as written ends most long sessions.
-- **Data2G:** not yet brought up.
+- **Data2G:** brought up 17 Nov on 0.5.1 (operator chose the update from 0.4.2): headless
+  host per station with its own `--config`, `output_volume -1.0` (D5), smoke 10/10 at WGN 18,
+  4,291 bit/s net (results log). Sweeps `sweep-data2g-50k` then `sweep-data2g-5k` running.
 
 **Stage 3: VARA HF 4.09**
 - **D2 (decided 13 Nov): settle registration at the start of the VARA stage.** First

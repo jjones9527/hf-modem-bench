@@ -1,0 +1,35 @@
+# Stage 2 (test-plan.md): Data2G 0.5.1 WGN sweep on the same IONOS settings as ARDOP 1.0.2.9 and Mercury,
+# one-way station 2 (VE3XZQ) -> station 1 (VA3ZTF), 10 messages per run, recovery on, 60-min time box. Station 2s Winlink
+# connects through the bench relay (8320 -> 8310) holding Winlink Expresss 5-min P2P timer DISCONNECT; start with
+# hfbench_start_campaign.ps1 -Relay. data2g-host runs on its own (hfbench_start_data2g.ps1, one --config per station),
+# output_volume -1.0 on both (cal-data2g, D5). Measured S:N (audio listen) is the axis. Operator: 17 Nov 2026.
+
+[campaign]
+name = "sweep-data2g-50k"
+stage = "coarse"
+replicates = 3
+profiles = ["WGN"]
+snr_db = [40, 22, 17]
+order = "blocked-random"
+order_seed = 30
+abort_minutes = 90
+abort_retries = 3
+time_box_minutes = 60
+
+[ionos]
+bandwidth_hz = 3000
+multipaths = 2
+
+[payload]
+file = "Text_50KB"
+bytes = 51200
+sha256 = "3ec10a0b30de0039bb0b949d7e160a5d4625c03ba2f245a60785d3973e0279f9"
+messages = 10
+
+[[modems]]
+name = "Data2G"
+version = "0.5.1"
+bandwidth_hz = 2750
+
+[[impairments]]
+name = "none"
