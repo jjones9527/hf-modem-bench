@@ -1,0 +1,32 @@
+# Fairness data (operator, 17 Nov 2026): each modem's transmitted crest factor (PAPR) at every sweep setting,
+# for the equal-peak-power comparison next to the equal-average one (D5). One run per setting, WGN 40 down to -5 (not -10:
+# the IONOS Lvl meter goes red there with any signal), 3 x Text_5KB one-way 2 -> 1, at the modem's sweep level, with scripts/tx_crest_log.py recording both
+# stations' speaker outputs digitally (WASAPI loopback, before the IONOS). Delivery here is incidental.
+[campaign]
+name = "crest-data2g"
+stage = "crest"
+replicates = 1
+profiles = ["WGN"]
+snr_db = [40, 22, 17, 12, 7, 2, -2, -5]
+order = "sequential"
+abort_minutes = 25
+abort_retries = 1
+time_box_minutes = 20
+
+[ionos]
+bandwidth_hz = 3000
+multipaths = 2
+
+[payload]
+file = "Text_5KB"
+bytes = 5120
+sha256 = "85741279e9a689624407e58e599340c048a72fdd56c9695345c6a1ac827384d4"
+messages = 3
+
+[[modems]]
+name = "Data2G"
+version = "0.5.1"
+bandwidth_hz = 2750
+
+[[impairments]]
+name = "none"

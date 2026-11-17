@@ -1,13 +1,13 @@
 # Data2G 0.5.1 cliff search (operator, 17 Nov 2026): sweep-data2g-5k delivered 10/10 at the bench's lowest
-# setting (WGN -10, measured -3.5 dB), so the signal is lowered instead: output_volume -10 on BOTH stations
-# (3 dB steps from the D5 level of -1.0), IONOS fixed at WGN -10, Text_5KB x 10 one-way 2 -> 1, relay, 60-min
+# setting (WGN -10, measured -3.5 dB; that setting is out of spec, Lvl red), so the signal is lowered instead: output_volume -4 on BOTH stations
+# (3 dB steps from the D5 level of -1.0), IONOS fixed at WGN -5 (WGN -10 puts the IONOS Lvl meter in the red with any signal: noise alone near the limit), Text_5KB x 10 one-way 2 -> 1, relay, 60-min
 # time box. The measured data S:N (data2g_snr.py) is the axis; this point is NOT at the D5 reference level.
 [campaign]
-name = "knee-data2g-v10"
-stage = "knee"
+name = "cliff-data2g-v4"
+stage = "cliff"
 replicates = 2
 profiles = ["WGN"]
-snr_db = [-10]
+snr_db = [-5]
 order = "sequential"
 abort_minutes = 90
 abort_retries = 3

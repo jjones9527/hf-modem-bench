@@ -70,6 +70,11 @@ class Transfer:
     winlink_time_s: int | None = None
     winlink_bytes_per_min: int | None = None
     completed: bool = False
+    # When the receiving station accepted the proposal (its "FS" answer, Y or +): the
+    # start of the message's transfer as both stations see it. Winlink proposes up to a
+    # few messages at once, so a later message in the batch starts when the one before
+    # it ends (results.message_start).
+    accepted_utc: datetime | None = None
 
     @property
     def goodput_bps(self) -> float | None:
@@ -96,6 +101,7 @@ class Session:
     avg_bytes_per_min: int | None = None
     peak_1min_bytes_per_min: int | None = None
     winlink_version: str | None = None
+    calling_utc: datetime | None = None  # the local "Calling <peer>" that led to this session (caller only)
     closed: bool = False  # saw the final "Session:" summary line
     transfers: list[Transfer] = field(default_factory=list)
     events: list[tuple[datetime, str]] = field(default_factory=list)
@@ -151,6 +157,8 @@ def parse_winlink_log(path_or_lines) -> list[Session]:
     cur: Session | None = None
     last_tx: Transfer | None = None  # awaiting "Sent n message. Bytes:" line
     last_rx: Transfer | None = None  # awaiting "Bytes:" line after receive
+    calling: datetime | None = None  # last "Calling <peer>", until the next connection
+    proposed: dict[bool, list[Transfer]] = {True: [], False: []}  # FC proposals awaiting FS, by local sender
 
     for t, ver, text in entries:
         # Client event: "*** <tag> *** <event>". The tag is only unambiguous
@@ -158,6 +166,9 @@ def parse_winlink_log(path_or_lines) -> list[Session]:
         m = _EVENT.match(text)
         if m:
             tag, ev = m.group("tag"), m.group("ev").strip()
+            if ev.startswith("Calling "):
+                calling = t
+                continue
             c = _RX["connected"].match(ev) or _RX["connected_vara"].match(ev)
             if c:
                 if cur is not None:
@@ -165,7 +176,11 @@ def parse_winlink_log(path_or_lines) -> list[Session]:
                 cur = Session(transport=tag, peer=c.group("peer"), connected_utc=t,
                               dial_khz=float(c.group("dial")) if c.group("dial") else None,
                               sideband=c.group("sb"), winlink_version=ver)
+                if calling is not None and timedelta(0) <= t - calling <= timedelta(minutes=30):
+                    cur.calling_utc = calling
+                calling = None
                 last_tx = last_rx = None
+                proposed = {True: [], False: []}
                 continue
             if cur is None or tag != cur.transport:
                 continue
@@ -213,11 +228,20 @@ def parse_winlink_log(path_or_lines) -> list[Session]:
             # B2F protocol text; 3-space indent = sent by local station.
             rest = text[len(cur.transport) + 5:]
             local = rest.startswith("   ")
-            fc = _FC.match(rest.strip())
+            body = rest.strip()
+            fc = _FC.match(body)
             if fc:
                 tr = cur.transfer(fc.group("mid"), "tx" if local else "rx")
                 tr.uncompressed_bytes = int(fc.group("unc"))
                 tr.compressed_bytes = int(fc.group("comp"))
+                proposed[local].append(tr)
+            elif body.startswith("FS "):
+                # the answer to the OTHER side's proposals, one character each
+                answers = body[3:].strip()
+                for tr, ch in zip(proposed[not local], answers):
+                    if ch in "Y+":
+                        tr.accepted_utc = t
+                proposed[not local] = []
 
     if cur is not None:
         sessions.append(cur)

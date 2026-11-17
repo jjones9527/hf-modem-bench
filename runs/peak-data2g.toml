@@ -1,0 +1,32 @@
+# Data2G 0.5.1 peak check (17 Nov 2026): the operator saw the IONOS Lvl meter in the red (>1300 mV p-p)
+# during knee-data2g-v4. Windows system sounds were going to station 2's bench card (fixed: default playback
+# Apple Audio, scheme No Sounds). WGN 40, 3 x Text_50KB 2 -> 1 at the D5 level (output_volume -1.0), with
+# scripts/peak_log.py on both microphones and the operator watching the meter.
+[campaign]
+name = "peak-data2g"
+stage = "smoke"
+replicates = 1
+profiles = ["WGN"]
+snr_db = [40]
+order = "sequential"
+abort_minutes = 30
+abort_retries = 3
+time_box_minutes = 20
+
+[ionos]
+bandwidth_hz = 3000
+multipaths = 2
+
+[payload]
+file = "Text_50KB"
+bytes = 51200
+sha256 = "3ec10a0b30de0039bb0b949d7e160a5d4625c03ba2f245a60785d3973e0279f9"
+messages = 3
+
+[[modems]]
+name = "Data2G"
+version = "0.5.1"
+bandwidth_hz = 2750
+
+[[impairments]]
+name = "none"

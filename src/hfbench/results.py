@@ -1,9 +1,19 @@
 """Per-message and per-run results from BOTH stations' Winlink logs.
 
-Rules (test-plan.md, 13 Nov 2026):
-- Goodput is taken from the RECEIVING station's log ("Receiving" -> "received").
-  The sender's interval also includes the handover after the last frame (~20 s),
-  which reads about 10% low.
+Rules (test-plan.md, 13 Nov 2026; reporting set by the operator 17 Nov 2026):
+- Headline: net throughput = compressed bytes delivered x 8 / session time (connect to
+  disconnect), failed sessions included: what an operator sees. Recovery time between
+  runs is not session time.
+- Transfer rate (rate_bps), the second figure: per proposal batch (the messages the
+  receiver accepts with one "FS" answer; Winlink proposes up to a few at once), the
+  batch's compressed bytes x 8 over the time from that "FS" line to the batch's last
+  "received" line; each message carries its batch's rate. Same rule for every modem.
+- goodput_bps is the older receiver window ("Receiving" -> "received"). Kept for
+  comparison only: it starts when the first data reaches Winlink, so it leaves out
+  most of the first burst (about 17 s for Data2G's 12-s bursts), and a message carried
+  in the same burst as the one before it gets a 0-s window.
+- Time to connect (connect_s): from the caller's "Calling <peer>" to the connection,
+  for the run's first session.
 - Every message offered in a run gets a status:
     delivered  - the receiver logged it as received
     corrupted  - the receiver logged a checksum/decompress link error during it
@@ -39,7 +49,10 @@ class MessageResult:
     start_utc: str = ""
     end_utc: str = ""
     seconds: int | None = None          # receiver's Winlink transfer time
-    goodput_bps: float | None = None    # receiver side
+    goodput_bps: float | None = None    # receiver side, older window (see module doc)
+    xfer_start_utc: str = ""            # its proposal batch's FS acceptance
+    xfer_seconds: float | None = None   # its batch's transfer time
+    rate_bps: float | None = None       # its batch's transfer rate (module doc)
     error: str = ""
     integrity: str = ""                 # delivered only: ok / MISMATCH / missing (see verify_attachments)
 
@@ -59,6 +72,9 @@ class RunResult:
     session_s: int | None = None
     net_bps: float | None = None
     goodput_median_bps: float | None = None
+    rate_median_bps: float | None = None
+    connect_s: float | None = None      # time to connect, first session of the run
+    sessions: int = 0
     messages: list[MessageResult] = field(default_factory=list)
 
 
@@ -76,6 +92,28 @@ def _error_after(s: lp.Session, t: datetime | None) -> str:
         if (t is None or et >= t) and any(k in ev.lower() for k in CORRUPT_MARKERS):
             return ev
     return ""
+
+
+def batch_transfers(s: lp.Session) -> dict[str, tuple[datetime, float, float]]:
+    """Per received message: (start, seconds, rate) of its PROPOSAL BATCH, i.e. every
+    message the receiver accepted with one "FS" answer. Start = that FS line; end = the
+    batch's last "received" line; rate = the batch's compressed bytes x 8 / that time.
+    A modem may carry a batch's messages in the same bursts (Data2G does), so a
+    message's own end is not where the next one starts; the batch is the unit that
+    means the same for every modem."""
+    batches: dict[datetime, list[lp.Transfer]] = {}
+    for t in s.transfers:
+        if t.direction == "rx" and t.completed and t.accepted_utc and t.end_utc and t.compressed_bytes:
+            batches.setdefault(t.accepted_utc, []).append(t)
+    out = {}
+    for start, ts in batches.items():
+        secs = (max(t.end_utc for t in ts) - start).total_seconds()
+        if secs <= 0:
+            continue
+        rate = sum(t.compressed_bytes for t in ts) * 8 / secs
+        for t in ts:
+            out[t.mid] = (start, secs, rate)
+    return out
 
 
 def run_results(row: dict, logs: dict[int, list[lp.Session]]) -> RunResult:
@@ -109,6 +147,9 @@ def run_results(row: dict, logs: dict[int, list[lp.Session]]) -> RunResult:
             m.compressed_bytes = tx[sender][1].compressed_bytes
         if rt is not None and rt.completed:
             m.status, m.seconds, m.goodput_bps = "delivered", rt.winlink_time_s, rt.goodput_bps
+            b = batch_transfers(rs).get(mid)
+            if b is not None:
+                m.xfer_start_utc, m.xfer_seconds, m.rate_bps = b[0].isoformat(), b[1], b[2]
         elif rt is not None and rt.start_utc is not None:
             err = _error_after(rs, rt.start_utc)
             if err:
@@ -130,9 +171,16 @@ def run_results(row: dict, logs: dict[int, list[lp.Session]]) -> RunResult:
     rr.session_s = sum(secs) if secs else None
     if rr.session_s:
         rr.net_bps = rr.delivered_bytes * 8 / rr.session_s
-    g = sorted(m.goodput_bps for m in rr.messages if m.goodput_bps)
-    if g:
-        rr.goodput_median_bps = g[len(g) // 2] if len(g) % 2 else (g[len(g) // 2 - 1] + g[len(g) // 2]) / 2
+    def med(v):
+        v = sorted(v)
+        return (v[len(v) // 2] if len(v) % 2 else (v[len(v) // 2 - 1] + v[len(v) // 2]) / 2) if v else None
+    rr.goodput_median_bps = med(m.goodput_bps for m in rr.messages if m.goodput_bps)
+    rr.rate_median_bps = med(m.rate_bps for m in rr.messages if m.rate_bps)
+    caller = sess[2] if any(s.calling_utc for s in sess[2]) else sess[1]
+    first = min(caller, key=lambda s: s.connected_utc, default=None)
+    if first is not None and first.calling_utc is not None:
+        rr.connect_s = (first.connected_utc - first.calling_utc).total_seconds()
+    rr.sessions = len(sess[1] or sess[2])
     return rr
 
 
@@ -165,10 +213,11 @@ def write_csvs(results: list[RunResult], out_dir: str | Path) -> tuple[Path, Pat
 
 def format_summary(results: list[RunResult]) -> str:
     lines = [f"{'run':<18} {'outcome':<10} {'deliv':>5} {'att':>4} {'corr':>4} {'stall':>5} {'cut':>4} "
-             f"{'goodput med':>12} {'net':>9}"]
+             f"{'net':>10} {'per msg med':>12} {'connect':>8}"]
     for r in results:
         lines.append(f"{r.run_id:<18} {r.outcome:<10} {r.delivered:>5} {r.attempted:>4} {r.corrupted:>4} "
-                     f"{r.stall:>5} {r.cut:>4} {(r.goodput_median_bps or 0):>8.0f} b/s {(r.net_bps or 0):>5.0f} b/s")
+                     f"{r.stall:>5} {r.cut:>4} {(r.net_bps or 0):>6.0f} b/s {(r.rate_median_bps or 0):>8.0f} b/s "
+                     f"{'' if r.connect_s is None else f'{r.connect_s:.0f} s':>8}")
     att = sum(r.attempted for r in results)
     dl = sum(r.delivered for r in results)
     secs = sum(r.session_s or 0 for r in results)

@@ -89,8 +89,16 @@ def test_report_points_and_charts(tmp_path):
     assert (p.modem, p.payload, p.setting_db, p.runs) == ("ARDOP 1.0.2.9", "Text_50KB", 28.0, 4)
     assert (p.delivered, p.attempted) == (24, 26) and p.snr_db == 18.3 and p.snr_runs == 3
     assert 1500 < p.goodput_median < 1570 and 1100 < p.net_bps < 1200
+    assert p.rate_median and p.connect_s is not None and p.papr_db is None and p.snr_peak_db is None
     files = rp.plot(pts, tmp_path / "out", ceiling_db=19)
-    assert {f.name for f in files} >= {"goodput-wgn.png", "net-wgn.svg", "success-wgn.png"}
+    names = {f.name for f in files}
+    assert names >= {"net-wgn.svg", "rate-wgn.png", "success-wgn.png", "connect-wgn.png"}
+    assert not any(n.startswith("peak-") for n in names)        # no PAPR: no equal-peak charts
+    with open(camp / "crest.csv", "w") as f:
+        f.write("run_id,st2_papr_0.01pct_db\n" + "".join(f"oneway28r-000{i},9.0\n" for i in range(1, 5)))
+    p = rp.build_points([camp])[0]
+    assert p.papr_db == 9.0 and p.snr_peak_db == 18.3 - 6.0
+    assert "peak-net-wgn.png" in {f.name for f in rp.plot([p], tmp_path / "out2")}
     assert rp.write_table(pts, tmp_path / "out" / "points.csv").exists()
 
 
@@ -111,3 +119,43 @@ def test_framing_error_is_corruption_not_stall():
     assert (r.delivered, r.corrupted, r.stall) == (2, 1, 0)
     (bad,) = [m for m in r.messages if m.status == "corrupted"]
     assert bad.mid == "ERZXWBFBHD5G" and "not correct format" in bad.error
+
+
+# Data2G (17 Nov 2026, receiver's log, VARA-type tag): two messages accepted with one
+# "FS YY" and carried in the same bursts, so the second ends 3 s after the first.
+D2G_RX = """\
+2026/11/17 05:17:00 1.8.6.0 Vara HF P2P *** Peer-to-Peer Vara Connection from VE3XZQ @ 2026/11/17 05:17:00  USB Dial: 7098.500
+2026/11/17 05:17:04 1.8.6.0 Vara HF P2P FC EM AAAAAAAAAAAA 5337 4500 0
+2026/11/17 05:17:04 1.8.6.0 Vara HF P2P FC EM BBBBBBBBBBBB 5337 4500 0
+2026/11/17 05:17:04 1.8.6.0 Vara HF P2P F> 5A
+2026/11/17 05:17:06 1.8.6.0 Vara HF P2P    FS YY
+2026/11/17 05:17:18 1.8.6.0 Vara HF P2P *** Receiving AAAAAAAAAAAA
+2026/11/17 05:17:21 1.8.6.0 Vara HF P2P *** AAAAAAAAAAAA - 5337/4500 bytes received
+2026/11/17 05:17:21 1.8.6.0 Vara HF P2P *** Receiving BBBBBBBBBBBB
+2026/11/17 05:17:24 1.8.6.0 Vara HF P2P *** BBBBBBBBBBBB - 5337/4500 bytes received
+""".splitlines()
+D2G_TX = """\
+2026/11/17 05:16:55 1.8.6.0 Vara HF P2P *** Calling VA3ZTF
+2026/11/17 05:17:00 1.8.6.0 Vara HF P2P *** Peer-to-Peer Vara Connection to VA3ZTF @ 2026/11/17 05:17:00  USB Dial: 7098.500
+2026/11/17 05:17:04 1.8.6.0 Vara HF P2P    FC EM AAAAAAAAAAAA 5337 4500 0
+2026/11/17 05:17:04 1.8.6.0 Vara HF P2P    FC EM BBBBBBBBBBBB 5337 4500 0
+2026/11/17 05:17:06 1.8.6.0 Vara HF P2P FS YY
+2026/11/17 05:17:06 1.8.6.0 Vara HF P2P *** Sending AAAAAAAAAAAA.
+2026/11/17 05:17:06 1.8.6.0 Vara HF P2P *** Sending BBBBBBBBBBBB.
+""".splitlines()
+
+
+def test_batch_rate_from_fs_and_time_to_connect():
+    rx, tx = lp.parse_winlink_log(D2G_RX), lp.parse_winlink_log(D2G_TX)
+    a = rx[0].transfer("AAAAAAAAAAAA", "rx")
+    assert a.accepted_utc is not None and a.accepted_utc.second == 6      # receiver's own FS line
+    assert tx[0].transfer("AAAAAAAAAAAA", "tx").accepted_utc.second == 6  # the peer's FS, sender side
+    assert tx[0].calling_utc is not None and rx[0].calling_utc is None
+    row = {"run_id": "t-0001", "start_utc": "2026-11-17T05:16:50+00:00", "end_utc": "2026-11-17T05:18:00+00:00",
+           "mids": "AAAAAAAAAAAA BBBBBBBBBBBB", "outcome": "completed"}
+    r = rs.run_results(row, {1: rx, 2: tx})
+    # both messages carry their batch's rate: 9,000 bytes from FS (05:17:06) to the last end (05:17:24)
+    assert [m.rate_bps for m in r.messages] == [9000 * 8 / 18] * 2
+    assert r.rate_median_bps == 9000 * 8 / 18 and r.connect_s == 5
+    # the older receiver window gives 12,000 bit/s for B (3 s) and leaves out A's first burst
+    assert r.messages[1].goodput_bps == 4500 * 8 / 3 or r.messages[1].goodput_bps is None
