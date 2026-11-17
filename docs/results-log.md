@@ -1426,7 +1426,42 @@ the 1.9.24 GUI; relay logging only (`relay-20261116-2236.log`).
 
 So the developer's three questions are answered yes, yes, yes, and the once-per-session
 absorb still loses multi-message and long sessions, as the code predicted. No freeze on
-station 1 (1.9.24) in about 30 min of sessions. Report drafted for #581.
+station 1 (1.9.24) in about 30 min of sessions. Reported on #581.
+
+### retest-mercury-1924: the receiver freeze on Mercury 1.9.24 (16-17 Nov 2026, 23:37-00:55 UTC)
+
+Both stations on the 1.9.24 release GUI (git 1b13fab1, `mercury-ui.exe`, engine built
+in), relay holding (D6, `relay-20261116-2333.log`), 10 × Text_50KB one-way 2 → 1,
+60-min time box. Run sheet: WGN 40 and 22, three each (6 runs). **Stopping rule
+(operator, 16 Nov): stop at 3 receiver freezes. The operator stopped the test after
+the second, and the 1.9.24 question is answered.**
+
+| Run | Setting | Result | Delivered | Notes |
+|---|---|---|---|---|
+| 0001 | WGN 40 | completed | 10/10 | goodput median 2,097 bit/s, net 1,738 bit/s |
+| 0002 | WGN 40 | **dnc, freeze 1** | 6/10 | station 1's log stops 00:36:56 UTC, 23 min into the session, Mercury up 2.0 h (`+7301 s`), `rx_total` 287,729 |
+| 0003 | WGN 22 | **dnc, freeze 2** | 0/10 | log stops 00:49:32 UTC, 3 min into the session, **6.7 min after the restart** (`+399.6 s`), `rx_total` 19,270 |
+
+- Same signature as all six 1.9.23 freezes: the last lines are three
+  `car_rx bytes=2300` frames logged in the same millisecond, then nothing. CPU
+  0.16-0.27 s per 5 s against 1.45-2.38 s for station 2. Windows says it is responding.
+  Station 2 logged "nothing from the peer in 240 s with data in flight, link lost".
+  No ERR or WRN before either freeze. The 2-6 min before each restart
+  showed no "Buffer full in capture buffer" lines (1.9.23 logged them later).
+- That burst is not a clean trigger: station 1 logged five other three-frame
+  2,300-byte bursts on 1.9.24 tonight without freezing.
+- All 16 delivered attachments are byte-identical (`results --verify`).
+- **S:N not measured for this campaign.** The freeze script stopped every
+  `hfbench.exe` process to stop the runner, and the S:N recorder is one too
+  (`listen-20261116-2238`, killed 00:42:47 before its first block was written, so the
+  PR #581 window is lost too). From sweep-mercury-50k at the same Windows levels: WGN 40 ≈
+  25.5 dB, WGN 22 ≈ 17.5 dB. Fixed for later: stop only the `hfbench_pilot` task's runner.
+- With 1.9.23 and 1.9.24 together, **the receiver froze in 8 of 16 long Mercury sessions**
+  (50 KB at WGN 22 and 40). The PR #581 sessions and the 5 KB sweep (short sessions, or
+  station 1 receiving little) had no freeze. Reported on #579.
+- Install note for the developers: the Windows installer overwrites `mercury.ini`
+  (installer.iss `[Files]` has `ignoreversion` and no `onlyifdoesntexist`), so an
+  update resets a station's settings (ports, sound card).
 
 ## Planned next
 

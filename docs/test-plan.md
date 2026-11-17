@@ -175,9 +175,12 @@ adapter)
   3. `retest-mercury-1924` (operator, 16 Nov: after the PR questions are answered):
      3 sessions at WGN 22, 50 KB, relay holding (D6), where 1.9.23 froze in 5 of 7.
      Answers #579. If 1.9.24 runs clean there, repeat the other settings where 1.9.23
-     froze (WGN 40).
+     froze (WGN 40). **Done 16-17 Nov: 1.9.24 froze too**, in 2 of 3 sessions
+     (WGN 40 and 22), the second 7 min after a restart; stopped there by the operator
+     (results log). Reported on #579.
   4. Relay logs (both ports), Winlink logs and Mercury logs to the developers on #581
-     and #579; then back to the relay-holding setup for everything else.
+     and #579; then back to the relay-holding setup for everything else. **Done** (#581 comment 16 Nov, #579 17 Nov,
+     release data-20261117). Next: Data2G bring-up.
   What the existing relay logs already show (results log, 16 Nov) goes to them first, as
   it predicts that the PR as written ends most long sessions.
 - **Data2G:** not yet brought up.
