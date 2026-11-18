@@ -356,16 +356,73 @@ class WinlinkUI:
             time.sleep(2)
         time.sleep(5)   # let it finish loading folders
 
+    SESSION_TYPES = ("Packet P2P", "Pactor P2P", "Robust Packet P2P", "Ardop P2P", "Vara HF P2P",
+                     "Vara FM P2P", "Telnet P2P")
+
+    def session_type(self) -> str | None:
+        """The session type shown next to 'Open Session:' in the main window's menu bar."""
+        for c in self.main().MenuBarControl(searchDepth=3, Name="MenuStrip1").GetChildren():
+            if c.ControlTypeName == "MenuItemControl" and (c.Name in self.SESSION_TYPES or c.Name.endswith(" Winlink")):
+                return c.Name
+        return None
+
+    def select_session_type(self, session_type: str, timeout: float = 20) -> None:
+        """Choose the session type in the main window: the menu-bar item next to
+        'Open Session:' opens a drop-down tree ('<current>DropDown': Winlink Sessions,
+        P2P Sessions, ...), and the type is an item in it (verified 17 Nov 2026,
+        Winlink Express 1.8.6.0)."""
+        cur = self.session_type()
+        if cur == session_type:
+            return
+        if cur is None:
+            raise RuntimeError(f"{self.call}: no session-type item in the main window's menu bar")
+        main = self.main()
+        item = main.MenuBarControl(searchDepth=3, Name="MenuStrip1").MenuItemControl(Name=cur, searchDepth=1)
+        auto = self.auto
+        drop = auto.MenuControl(searchDepth=1, Name=f"{cur}DropDown")
+        for attempt in range(3):
+            # a freshly started Winlink may not answer yet; focus it, open, wait up to 4 s
+            try:
+                self._thread(lambda: main.SetFocus())
+            except Exception:
+                pass
+            if attempt < 2:
+                self._thread(lambda: item.GetLegacyIAccessiblePattern().DoDefaultAction())
+            else:
+                self._thread(lambda: item.Click(simulateMove=False))
+            if drop.Exists(4):
+                break
+            time.sleep(2)
+        else:
+            raise RuntimeError(f"{self.call}: session-type drop-down did not open")
+        entry = drop.TreeItemControl(Name=session_type, searchDepth=4)
+        if not entry.Exists(2):
+            auto.SendKeys("{Esc}")
+            raise RuntimeError(f"{self.call}: {session_type!r} not in the session-type list")
+        self._thread(lambda: entry.GetSelectionItemPattern().Select())
+        time.sleep(0.5)
+        if drop.Exists(0.5):
+            self._thread(lambda: entry.GetLegacyIAccessiblePattern().DoDefaultAction())
+            time.sleep(1)
+        if drop.Exists(0.5):
+            auto.SendKeys("{Enter}")
+            time.sleep(1)
+        got = self.session_type()
+        if got != session_type:
+            if drop.Exists(0.5):
+                auto.SendKeys("{Esc}")
+            raise RuntimeError(f"{self.call}: session type still {got!r} after selecting {session_type!r}")
+        self.log(f"{self.call}: session type set to {session_type} (was {cur})")
+
     def open_session(self, session_type: str = "Ardop P2P", timeout: float = 90) -> SessionStatus:
         """Open a P2P session from the main window ('Open Session:' with
-        `session_type` selected next to it) and wait until Start is enabled.
-        Verified for 'Ardop P2P' (12 Nov 2026). For VARA-type modems the session
-        type is expected to be 'Vara HF P2P'; confirm at each modem's bring-up.
-        The session type is not changed here: select it once by hand per install."""
+        `session_type` selected next to it, set first if it differs) and wait until
+        Start is enabled. Verified for 'Ardop P2P' (12 Nov 2026) and 'Vara HF P2P'
+        (VARA HF, Mercury, Data2G)."""
         if not self.has_session_window():
             main = self.main()
             if not main.MenuItemControl(Name=session_type, searchDepth=3).Exists(1):
-                raise RuntimeError(f"{self.call}: session type {session_type!r} is not selected in the main window")
+                self.select_session_type(session_type)
             self._thread(lambda: main.MenuItemControl(Name="Open Session:", searchDepth=3)
                          .GetLegacyIAccessiblePattern().DoDefaultAction())
         t0 = time.time()
@@ -464,6 +521,10 @@ def _main(argv: list[str]) -> None:
         ui.close_session_window()
         say("closed:", ui.close_main())
         return
+    elif action == "session-type":             # arg: type to select, or none to show the current one
+        if args:
+            ui.select_session_type(args[0])
+        say(ui.session_type())
     elif action == "open-session":             # optional arg: session type (default Ardop P2P)
         say(ui.open_session(args[0] if args else "Ardop P2P"))
     elif action == "launch":                  # args: install folder

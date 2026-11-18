@@ -560,3 +560,13 @@ def test_call_that_connects_on_retry_runs_normally(tmp_path):
                     say=rp.said.append, poll_s=5).run_one(rows[0])
     assert len(fa.pressed) == 2 and r.outcome == "completed"
     assert any("calling again (2/3)" in s for s in rp.said)
+
+
+def test_set_session_type_rewrites_only_the_mode_line(tmp_path):
+    from hfbench.bench import set_session_type
+    ini = tmp_path / "RMS Express.ini"
+    ini.write_bytes(b"[Properties]\r\nMode=Vara HF P2P\r\nVara HF P2P Bandwidth=2750\r\n")
+    assert set_session_type(tmp_path, "Ardop P2P") == "Vara HF P2P"
+    assert ini.read_bytes() == b"[Properties]\r\nMode=Ardop P2P\r\nVara HF P2P Bandwidth=2750\r\n"
+    assert set_session_type(tmp_path, "Ardop P2P") == "Ardop P2P"       # no change
+    assert set_session_type(tmp_path / "missing", "Ardop P2P") is None

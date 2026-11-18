@@ -8,9 +8,10 @@ its end. Noise: median mic-1 block power in the quiet gap after the run (end + 1
 end + 100 s: the runner waits 120 s before the next run sets the IONOS, and nobody
 transmits), so dense traffic inside the run doesn't matter. For comparison it also prints
 the in-run estimate (blocks outside energy-detected bursts and the sender's bursts) where
-at least 10 such blocks exist, and uses it for the campaign's last run, whose gap may hold
-the next campaign's setting (with no idle blocks there, the campaign's other runs at the
-same setting). Also
+at least 10 such blocks exist. A campaign's last run, whose gap may hold the next
+campaign's setting, uses its own gap if it agrees within 1 dB with the other runs' gaps
+at the same setting, else their noise, else (flagged) the in-run estimate, which reads
+low at low S:N (the receiver's replies and faint bursts get into it). Also
 prints the run's data-mode mix (share of data air time per mode) and writes snr.csv."""
 import csv, json, math, statistics as st, sys
 from collections import Counter
@@ -56,18 +57,29 @@ for r in sorted(rows, key=lambda r: r["run_id"] == last_id):
     sends = [(x0, x1) for x0, x1, _, _ in mine]
     idle = [p for t, p in pts if not inside(t, energy) and not inside(t, sends)]
     inrun = st.median(idle) if len(idle) >= 10 else None
-    if r["run_id"] == last_id or len(gap) < 100:
-        if inrun is None:
-            same = [n for sd, n in noise_by_setting if sd == r["snr_db"]]
-            if not same:
-                print(f"{r['run_id']:<24} WGN {r['snr_db']:>3}  no noise estimate (last run, no idle blocks) | modes: {mixs}")
-                continue
-            noise, note = st.median(same), f"  (noise: the campaign's other runs at this setting, n={len(same)})"
-        else:
-            noise, note = inrun, "  (noise: in-run, last run of the campaign)"
-    else:
-        noise = st.median(gap)
+    own_gap = st.median(gap) if len(gap) >= 100 else None
+    if r["run_id"] != last_id and own_gap is not None:
+        noise = own_gap
         note = f"  (in-run noise {10*math.log10(inrun):.1f} dBFS)" if inrun else "  (in-run noise: too few idle blocks)"
+    else:
+        # the last run's gap may hold the next campaign's setting: use it only if it agrees
+        # (1 dB) with the other runs' gaps at this setting; else their noise; else in-run
+        same = [n for sd, n in noise_by_setting if sd == r["snr_db"]]
+        ref = st.median(same) if same else None
+        check = ref if ref is not None else inrun   # with no other run, the in-run estimate (a looser check)
+        tol = 1.0 if ref is not None else 1.5
+        if own_gap is not None and (check is None or abs(10 * math.log10(own_gap / check)) <= tol):
+            noise, note = own_gap, "  (noise: own gap" + (", agrees with the other runs)" if ref else
+                                                          ", agrees with the in-run estimate)" if inrun else ")")
+        elif ref is None and inrun is not None:
+            noise, note = inrun, "  (noise: in-run; the gap after the run disagrees, likely the next campaign's setting)"
+        elif ref is not None:
+            noise, note = ref, f"  (noise: the campaign's other runs at this setting, n={len(same)})"
+        elif inrun is not None:
+            noise, note = inrun, "  (noise: in-run only; low S:N reads low)"
+        else:
+            print(f"{r['run_id']:<24} WGN {r['snr_db']:>3}  no noise estimate | modes: {mixs}")
+            continue
     noise_by_setting.append((r["snr_db"], noise))
     snr = []
     for x0, x1, _, _ in mine:

@@ -65,6 +65,7 @@ class Point:
     profile: str
     payload: str
     setting_db: float
+    variant: str = ""                    # cliff campaigns: the campaign (a lowered level at one setting)
     snr_db: float | None = None          # median measured data S:N
     snr_runs: int = 0
     runs: int = 0
@@ -105,14 +106,21 @@ def build_points(campaign_dirs: list[str | Path]) -> list[Point]:
             msgs.setdefault(m["run_id"], []).append(m)
         for r in runs:
             s = sheet[r["run_id"]]
-            key = (f"{s['modem']} {s['modem_version']}", s["profile"], s["payload_file"], float(s["snr_db"]))
+            # a cliff campaign lowers the modem's own level at one IONOS setting: each is its
+            # own point (placed by its measured S:N), not pooled with the sweep at that setting
+            variant = s["campaign"] if s.get("stage") == "cliff" else ""
+            key = (f"{s['modem']} {s['modem_version']}", s["profile"], s["payload_file"], float(s["snr_db"]), variant)
             g = groups.setdefault(key, {"runs": [], "snr": [], "good": [], "rate": [], "conn": [], "papr": [],
                                         "outcomes": []})
             g["runs"].append(r)
             g["outcomes"].append(r["outcome"])
             sr = snr.get(r["run_id"], {})
             # a run only partly inside a recording gives too few bursts to trust
-            if sr.get("data_snr_db") and int(sr.get("data_n") or 0) >= MIN_SNR_BURSTS:
+            # energy-keyed readings need 30 bursts; a reading keyed by the modem's own
+            # transmit log (each burst's time known) is sound from 10 (Data2G's are 12 s long)
+            need = 10 if "log" in (sr.get("keyed_by") or "").lower() or "ptt" in (sr.get("keyed_by") or "").lower() \
+                else MIN_SNR_BURSTS
+            if sr.get("data_snr_db") and int(sr.get("data_n") or 0) >= need:
                 g["snr"].append(float(sr["data_snr_db"]))
             g["good"] += [float(m["goodput_bps"]) for m in msgs.get(r["run_id"], [])
                           if m["status"] == "delivered" and m.get("goodput_bps")]
@@ -124,13 +132,16 @@ def build_points(campaign_dirs: list[str | Path]) -> list[Point]:
             if c.get("st2_papr_0.01pct_db"):
                 g["papr"].append(float(c["st2_papr_0.01pct_db"]))
     points = []
-    for (modem, prof, payload, setting), g in sorted(groups.items()):
+    for (modem, prof, payload, setting, variant), g in sorted(groups.items()):
         att = sum(int(r["attempted"]) for r in g["runs"])
         dl = sum(int(r["delivered"]) for r in g["runs"])
-        secs = sum(int(r["session_s"]) for r in g["runs"] if r["session_s"])
-        byt = sum(int(r["delivered_bytes"]) for r in g["runs"])
+        # a run whose session never closed (a modem freeze) has bytes but no session time:
+        # it counts for delivery, not for throughput
+        timed = [r for r in g["runs"] if r["session_s"]]
+        secs = sum(int(r["session_s"]) for r in timed)
+        byt = sum(int(r["delivered_bytes"]) for r in timed)
         points.append(Point(
-            modem, prof, payload, setting,
+            modem, prof, payload, setting, variant,
             snr_db=stats.median(g["snr"]) if g["snr"] else None, snr_runs=len(g["snr"]),
             runs=len(g["runs"]), attempted=att, delivered=dl,
             success=dl / att if att else None,
@@ -164,6 +175,7 @@ def write_table(points: list[Point], path: str | Path) -> Path:
 
 METRICS = {
     "net": ("Net throughput", "bit/s (delivered bytes x 8 / total session time)"),
+    "netlog": ("Net throughput, log scale", "bit/s, log scale (delivered bytes x 8 / total session time)"),
     "rate": ("Transfer rate per message batch", "bit/s (receiver's FS to last message received; median and range)"),
     "success": ("Messages delivered", "% of messages attempted"),
     "connect": ("Time to connect", "seconds (Calling to connected, median)"),
@@ -175,7 +187,10 @@ VIEWS = {
 
 
 def plot(points: list[Point], out_dir: str | Path, *, ceiling_db: float | None = None,
-         subtitle: str = "") -> list[Path]:
+         subtitle: str = "", exclude_settings: tuple[float, ...] = ()) -> list[Path]:
+    """exclude_settings: IONOS settings left off the charts (still in points.csv), e.g. -10,
+    where the IONOS Lvl meter goes red with any signal (results log, 17 Nov 2026)."""
+    points = [p for p in points if p.setting_db not in exclude_settings]
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
@@ -194,37 +209,48 @@ def plot(points: list[Point], out_dir: str | Path, *, ceiling_db: float | None =
             modems = [m for m in MODEM_SLOTS if any(p.modem.startswith(m) for p in plotted if p.profile == prof)]
             ymax = 0.0
             for name in modems:
-                pts = sorted((p for p in plotted if p.profile == prof and p.modem.startswith(name)),
-                             key=lambda p: getattr(p, xattr))
                 col = modem_color(name)
-                xs, ys = [], []
-                for p in pts:
-                    y = {"rate": p.rate_median, "net": p.net_bps, "connect": p.connect_s,
-                         "success": None if p.success is None else 100 * p.success}[metric]
-                    if y is None:
-                        continue
-                    x = getattr(p, xattr)
-                    xs.append(x)
-                    ys.append(y)
-                    if metric == "rate" and p.rate_min is not None:
-                        ax.plot([x, x], [p.rate_min, p.rate_max], color=col, lw=1.2,
-                                solid_capstyle="round", zorder=2)
-                        ymax = max(ymax, p.rate_max)
-                    small = p.payload.endswith("5KB")
-                    ax.plot([x], [y], marker="o", ms=7, mew=2, color=col,
-                            mfc=SURFACE if small else col, mec=col, zorder=4)
-                    ymax = max(ymax, y)
-                if xs:
-                    ax.plot(xs, ys, color=col, lw=2, zorder=3, solid_joinstyle="round")
-                    ax.annotate(pts[0].modem if len({p.modem for p in pts}) == 1 else name,
-                                (xs[-1], ys[-1]), xytext=(6, 0), textcoords="offset points",
+                label_at = None
+                # one line per workload: 50 KB solid, 5 KB dashed (joining them would zig-zag
+                # where both were measured at the same S:N)
+                for payload in sorted({p.payload for p in plotted if p.profile == prof and p.modem.startswith(name)}):
+                    pts = sorted((p for p in plotted if p.profile == prof and p.modem.startswith(name)
+                                  and p.payload == payload), key=lambda p: getattr(p, xattr))
+                    small = payload.endswith("5KB")
+                    xs, ys = [], []
+                    for p in pts:
+                        y = {"rate": p.rate_median, "net": p.net_bps, "netlog": p.net_bps, "connect": p.connect_s,
+                             "success": None if p.success is None else 100 * p.success}[metric]
+                        if y is None or (metric == "netlog" and y <= 0):
+                            continue
+                        x = getattr(p, xattr)
+                        xs.append(x)
+                        ys.append(y)
+                        if metric == "rate" and p.rate_min is not None:
+                            ax.plot([x, x], [p.rate_min, p.rate_max], color=col, lw=1.2,
+                                    solid_capstyle="round", zorder=2)
+                            ymax = max(ymax, p.rate_max)
+                        ax.plot([x], [y], marker="o", ms=7, mew=2, color=col,
+                                mfc=SURFACE if small else col, mec=col, zorder=4)
+                        ymax = max(ymax, y)
+                    if xs:
+                        ax.plot(xs, ys, color=col, lw=2, zorder=3, solid_joinstyle="round",
+                                ls=(0, (5, 3)) if small else "-")
+                        if label_at is None or xs[-1] > label_at[0]:
+                            label_at = (xs[-1], ys[-1], pts[0].modem)
+                if label_at:
+                    ax.annotate(label_at[2], label_at[:2], xytext=(6, 0), textcoords="offset points",
                                 va="center", fontsize=9, color=INK)
             if ceiling_db is not None and not view:
                 ax.axvline(ceiling_db, color=INK2, lw=1, ls=(0, (4, 3)), zorder=1)
                 # at the foot of the line: the top is where the best points sit
                 ax.annotate(f"bench ceiling ~{ceiling_db:.0f} dB", (ceiling_db, 0), xycoords=("data", "axes fraction"),
                             xytext=(-4, 4), textcoords="offset points", ha="right", va="bottom", fontsize=8, color=INK2)
-            ax.set_ylim(0, 105 if metric == "success" else max(ymax * 1.12, 1))
+            if metric == "netlog":
+                ax.set_yscale("log")
+                ax.set_ylim(10, max(ymax * 1.6, 100))
+            else:
+                ax.set_ylim(0, 105 if metric == "success" else max(ymax * 1.12, 1))
             ax.set_xlabel(xlabel, color=INK2, fontsize=9)
             ax.set_ylabel(ylabel, color=INK2, fontsize=9)
             ax.set_title(f"{title}, {prof}" + (", equal peak power" if view else "")
@@ -245,10 +271,10 @@ def plot(points: list[Point], out_dir: str | Path, *, ceiling_db: float | None =
                                    label=next(p.modem for p in plotted if p.modem.startswith(m))) for m in modems]
             present = {p.payload for p in plotted if p.profile == prof}
             if "Text_50KB" in present:
-                handles.append(Line2D([], [], ls="", marker="o", ms=7, color=INK2, label="Text_50KB (10 x 50 KB)"))
+                handles.append(Line2D([], [], ls="-", lw=2, marker="o", ms=7, color=INK2, label="10 x 50 KB (solid)"))
             if "Text_5KB" in present:
-                handles.append(Line2D([], [], ls="", marker="o", ms=7, mew=2, mfc=SURFACE, color=INK2,
-                                      label="Text_5KB (10 x 5 KB)"))
+                handles.append(Line2D([], [], ls=(0, (5, 3)), lw=2, marker="o", ms=7, mew=2, mfc=SURFACE, color=INK2,
+                                      label="10 x 5 KB (dashed)"))
             if handles:
                 fig.legend(handles=handles, loc="lower center", ncol=min(len(handles), 4), fontsize=8,
                            frameon=False, labelcolor=INK, bbox_to_anchor=(0.5, 0.0))

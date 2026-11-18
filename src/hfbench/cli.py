@@ -153,13 +153,14 @@ def cmd_report(args):
     pts = rp.build_points(args.campaigns)
     out = Path(args.out)
     t = rp.write_table(pts, out / "points.csv")
-    files = rp.plot(pts, out, ceiling_db=args.ceiling, subtitle=args.subtitle or "")
+    files = rp.plot(pts, out, ceiling_db=args.ceiling, subtitle=args.subtitle or "",
+                    exclude_settings=tuple(args.exclude_setting or ()))
     for p in pts:
         snr = f"{p.snr_db:5.1f} dB" if p.snr_db is not None else "  n/a  "
-        g = f"{p.goodput_median:5.0f}" if p.goodput_median else "    -"
+        g = f"{p.rate_median:5.0f}" if p.rate_median else "    -"
         n = f"{p.net_bps:5.0f}" if p.net_bps else "    -"
-        print(f"{p.modem:<16} {p.profile:<4} {p.payload:<10} set {p.setting_db:>4.0f}  S:N {snr}  "
-              f"{p.delivered:>3}/{p.attempted:<3} goodput {g}  net {n} bit/s  ({p.runs} runs)")
+        print(f"{p.modem:<16} {p.profile:<4} {p.payload:<10} set {p.setting_db:>4.0f} {p.variant[-4:]:>4}  S:N {snr}  "
+              f"{p.delivered:>3}/{p.attempted:<3} net {n}  rate {g} bit/s  ({p.runs} runs)")
     print(f"\nwrote {t} and {len(files)} chart files in {out}")
 
 
@@ -629,6 +630,8 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("-o", "--out", required=True, help="output folder")
     s.add_argument("--ceiling", type=float, help="mark the bench's highest reachable data S:N (dB)")
     s.add_argument("--subtitle", help="second title line, e.g. bench and date")
+    s.add_argument("--exclude-setting", type=float, action="append",
+                   help="IONOS setting to leave off the charts (table keeps it), e.g. -10; repeatable")
     s.set_defaults(func=cmd_report)
 
     s = sub.add_parser("parse", help="parse Winlink Express (and ARDOP) logs to sessions/transfers CSV")

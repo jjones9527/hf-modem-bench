@@ -311,6 +311,28 @@ def install_callsign(install_dir: str | Path) -> str:
     return calls[0]
 
 
+def set_session_type(install_dir: str | Path, session_type: str) -> str | None:
+    """Set Winlink Express's selected session type ('Mode=' in <install>/RMS Express.ini,
+    one line per file; Winlink must be closed). Returns the previous value, or None if
+    the file or line is missing. Verified 17 Nov 2026 (1.8.6.0): the main window's
+    drop-down could not be driven reliably on one install, the ini can."""
+    ini = Path(install_dir) / "RMS Express.ini"
+    if not ini.exists():
+        return None
+    raw = ini.read_bytes()
+    text = raw.decode("utf-8-sig", errors="replace")
+    nl = "\r\n" if "\r\n" in text else "\n"
+    lines = text.split(nl)
+    idx = [i for i, l in enumerate(lines) if l.startswith("Mode=")]
+    if len(idx) != 1:
+        return None
+    was = lines[idx[0]][5:]
+    if was != session_type:
+        lines[idx[0]] = "Mode=" + session_type
+        ini.write_bytes(((b"\xef\xbb\xbf" if raw.startswith(b"\xef\xbb\xbf") else b"") + nl.join(lines).encode("utf-8")))
+    return was
+
+
 @dataclass(frozen=True)
 class ModemProfile:
     """How Winlink Express runs a modem: the P2P session type selected in its main
@@ -464,7 +486,9 @@ class WinlinkAutomation:
         3. close both session windows and both Winlink Express instances
            (force-stop any process of that install still running after 60 s);
         4. move partial files to quarantine/<run_id> while Winlink is closed;
-        5. start both instances again and open their Ardop P2P sessions;
+        5. set the profile's session type in each install's RMS Express.ini (Winlink is
+           closed, so it reads it on start), start both instances again and open
+           their sessions;
         6. check both Outboxes are empty.
         Raises AutomationError if the bench isn't ready afterwards."""
         self.say(f"--- Recovery after {run_id}: clearing Outboxes and restarting Winlink Express "
@@ -503,6 +527,10 @@ class WinlinkAutomation:
         moved = self._quarantine_partials(run_id)
         if moved:
             self.say(f"  moved {moved} partial file(s) to quarantine/{run_id}")
+        for st in (1, 2):
+            was = set_session_type(self.installs[st - 1], self.profile.session_type)
+            if was and was != self.profile.session_type:
+                self.say(f"  {self.calls[st]}: session type set to {self.profile.session_type} (was {was})")
         for st in (1, 2):
             self.procs.launch(self.installs[st - 1])
             self.ui[st].wait_main()
