@@ -1,0 +1,36 @@
+# Stage 3 (test-plan.md): VARA HF 4.9.1, registered at both ends (station 2 runs as VA3ZTF, D2 resolved 18 Nov),
+# same WGN settings as ARDOP 1.0.2.9, Mercury and Data2G, one-way station 2 -> station 1, recovery on, 60-min time box,
+# station 2 through the bench relay (8320 -> 8310) holding Winlink Express's timer DISCONNECT (D6). Started by
+# hfbench_start_vara.ps1; drive level set to the reference (D5, vara-level). Measured S:N is the axis.
+# WGN -10 left out: the IONOS Lvl meter goes red there with any signal (results log, 17 Nov).
+
+
+[campaign]
+name = "sweep-vara-5k"
+stage = "coarse"
+replicates = 3
+profiles = ["WGN"]
+snr_db = [17, 12, 7, 2, -2, -5]
+order = "blocked-random"
+order_seed = 41
+abort_minutes = 90
+abort_retries = 3
+time_box_minutes = 60
+
+[ionos]
+bandwidth_hz = 3000
+multipaths = 2
+
+[payload]
+file = "Text_5KB"
+bytes = 5120
+sha256 = "85741279e9a689624407e58e599340c048a72fdd56c9695345c6a1ac827384d4"
+messages = 10
+
+[[modems]]
+name = "VARA HF"
+version = "4.9.1"
+bandwidth_hz = 2750
+
+[[impairments]]
+name = "none"

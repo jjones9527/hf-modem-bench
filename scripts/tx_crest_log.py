@@ -33,7 +33,10 @@ def run(st, name, t_end):
         while time.time() < t_end:
             x = rec.record(numframes=BLOCK)
             t = time.time()
-            x = x[:, 0] if x.ndim > 1 else x
+            # the channel that carries the signal: VARA writes only its configured channel
+            # (station 2: Channel=2, the right), the others write both
+            if x.ndim > 1:
+                x = x[:, int(np.argmax(np.mean(x * x, axis=0)))]
             p = float(np.mean(x * x))
             if db(p) > ON_DB:
                 if cur is None:
