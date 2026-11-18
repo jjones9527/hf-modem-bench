@@ -1,0 +1,32 @@
+# VARA HF 4.9.1 peak check (18 Nov 2026): IONOS Lvl red at ALC drive 0 (operator); drive -3 on both stations, WGN 40, 3 x 50 KB, peak_log.py at the microphones, operator on the meter.
+# Winlink callsign in C:\RMS Express 2, VE3XZQ kept) so both VARA copies get the licensed callsign; P2P
+# VA3ZTF -> VA3ZTF on the bench (no transmitter). WGN 40, 3 x 50 KB, relay holding, ALC drive -5 (not yet
+# levelled). Checks: connect, delivery, speed levels above the unregistered limit (~175 bit/s).
+[campaign]
+name = "peak-vara"
+stage = "smoke"
+replicates = 1
+profiles = ["WGN"]
+snr_db = [40]
+order = "sequential"
+abort_minutes = 30
+abort_retries = 3
+time_box_minutes = 20
+
+[ionos]
+bandwidth_hz = 3000
+multipaths = 2
+
+[payload]
+file = "Text_50KB"
+bytes = 51200
+sha256 = "3ec10a0b30de0039bb0b949d7e160a5d4625c03ba2f245a60785d3973e0279f9"
+messages = 3
+
+[[modems]]
+name = "VARA HF"
+version = "4.9.1"
+bandwidth_hz = 2750
+
+[[impairments]]
+name = "none"
