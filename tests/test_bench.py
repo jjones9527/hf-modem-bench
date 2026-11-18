@@ -465,7 +465,7 @@ def test_modem_profiles_and_tnc_paths():
     from hfbench.bench import modem_profile, MODEM_PROFILES
     from hfbench.winlink_ui import WinlinkProcesses
     assert modem_profile("ardop").session_type == "Ardop P2P" and modem_profile("ARDOP").verified
-    assert not modem_profile("VARA HF").verified
+    assert modem_profile("VARA HF").verified and modem_profile("VARA HF").tnc1 == ""   # started by hfbench_start_vara.ps1 (18 Nov)
     with pytest.raises(Exception, match="no modem profile"):
         modem_profile("PACTOR")
     seen = []
@@ -570,3 +570,20 @@ def test_set_session_type_rewrites_only_the_mode_line(tmp_path):
     assert ini.read_bytes() == b"[Properties]\r\nMode=Ardop P2P\r\nVara HF P2P Bandwidth=2750\r\n"
     assert set_session_type(tmp_path, "Ardop P2P") == "Ardop P2P"       # no change
     assert set_session_type(tmp_path / "missing", "Ardop P2P") is None
+
+
+def test_install_callsign_picks_the_active_one_when_there_are_several(tmp_path):
+    from hfbench.bench import install_callsign
+    for c in ("VE3XZQ", "VA3ZTF-1"):
+        (tmp_path / c / "Messages").mkdir(parents=True)
+        (tmp_path / c / "Data").mkdir()
+    (tmp_path / "RMS Express.ini").write_text("[Properties]\nCall signs=VE3XZQ,VA3ZTF-1\nCallsign=VA3ZTF-1\n")
+    assert install_callsign(tmp_path) == "VA3ZTF-1"
+
+
+def test_set_session_type_uses_the_active_callsigns_section(tmp_path):
+    from hfbench.bench import set_session_type
+    ini = tmp_path / "RMS Express.ini"
+    ini.write_text("[Properties]\nCallsign=VA3ZTF\n[VE3XZQ]\nMode=Ardop P2P\n[VA3ZTF]\nMode=Vara HF Winlink\n")
+    assert set_session_type(tmp_path, "Vara HF P2P") == "Vara HF Winlink"
+    assert ini.read_text() == "[Properties]\nCallsign=VA3ZTF\n[VE3XZQ]\nMode=Ardop P2P\n[VA3ZTF]\nMode=Vara HF P2P\n"

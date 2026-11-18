@@ -306,9 +306,21 @@ def install_callsign(install_dir: str | Path) -> str:
     # 'Global Folders' also has a Messages subfolder; a station folder has Data + Messages
     calls = [p.name for p in Path(install_dir).iterdir()
              if p.is_dir() and callsign.match(p.name) and (p / "Messages").is_dir() and (p / "Data").is_dir()]
-    if len(calls) != 1:
-        raise AutomationError(f"expected one callsign folder in {install_dir}, found {calls}")
-    return calls[0]
+    if len(calls) == 1:
+        return calls[0]
+    # several callsigns in one install (e.g. VE3XZQ and VA3ZTF-1, 18 Nov 2026): the active
+    # one is 'Callsign=' in RMS Express.ini, as Winlink Express saved it
+    ini = Path(install_dir) / "RMS Express.ini"
+    if len(calls) > 1 and ini.exists():
+        for line in ini.read_text(encoding="utf-8-sig", errors="replace").splitlines():
+            if line.startswith("Callsign="):
+                active = line.split("=", 1)[1].strip()
+                match = [c for c in calls if c.upper() == active.upper()]
+                if match:
+                    return match[0]
+                break
+    raise AutomationError(f"expected one callsign folder in {install_dir} (or an active one in "
+                          f"RMS Express.ini), found {calls}")
 
 
 def set_session_type(install_dir: str | Path, session_type: str) -> str | None:
@@ -324,6 +336,16 @@ def set_session_type(install_dir: str | Path, session_type: str) -> str | None:
     nl = "\r\n" if "\r\n" in text else "\n"
     lines = text.split(nl)
     idx = [i for i, l in enumerate(lines) if l.startswith("Mode=")]
+    if len(idx) > 1:
+        # one Mode= per callsign section when the install has several callsigns (18 Nov
+        # 2026): use the active callsign's section ('Callsign=' at the top)
+        active = next((l.split("=", 1)[1].strip() for l in lines if l.startswith("Callsign=")), None)
+        sec, idx = None, []
+        for i, l in enumerate(lines):
+            if l.startswith("["):
+                sec = l.strip()[1:-1]
+            elif l.startswith("Mode=") and active and sec and sec.upper() == active.upper():
+                idx.append(i)
     if len(idx) != 1:
         return None
     was = lines[idx[0]][5:]
@@ -348,7 +370,9 @@ class ModemProfile:
 
 MODEM_PROFILES = {
     "ARDOP": ModemProfile("Ardop P2P", r"{install}\ARDOP_Win.exe", r"{install}\ARDOP_Win.exe", verified=True),
-    "VARA HF": ModemProfile("Vara HF P2P", r"C:\VARA\VARA.exe", r"C:\VARA 2\VARA.exe"),
+    # VARA HF 4.9.1: started by hfbench_start_vara.ps1 (Winlink's auto launch off), so
+    # recovery leaves it running: no TNC path. Ports 8300/8310 (bring-up 18 Nov 2026).
+    "VARA HF": ModemProfile("Vara HF P2P", "", "", verified=True),
     # Data2G 0.5.1: data2g-host runs on its own (hfbench_start_data2g.ps1, one
     # --config file per station), not launched by Winlink, so recovery leaves it
     # running: no TNC path. Ports 8300/8310 (bring-up 17 Nov 2026).
@@ -393,8 +417,11 @@ class WinlinkAutomation:
             self.templates[st] = p.read_text(encoding="utf-8")
         if ui_factory is None:
             from .winlink_ui import WinlinkUI
-            ui_factory = lambda call: WinlinkUI(call, log=say)
-        self.ui = {st: ui_factory(self.calls[st]) for st in (1, 2)}
+            ui_factory = lambda call, install=None: WinlinkUI(call, log=say, install=install)
+        try:
+            self.ui = {st: ui_factory(self.calls[st], installs[st - 1]) for st in (1, 2)}
+        except TypeError:          # a test's factory that takes the callsign only
+            self.ui = {st: ui_factory(self.calls[st]) for st in (1, 2)}
         self.profile = profile or MODEM_PROFILES["ARDOP"]
         if procs is None:
             from .winlink_ui import WinlinkProcesses

@@ -44,13 +44,44 @@ class SessionStatus:
     target: str
 
 
-class WinlinkUI:
-    """Controls one Winlink Express instance, identified by its callsign."""
+def _exe_dir(pid: int) -> str:
+    """Folder of a process's executable (Windows), '' if not readable."""
+    import ctypes
+    from ctypes import wintypes
+    k32 = ctypes.windll.kernel32
+    h = k32.OpenProcess(0x1000, False, pid)          # PROCESS_QUERY_LIMITED_INFORMATION
+    if not h:
+        return ""
+    try:
+        buf = ctypes.create_unicode_buffer(1024)
+        n = wintypes.DWORD(1024)
+        if not k32.QueryFullProcessImageNameW(h, 0, buf, ctypes.byref(n)):
+            return ""
+        return str(Path(buf.value).parent).lower()
+    finally:
+        k32.CloseHandle(h)
 
-    def __init__(self, call: str, log=print):
+
+class WinlinkUI:
+    """Controls one Winlink Express instance, identified by its callsign or, when given,
+    by its install folder (the process's own path). The folder is what tells two installs
+    apart when both run the same callsign (VA3ZTF and VA3ZTF-1 for VARA, 18 Nov 2026):
+    Winlink's window titles show only the base callsign."""
+
+    def __init__(self, call: str, log=print, install: str | None = None):
         self.call = call
         self.log = log
         self.auto = _auto()
+        self.install = str(Path(install)).lower() if install else None
+        self._pid_ok: dict[int, bool] = {}
+
+    def _mine(self, w) -> bool:
+        if self.install is None:
+            return True
+        pid = w.ProcessId
+        if pid not in self._pid_ok:
+            self._pid_ok[pid] = _exe_dir(pid) == self.install
+        return self._pid_ok[pid]
 
     # -- windows -----------------------------------------------------------------
     def _top_windows(self):
@@ -66,13 +97,14 @@ class WinlinkUI:
 
     def main(self):
         for w, n, kind in self._top_windows():
-            if kind == "WindowControl" and "Winlink Express" in n and f"- {self.call}" in n:
+            if kind == "WindowControl" and "Winlink Express" in n and (
+                    self._mine(w) if self.install else f"- {self.call}" in n):
                 return w
         raise RuntimeError(f"Winlink Express main window for {self.call} not found")
 
     def session_window(self):
         for w, n, _ in self._top_windows():
-            if "Peer-to-Peer Session" in n and n.rstrip().endswith(f"- {self.call}"):
+            if "Peer-to-Peer Session" in n and (self._mine(w) if self.install else n.rstrip().endswith(f"- {self.call}")):
                 return w
         raise RuntimeError(f"no Peer-to-Peer Session window open for {self.call}")
 
