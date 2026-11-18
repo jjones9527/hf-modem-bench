@@ -1,0 +1,30 @@
+# VARA HF 4.9.1 cliff search (operator, 18 Nov 2026): as the Data2G one, IONOS fixed at WGN -5 (WGN -10 out of spec),
+# VARA's ALC drive -9 on both stations (bench level -3), 10 x 5 KB, two runs, relay, 60-min time box. Measured S:N is the axis.
+[campaign]
+name = "cliff-vara-d9"
+stage = "cliff"
+replicates = 2
+profiles = ["WGN"]
+snr_db = [-5]
+order = "sequential"
+abort_minutes = 90
+abort_retries = 3
+time_box_minutes = 60
+
+[ionos]
+bandwidth_hz = 3000
+multipaths = 2
+
+[payload]
+file = "Text_5KB"
+bytes = 5120
+sha256 = "85741279e9a689624407e58e599340c048a72fdd56c9695345c6a1ac827384d4"
+messages = 10
+
+[[modems]]
+name = "VARA HF"
+version = "4.9.1"
+bandwidth_hz = 2750
+
+[[impairments]]
+name = "none"
