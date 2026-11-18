@@ -1,0 +1,2 @@
+run_id,setting_db,data_snr_db,data_n,control_snr_db,keyed_by,ardop_ptt_data,data_modes
+cal-data2g-0001,40,30.42,16,,Data2G TX log (sender),,w48-256l-r5/8 100%

@@ -1,0 +1,2 @@
+{"event": "start", "host": "BENCH-PC", "ionos_ack": "BANDWIDTH:3000=OK; MULTIPATH:2=OK; OFFSET:0=OK; FADE DEPTH:0=OK; FADE FREQ:0=OK; FM DEVIATION:0=OK; FM RATE:0=OK; WGN:40=OK", "log_connected_utc": "2026-11-17T12:40:11+00:00", "mids": "TRJLG3LKENUT 89X9UCD1OSGM FJ8JQEKMXMM2", "run_id": "peak-data2g-0001", "t_local": "2026-11-17T07:40:11-05:00", "t_utc": "2026-11-17T12:40:11+00:00"}
+{"event": "end", "host": "BENCH-PC", "notes": "", "outcome": "completed", "run_id": "peak-data2g-0001", "t_local": "2026-11-17T07:43:41-05:00", "t_utc": "2026-11-17T12:43:41+00:00"}

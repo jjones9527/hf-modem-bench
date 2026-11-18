@@ -1,0 +1,10 @@
+run_id,setting_db,source,st1_air_s,st1_bursts,st1_mean_dbfs,st1_papr_0.01pct_db,st1_papr_0.1pct_db,st1_papr_max_db,st2_air_s,st2_bursts,st2_mean_dbfs,st2_papr_0.01pct_db,st2_papr_0.1pct_db,st2_papr_max_db
+sweep-mercury-50k-0001,40,crest-mercury-0001,37.2,12,-8.77,6.25,6.24,6.3,79.6,12,-14.63,11.17,9.97,11.88
+sweep-mercury-50k-0002,17,crest-mercury-0003,55.4,17,-8.73,6.21,6.18,6.26,149.3,18,-10.0,7.09,6.8,7.35
+sweep-mercury-50k-0003,22,crest-mercury-0002,68.0,19,-8.74,6.22,6.21,6.27,127.3,20,-10.5,7.7,7.47,7.8
+sweep-mercury-50k-0004,17,crest-mercury-0003,55.4,17,-8.73,6.21,6.18,6.26,149.3,18,-10.0,7.09,6.8,7.35
+sweep-mercury-50k-0005,40,crest-mercury-0001,37.2,12,-8.77,6.25,6.24,6.3,79.6,12,-14.63,11.17,9.97,11.88
+sweep-mercury-50k-0006,17,crest-mercury-0003,55.4,17,-8.73,6.21,6.18,6.26,149.3,18,-10.0,7.09,6.8,7.35
+sweep-mercury-50k-0007,22,crest-mercury-0002,68.0,19,-8.74,6.22,6.21,6.27,127.3,20,-10.5,7.7,7.47,7.8
+sweep-mercury-50k-0008,22,crest-mercury-0002,68.0,19,-8.74,6.22,6.21,6.27,127.3,20,-10.5,7.7,7.47,7.8
+sweep-mercury-50k-0009,40,crest-mercury-0001,37.2,12,-8.77,6.25,6.24,6.3,79.6,12,-14.63,11.17,9.97,11.88

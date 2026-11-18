@@ -1,0 +1,10 @@
+run_id,setting_db,data_snr_db,data_n,control_snr_db,keyed_by,ardop_ptt_data,data_modes
+sweep-data2g-50k-0001,40,29.35,51,,Data2G TX log (sender),,w48-256l-r5/8 100%
+sweep-data2g-50k-0002,22,21.27,52,,Data2G TX log (sender),,"w48-256l-r5/8 95%, w48-64l-r2/3 5%"
+sweep-data2g-50k-0003,22,21.25,52,,Data2G TX log (sender),,"w48-256l-r5/8 92%, w48-64l-r2/3 8%"
+sweep-data2g-50k-0004,40,29.29,51,,Data2G TX log (sender),,w48-256l-r5/8 100%
+sweep-data2g-50k-0005,17,17.43,71,,Data2G TX log (sender),,"w48-64l-r7/12 98%, w48-64l-r1/2 2%, w48-64l-r2/3 0%"
+sweep-data2g-50k-0006,40,29.35,51,,Data2G TX log (sender),,w48-256l-r5/8 100%
+sweep-data2g-50k-0007,17,17.46,71,,Data2G TX log (sender),,"w48-64l-r7/12 98%, w48-64l-r1/2 2%, w48-64l-r2/3 0%"
+sweep-data2g-50k-0008,22,21.28,52,,Data2G TX log (sender),,"w48-256l-r5/8 95%, w48-64l-r2/3 5%"
+sweep-data2g-50k-0009,17,17.46,71,,Data2G TX log (sender),,"w48-64l-r7/12 98%, w48-64l-r1/2 2%, w48-64l-r2/3 0%"

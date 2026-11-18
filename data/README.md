@@ -24,7 +24,8 @@ Callsigns (VA3ZTF, VE3XZQ) are kept. All times are UTC unless a file says otherw
 | `events.jsonl` | Append-only log of every start, end, mark, invalidation and recovery, as written during the run |
 | `manifest.csv` | One row per attempt (from the events): start/end, outcome, notes, Message-IDs. `final_attempt` marks the one that counts; `invalid` attempts are bench faults and excluded |
 | `runs.csv`, `messages.csv` | Per-run and per-message results from both stations' Winlink logs (`hfbench results --verify`): delivered / corrupted / stall / cut, goodput (receiver side), net throughput, attachment check against the payload |
-| `snr.csv` | Measured data S:N per run (`hfbench audio listen-report`, or `scripts/mercury_snr.py` for Mercury, keyed by the sender's own PTT log) |
+| `snr.csv` | Measured data S:N per run (`hfbench audio listen-report`; `scripts/mercury_snr.py` for Mercury, keyed by its PTT log; `scripts/data2g_snr.py` for Data2G, keyed by its TX lines, noise from the quiet gap after each run) |
+| `crest.csv` | The sender's transmitted peak-to-average ratio (PAPR) per run: measured (`scripts/tx_crest_log.py` + `crest_report.py`, crest and cliff campaigns), or for the sweeps taken from the modem's crest campaign at the same setting (`crest_by_setting.py`, `source` column) |
 | `console-*.txt` | The runner's console output |
 | `levels-tonecheck.json`, `qam-precheck.json` | The tone check and 16QAM path check made before the campaign |
 | `relay.txt` | VARA-protocol campaigns: the bench relay's state at start |
@@ -46,6 +47,8 @@ The raw files are too big for git (about 1.2 GB before compression). They are in
 |---|---|
 | `winlink/station1`, `winlink/station2` | Winlink Express session logs (`RMS Express YYYYMMDD.log`) and ARDOP TNC logs (`ARDOP_WinTNC_ARQSession_*`, `ARDOP_WinTNC_Debug_*`, which include every frame decode) |
 | `mercury/` | Mercury engine logs, both stations |
+| `data2g/` | Data2G host logs (`station<N>_host.log`, local time) and its start/stop log |
+| `peaks/` | `txcrest-*.jsonl`: every transmitted burst's mean power and peak levels, both stations (WASAPI loopback); `peaks-*.json`: microphone block peaks (IONOS Lvl checks) |
 | `relay/` and `<campaign>/*.log` | Bench-relay logs (every host↔modem control line, data-port sizes) and per-campaign Mercury logs |
 | `listen/` | S:N recordings: per-block band power of both microphones (about 21 ms blocks) and ARDOP PTT times; re-analyse with `hfbench audio listen-report` |
 | `qam/`, `levels/` | 16QAM path tests and tone checks |

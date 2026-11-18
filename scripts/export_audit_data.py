@@ -36,8 +36,8 @@ ARCHIVE = ROOT / "logs" / "archive"
 DATA = ROOT / "data"
 DIST = ROOT / "dist"
 SMALL = ("runsheet.csv", "manifest.csv", "events.jsonl", "runs.csv", "messages.csv", "snr.csv",
-         "relay.txt", "levels-tonecheck.json", "qam-precheck.json")
-RAW_DIRS = ("winlink", "mercury", "data2g", "relay", "listen", "qam", "levels", "mercury-bringup", "reports")
+         "relay.txt", "levels-tonecheck.json", "qam-precheck.json", "crest.csv")
+RAW_DIRS = ("winlink", "mercury", "data2g", "peaks", "relay", "listen", "qam", "levels", "mercury-bringup", "reports")
 
 
 def load_redactions() -> list[tuple[bytes, bytes]]:

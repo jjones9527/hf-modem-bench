@@ -1,4 +1,4 @@
-run_id,outcome,attempted,delivered,corrupted,stall,cut,not_reached,delivered_bytes,integrity_bad,session_s,net_bps,goodput_median_bps
-retest-mercury-1924-0001,completed,10,10,0,0,0,0,421688,0,1941,1738.0236991241627,2097.2422360248447
-retest-mercury-1924-0002,dnc,7,6,0,1,0,3,252893,0,,,2037.5485614137579
-retest-mercury-1924-0003,dnc,1,0,0,1,0,9,0,0,,,
+run_id,outcome,attempted,delivered,corrupted,stall,cut,not_reached,delivered_bytes,integrity_bad,session_s,net_bps,goodput_median_bps,rate_median_bps,connect_s,sessions
+retest-mercury-1924-0001,completed,10,10,0,0,0,0,421688,0,1941,1738.0236991241627,2097.2422360248447,1973.7543859649122,8.0,1
+retest-mercury-1924-0002,dnc,7,6,0,1,0,3,252893,0,,,2037.5485614137579,1926.846394984326,8.0,1
+retest-mercury-1924-0003,dnc,1,0,0,1,0,9,0,0,,,,,8.0,1

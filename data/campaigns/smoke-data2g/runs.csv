@@ -1,0 +1,2 @@
+run_id,outcome,attempted,delivered,corrupted,stall,cut,not_reached,delivered_bytes,integrity_bad,session_s,net_bps,goodput_median_bps,rate_median_bps,connect_s,sessions
+smoke-data2g-0001,completed,10,10,0,0,0,0,421635,0,786,4291.4503816793895,6486.076923076924,4888.057971014492,5.0,1
