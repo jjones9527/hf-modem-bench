@@ -1808,6 +1808,40 @@ Net throughput, equal average power (bit/s at measured data S:N; points.csv in
   the S:N it sees, which a peak-limited transmitter changes; how it adapts there is not tested.
 - All white-noise (WGN) results; fading (CCIR) channels are still to come.
 
+## Stage 4: ARDOP 1.0.3.3 development build, bring-up (19 Nov 2026)
+
+`scripts/windows/hfbench_ardop_swap.ps1 -Build dev` (11:02 UTC) put the 1.0.3.3 build (sha256
+8517bb90…cc9c0) into both Winlink installs; 1.0.2.9 is kept beside it as `ARDOP_Win.exe.1.0.2.9`
+(`-Build release` puts it back). `ARDOP_Win TNC.ini` unchanged (DriveLevel 90 / 75), so the
+settings are 1.0.2.9's. Station 2 now runs as VA3ZTF (its second Winlink callsign, set up for
+VARA), so ARDOP calls VA3ZTF -> VA3ZTF; 1.0.2.9 ran VE3XZQ -> VA3ZTF. Recorders: listen-20261119-1103
+(16 × 150 min) and txcrest-20261119-1103.jsonl (40 h).
+
+**Two bench faults before the first good run (not modem results; folders kept on the bench):**
+- `smoke-ardop133-setupfail`: both Winlinks were still in "Vara HF P2P" from the VARA tests and
+  the chain didn't recover first, so ARDOP never started; station 2's Winlink then hung in VARA
+  reconnects (11-s timeouts to the relay with no VARA behind it) and recovery couldn't read its
+  windows. Both Winlinks force-closed, recovered into Ardop P2P. **Fixed:** `bench_chain.sh`
+  recovers before its first campaign.
+- `smoke-ardop133-noremote`: station 2's Ardop P2P window opened with an empty callsign box.
+  Winlink keeps the callsign to call per session type and own callsign ("Ardop P2P Remote
+  Callsign", "Vara P2P Remote Callsign" in that callsign's ini section), and VA3ZTF had never run
+  ARDOP on station 2. **Fixed:** recovery sets it (`bench.set_remote_callsign`), with the session type.
+
+**smoke-ardop133** (WGN 40, 3 × 50 KB, 12:08-12:25 UTC): **3/3 delivered, identical**, 1,282-1,293
+bit/s per message, **1,063 bit/s net**, connect 4 s (1.0.2.9: 6-7 s; 1,259 net at its 21.9 dB ceiling).
+- **A new waveform.** Station 1's debug log: data frames OFDM.2000.R35 (24), OFDM16.2000.R34.S (9),
+  OFDM.2000.R12 (6), OFDM.2000.R12.G6.S (7), OFDM.500.R12.G6.S (2), plus new LAB-RELIABLE /
+  LAB-OFDM-ACK / LAB-OFFER frames; data bursts about 11 s (68 bursts, 777 s). 1.0.2.9 used
+  4PSK/8PSK/16QAM.2000 single-carrier frames of 1-4 s. Its audio code is new too ("split-audio-20261013"
+  build, discontinuity recovery lines).
+- **Level and crest at the same drive:** data average −15.2 dBFS digital (1.0.2.9 at WGN 40: −16.0),
+  PAPR 9.1 dB at 0.01 % (1.0.2.9 16QAM: 10.5), so its peaks are no higher (−6.1 against −5.5 dBFS).
+  Left at 1.0.2.9's drive; the 0.8 dB is on the measured S:N axis.
+
+Full set started 12:3x UTC: sweep-ardop133-50k (WGN 40/22/17 × 3), sweep-ardop133-5k (17, 12, 7, 2,
+0, −2, −5 × 3: 1.0.2.9's sweep, knee and low points in one; −10 left out), crest-ardop133.
+
 ## Planned next
 
 > **Superseded 13 Nov 2026 by [test-plan.md](test-plan.md)**, which covers the remaining modems, the metric changes and the open decisions. The items below are kept for the record.
