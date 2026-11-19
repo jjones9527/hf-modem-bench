@@ -406,6 +406,10 @@ class ModemProfile:
     tnc1: str        # station 1 TNC executable ({install} = station 1's Winlink folder);
     tnc2: str        # "" = the modem runs on its own and recovery never stops it
     verified: bool = False
+    # optional: a PowerShell script in the bench user's profile folder that recovery runs
+    # once per station (-Station N) while both Winlinks are closed, to restart a modem that
+    # runs on its own (ULTRA: a TNC can stay stuck after a failed handshake, 19 Nov 2026)
+    restart: str = ""
 
 
 MODEM_PROFILES = {
@@ -421,6 +425,10 @@ MODEM_PROFILES = {
     # (auto launch off), so recovery must leave it running: no TNC path. Verified
     # 15 Nov 2026: session window readable, ports 8300/8310.
     "Mercury": ModemProfile("Vara HF P2P", "", "", verified=True),
+    # ProjectUltra 0.6.2 (ULTRA): ultra_tnc speaks VARA's TCP interface; it runs on its own
+    # (hfbench_start_ultra.ps1, one config per station), so no TNC path. Ports 8300/8310
+    # (bring-up 19 Nov 2026).
+    "ULTRA": ModemProfile("Vara HF P2P", "", "", verified=True, restart="hfbench_start_ultra.ps1"),
 }
 
 
@@ -574,6 +582,12 @@ class WinlinkAutomation:
             raise
         except Exception as e:      # a dead session window is what a restart is for
             self.say(f"  (session status not readable: {e})")
+        for st in (1, 2):
+            try:
+                for t in self.ui[st].dismiss_message_boxes():
+                    self.say(f"  {self.calls[st]}: dismissed message box: {t[:120]}")
+            except Exception as e:
+                self.say(f"  ({self.calls[st]}: message boxes not checked: {e})")
         deleted, forced = {}, {}
         for st in (1, 2):
             deleted[st] = self.ui[st].delete_folder_messages("Outbox") if self.ui[st].has_main_window() else []
@@ -594,6 +608,9 @@ class WinlinkAutomation:
         moved = self._quarantine_partials(run_id)
         if moved:
             self.say(f"  moved {moved} partial file(s) to quarantine/{run_id}")
+        if self.profile.restart:
+            for st in (1, 2):
+                self.say(f"  station {st} modem: {self.procs.restart_modem(self.profile.restart, st)}")
         for st in (1, 2):
             was = set_session_type(self.installs[st - 1], self.profile.session_type)
             if was and was != self.profile.session_type:

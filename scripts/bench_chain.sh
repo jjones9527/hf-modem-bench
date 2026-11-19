@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Run bench campaigns one after another, unattended, from this machine over SSH.
 #   HFBENCH_HOST=user@host scripts/bench_chain.sh LOG MODEM CAMPAIGN:RUNS[:relay] ...
-# MODEM: ARDOP, VARA, Mercury or Data2G (which hang check to use, and how to restart it).
+# MODEM: ARDOP, VARA, Mercury, Data2G or ULTRA (which hang check to use, and how to restart it;
+# ULTRA restarts at its saved drive, hfbench\ultra\drive.txt).
 # For each campaign: start it on the bench (hfbench_start_campaign.ps1 -AutoContinue
 # -Recover [-Relay]), log every run result, watch for a hung modem (Mercury, Data2G: its
 # log quiet >240 s during a session -> run dnc, restart that station's modem, recover,
@@ -23,6 +24,7 @@ restart_modem() {  # $1 station
     Data2G) ps "hfbench_start_data2g.ps1 -Station $1" >> "$L" ;;
     Mercury) ps "hfbench_restart_mercury.ps1 -Station $1" >> "$L" ;;
     VARA) ps "hfbench_start_vara.ps1 -Station $1" >> "$L" ;;
+    ULTRA) ps "hfbench_start_ultra.ps1 -Station $1" >> "$L" ;;
   esac
 }
 
@@ -66,6 +68,9 @@ while pilot_running; do sleep 60; done
 # (RMS Express.ini) and reopens their sessions, so a chain can follow another modem's tests
 # (19 Nov: smoke-ardop133 started with both Winlinks still in Vara HF P2P and never connected).
 first=${1%%:*}
+# a relay campaign's station 2 Winlink talks to the relay (8320): start it first, or that
+# station's session never opens (19 Nov: cal-ultra's pre-recovery failed this way)
+case $1 in *:relay) ps "hfbench_start_relay.ps1" >> "$L" ;; esac
 ps "hfbench_desktop.ps1 -HfArgs \"recover -d runs\\$first $first-0001\" -Out runs\\$first\\recover-pre.txt" >> "$L"
 say "recovered before $first (session type set)"
 for spec in "$@"; do

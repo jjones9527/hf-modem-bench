@@ -291,7 +291,7 @@ def _profile_for(args, campaign: Path):
 
 
 def _profile_args(sp):
-    sp.add_argument("--modem", help="modem profile (default: from the run sheet): ARDOP, VARA HF, Data2G, Mercury")
+    sp.add_argument("--modem", help="modem profile (default: from the run sheet): ARDOP, VARA HF, Data2G, Mercury, ULTRA")
     sp.add_argument("--session-type", help="Winlink session type to open, e.g. 'Vara HF P2P'")
     sp.add_argument("--tnc1", help="station 1 TNC executable (full path)")
     sp.add_argument("--tnc2", help="station 2 TNC executable (full path)")

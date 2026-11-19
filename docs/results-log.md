@@ -1839,8 +1839,101 @@ bit/s per message, **1,063 bit/s net**, connect 4 s (1.0.2.9: 6-7 s; 1,259 net a
   PAPR 9.1 dB at 0.01 % (1.0.2.9 16QAM: 10.5), so its peaks are no higher (−6.1 against −5.5 dBFS).
   Left at 1.0.2.9's drive; the 0.8 dB is on the measured S:N axis.
 
-Full set started 12:3x UTC: sweep-ardop133-50k (WGN 40/22/17 × 3), sweep-ardop133-5k (17, 12, 7, 2,
+Full set started 12:27 UTC: sweep-ardop133-50k (WGN 40/22/17 × 3), sweep-ardop133-5k (17, 12, 7, 2,
 0, −2, −5 × 3: 1.0.2.9's sweep, knee and low points in one; −10 left out), crest-ardop133.
+
+### sweep-ardop133-50k results (19 Nov 2026, 12:27-20:22 UTC)
+
+Blocked-random order, 10 × 50 KB per run, 2 -> 1. **84/86 delivered, all 84 attachments
+identical, no corrupted message.** Net throughput by simulator setting (measured S:N not yet
+computed; the S:N recorder's fourth block, 18:33-20:33, was lost in the power cut below, so runs
+7-9 will take their setting's S:N from runs 1-6):
+
+| WGN | Runs (net bit/s, delivered) | 1.0.2.9 (sweep-ardop-50k) |
+|---|---|---|
+| 40 | 1,110 (10/10), 1,110 (10/10), **1,009 (9/10, dnc)** | 1,251, 1,275, 1,251 (all 10/10) |
+| 22 | 1,107 (10/10), 1,096 (10/10), **993 (5 delivered, dnc)** | 1,078, 958 (dnc), 834 (dnc); 2 corrupted |
+| 17 | 1,041, 1,033, 1,048 (all 10/10) | 551 × 3, all time-boxed at 6/10 |
+
+Per message (receiver) 1,117-1,199 bit/s median; connect 4-5 s (8 and 12 s once each).
+About 12 % below 1.0.2.9 at WGN 40, level with its best run at WGN 22 and without its 16QAM
+corruptions, and nearly twice its speed at WGN 17. Data frames at full speed are OFDM.2000.R35.E
+of **26.4-26.7 s** (406 of them on the sender's log that day; the smoke run's 11-s average was
+over all frame types).
+
+**Both dnc runs: the sender's ARQ inactivity timeout during a repeated 26-s frame.** Run 0003
+(WGN 40): station 1's capture logged `[Audio discontinuity] flags=0x1` at 15:05:04.925 and
+`partial receive frame cleared` (`conservative reset missingFrames=0`) just as station 2 began a
+26.7-s data frame; station 2 repeated it (15:05:36.9-15:06:03.6), station 1 decoded it (Quality
+90) and acked at 15:06:03.998, but station 2 had declared `[SESSION FAILURE] ARQ inactivity
+timeout` at 15:06:04.422, 60.8 s after its last ack; the ack arrived at 15:06:04.512. Run 0009
+(WGN 22): the same, partial frame cleared 20:19:14.5, repeat done 20:20:13.3, timeout
+20:20:14.2. With 26-s frames, one lost frame plus its repeat uses the whole 60-s allowance.
+Station 1's discontinuities are periodic: 145 between 11:53 and 16:40 UTC, 123 of the intervals
+109 s and 15 of 218 s, in sessions and out; 30 cleared a partial frame. Station 2 logged no
+discontinuities but 405 `[Receive backlog] state=high` (about 500 ms). Not seen before because
+1.0.2.9 doesn't log WASAPI flags. Reported to Phil privately with both stations' logs.
+
+**Bench power cut, 20:33:55 UTC.** The PC (a Mac mini under Windows) lost power mid-way through
+sweep-ardop133-5k-0001 (WGN 0): every log stops in the same second; Kernel-Power 41 and
+EventLog 6008 at the 21:01 reboot, no bugcheck. That run is marked invalid. The tone check
+afterwards (21:06) matched the earlier one (2 -> 1 −22.8, 1 -> 2 −23.4 dBFS; −0.2 / −0.3 dB vs
+the reference at WGN 20). **ARDOP 1.0.3.3 testing stopped here** (operator, 19 Nov): Phil has
+newer work, which will be tested instead; the 5 KB sweep and crest runs were not done. The dev
+build is still installed in both Winlinks (`hfbench_ardop_swap.ps1 -Build release` restores 1.0.2.9).
+
+## Stage 5: ULTRA (ProjectUltra) 0.6.2-pre-alpha, bring-up, paused (19 Nov 2026)
+
+**Install.** `projectultra-windows.zip` (sha256 1225a638…4e36e) unpacked to `C:\ProjectUltra`;
+`ultra_tnc` 0.6.2, commit a18a6b84 (`dirty=true`, built 10 Nov), sha256 eb3eff9d…b0daa9. One
+install, two TNCs started by `scripts/windows/hfbench_start_ultra.ps1`: station 1 VA3ZTF, C-Media
+(Syba), port 8300; station 2 VE3XZQ, "3- USB Audio Device" (Sabrent), port 8310 through the relay.
+`ultra_tnc` speaks VARA's TCP command set (`PUBLIC ON`, `CWID ON`, `COMPRESSION ON`, `BW2750`,
+`MYCALL`, `LISTEN ON` all answered OK), so Winlink drives it as a Vara HF P2P session; runner
+profile `ULTRA`. Drive: ULTRA's default `--tx-drive 0.50` (each burst normalised to a −6.0 dBFS peak).
+
+**One good run.** `cal-ultra` (WGN 40, 3 × 50 KB, 22:12-22:25 UTC): **3/3 delivered, identical**,
+3,550-3,833 bit/s per message (ULTRA's receive side), **1,410 bit/s net**, connect 14 s. Transmit
+log (station 2, 259 s of data bursts of 7-18 s): mean −18.7 dBFS, PAPR 11.2 dB at 0.01 %, peak
+−6.0 dBFS; short control bursts −12.9 dBFS, PAPR 6.1 dB. With the peak pinned, ULTRA's data runs
+about 7 dB under the reference level (about −11.7 dBFS mean on station 2's card), and its maximum
+drive (0.70) would still leave about 4 dB; its peaks at 0.50 are about VARA's (−5.4 dBFS), which never
+reddened the IONOS. Kept at 0.50 (D5 exception, as VARA); measured S:N would place it.
+
+**Why it was paused: it answers its own signal.** One IONOS in half-duplex mode mixes both
+stations onto both outputs, so each station hears itself at the other's level (tone check 1 -> 1
+−22.7, 2 -> 1 −22.8 dBFS). ARDOP, VARA HF, Mercury and Data2G ignore their own signal; ULTRA
+doesn't. Station 1's debug log: PING heard at 25.3 s -> PONG sent 25.35-27.19 s -> a chirp found
+at 28.2 s *inside its own PONG* (SNR 19.7 dB) taken for a new PING -> another PONG, every 3 s
+until the process was stopped (the 450 mV p-p the operator saw on the IONOS at 23:15). Earlier the
+same mechanism gave `Simultaneous CONNECT with identical callsign VA3ZTF, rejecting` (station 2
+hearing its own CONNECT) when both ends ran as VA3ZTF.
+- **Workaround tried:** `scripts/windows/ultra_rxmute.py` (pycaw, installed on the bench) mutes each
+  station's Windows microphone from ULTRA's `PTT ON` until 0.15 s after `PTT OFF`, as a
+  transceiver mutes its receiver. Checked: a muted microphone records digital silence (−240 dBFS)
+  and unmutes at once. Measured with only station 1 calling: its own signal reaches its microphone
+  0.14-0.30 s after `PTT ON` and ends about 0.1 s before `PTT OFF` is reported, so the 0.15-s tail
+  can't clip a reply (the other side's turnaround is ≥ 0.3 s plus 0.14 s of path). (A first 0.6-s
+  tail would have clipped about 80 ms of a fast reply: replaced.) With it, a direct connect at WGN 17
+  completed in about 11 s; at WGN 7 none in 10 attempts.
+- **Other faults, no workaround:** after a failed or abandoned call a TNC stays in CONNECTED or
+  CONNECTING and refuses the next `CONNECT` until restarted (retries went on after the host had
+  closed its connection); a `DISCONNECT` during the handshake got `WRONG`; one `PTT ON` (station 2,
+  192.8 s) had no `PTT OFF`. Recovery now restarts both TNCs (profile `restart`), which works, but a
+  sweep can't run unattended on that.
+
+**Bench faults during bring-up (not ULTRA results; folders kept):** `cal-ultra-samecall` (both ends
+VA3ZTF); `cal-ultra-stale` (station 1's TNC stuck from the previous attempt, 0 calls answered); one
+`sweep-ultra-50k` run dnc (WGN 17, the self-PONG loop). Fixed in the runner along the way:
+recovery starts the relay first for relay campaigns; `open_session` clicks again after 20 s;
+recovery presses OK on Winlink message boxes (an "Unable to open Vara command port" box had
+disabled station 1's windows); `folder_mids` checks the grid's row count against the folder's own
+count. **Without that check, recovery would have deleted station 1's Inbox:** with its window
+disabled, the Outbox click did nothing and the 1,328 Inbox rows were read as the Outbox. Nothing was
+deleted (stopped by hand; Winlink log and message files checked).
+
+**Reported** to the developer, 19 Nov: https://github.com/secup/ProjectUltra/issues/38. ULTRA is
+paused until a build addresses the self-echo and the stuck states; next is Aether HF (operator).
 
 ## Planned next
 

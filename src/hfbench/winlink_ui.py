@@ -194,14 +194,35 @@ class WinlinkUI:
             pass
         time.sleep(1.0)
 
+    def _folder_count(self, name: str) -> int | None:
+        """The message count in the folder list's label, e.g. 'Outbox  (0)' -> 0; None when
+        the label has no plain count (the Inbox shows '(N unread)')."""
+        main = self.main()
+        item = next(i for i in main.ListControl(AutomationId="lstFixedFolders").GetChildren()
+                    if (i.Name or "").startswith(name))
+        m = re.search(r"\((\d+)\)\s*$", item.Name or "")
+        return int(m.group(1)) if m else None
+
     def folder_mids(self, name: str) -> list[str]:
-        """Message IDs listed in a folder (selects the folder)."""
-        self.select_folder(name)
+        """Message IDs listed in a folder (selects the folder). Checks that the grid really
+        shows that folder: its row count must equal the count in the folder's label. Winlink
+        doesn't always switch on the first click (19 Nov 2026: right after a restart, station
+        1's grid still showed its Inbox, 1,328 rows, when the Outbox was selected), and the
+        recovery deletes whatever this returns."""
+        rows = []
+        for attempt in range(6):
+            self.select_folder(name)
+            want = self._folder_count(name)
+            rows = [r for r in self.main().TableControl(AutomationId="grdMessageList").GetChildren()
+                    if (r.Name or "").startswith("Row ")]
+            if want is None or len(rows) == want:
+                break
+            time.sleep(2)
+        else:
+            raise RuntimeError(f"{self.call}: the message list shows {len(rows)} rows, not {name}'s "
+                               f"{want}: folder not selected")
         mids = []
-        grid = self.main().TableControl(AutomationId="grdMessageList")
-        for r in grid.GetChildren():
-            if not (r.Name or "").startswith("Row "):
-                continue
+        for r in rows:
             for c in r.GetChildren():
                 if (c.Name or "").startswith("Message ID"):
                     try:
@@ -297,6 +318,31 @@ class WinlinkUI:
             return True
         except RuntimeError:
             return False
+
+    def dismiss_message_boxes(self) -> list[str]:
+        """Press OK on message boxes owned by this instance's main or session window (seen
+        19 Nov 2026: 'Unable to open Vara command port' in the session window, left from a
+        moment the modem was down, disabled both windows so no folder could be selected).
+        Returns their texts."""
+        texts = []
+        owners = []
+        if self.has_main_window():
+            owners.append(self.main())
+        if self.has_session_window():
+            owners.append(self.session_window())
+        for o in owners:
+            for w in self._child_windows(o):
+                try:
+                    if (w.ClassName or "") != "#32770":
+                        continue
+                    texts += [t for t in self._texts(w) if t]
+                    btn = w.ButtonControl(Name="OK", searchDepth=3)
+                    if btn.Exists(0.3):
+                        self._thread(lambda btn=btn: btn.GetInvokePattern().Invoke())
+                        time.sleep(1)
+                except Exception:
+                    continue
+        return texts
 
     def has_main_window(self) -> bool:
         try:
@@ -458,11 +504,19 @@ class WinlinkUI:
             self._thread(lambda: main.MenuItemControl(Name="Open Session:", searchDepth=3)
                          .GetLegacyIAccessiblePattern().DoDefaultAction())
         t0 = time.time()
+        clicked_again = False
         while True:
             if time.time() - t0 > timeout:
                 raise RuntimeError(f"{self.call}: {session_type} session not ready within {timeout:.0f} s")
             time.sleep(2)
             if not self.has_session_window():
+                # a Winlink just started can ignore the first click (19 Nov 2026: VE3XZQ's
+                # first start on station 2); click once more after 20 s
+                if not clicked_again and time.time() - t0 > 20:
+                    clicked_again = True
+                    main = self.main()
+                    self._thread(lambda: main.MenuItemControl(Name="Open Session:", searchDepth=3)
+                                 .GetLegacyIAccessiblePattern().DoDefaultAction())
                 continue
             try:
                 st = self.status()
@@ -505,6 +559,19 @@ class WinlinkProcesses:
                            f"Where-Object {{ $_.ExecutablePath -eq '{q}' }} | ForEach-Object {{ $_.ProcessId }}")
             out[path] = [int(x) for x in txt.split() if x.strip().isdigit()]
         return out
+
+    def restart_modem(self, script: str, station: int) -> str:
+        """Run <user profile>\\<script> -Station <station> (a modem's own start script, which
+        stops that station's running copy first) and return its last output line."""
+        import subprocess
+        r = subprocess.run(["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File",
+                            str(Path.home() / script), "-Station", str(station)],
+                           capture_output=True, text=True, timeout=120)
+        lines = [l for l in (r.stdout or "").splitlines() if l.strip()]
+        if r.returncode != 0:
+            err = " ".join((r.stderr or "").split())[:300]
+            raise RuntimeError(f"{script} -Station {station} failed (exit {r.returncode}): {err}")
+        return lines[-1].strip() if lines else "(no output)"
 
     def running(self, install: str) -> bool:
         return any(self.pids(install).values())
