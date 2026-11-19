@@ -62,6 +62,12 @@ run_campaign() {  # $1 campaign $2 max runs $3 "-Relay" or ""
 }
 
 while pilot_running; do sleep 60; done
+# Recover once before the first campaign: it sets the modem's session type in both Winlinks
+# (RMS Express.ini) and reopens their sessions, so a chain can follow another modem's tests
+# (19 Nov: smoke-ardop133 started with both Winlinks still in Vara HF P2P and never connected).
+first=${1%%:*}
+ps "hfbench_desktop.ps1 -HfArgs \"recover -d runs\\$first $first-0001\" -Out runs\\$first\\recover-pre.txt" >> "$L"
+say "recovered before $first (session type set)"
 for spec in "$@"; do
   IFS=: read -r c n r <<<"$spec"
   run_campaign "$c" "$n" "$([ "${r:-}" = relay ] && echo -Relay)"

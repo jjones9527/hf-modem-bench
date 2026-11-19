@@ -355,6 +355,46 @@ def set_session_type(install_dir: str | Path, session_type: str) -> str | None:
     return was
 
 
+def set_remote_callsign(install_dir: str | Path, session_type: str, remote: str) -> str | None:
+    """Set the callsign a P2P session window offers to call ('<type> Remote Callsign=' in
+    the active callsign's section of <install>/RMS Express.ini; Winlink must be closed).
+    Winlink keeps one per P2P session type and callsign ('Ardop P2P', 'Vara P2P' for every
+    VARA-type session); a callsign that never ran that type has none and its session window
+    opens with an empty box (19 Nov 2026: station 2 as VA3ZTF had only a VARA one, so its
+    first ARDOP session couldn't call). Adds the line if missing. Returns the previous
+    value ('' if none), or None for a non-P2P type or a missing file/section."""
+    if "P2P" not in session_type:
+        return None
+    key = ("Vara P2P" if session_type.startswith("Vara") else session_type) + " Remote Callsign="
+    ini = Path(install_dir) / "RMS Express.ini"
+    if not ini.exists():
+        return None
+    raw = ini.read_bytes()
+    text = raw.decode("utf-8-sig", errors="replace")
+    nl = "\r\n" if "\r\n" in text else "\n"
+    lines = text.split(nl)
+    active = next((l.split("=", 1)[1].strip() for l in lines if l.startswith("Callsign=")), None)
+    if not active:
+        return None
+    start = next((i for i, l in enumerate(lines) if l.strip().upper() == f"[{active.upper()}]"), None)
+    if start is None:
+        return None
+    end = next((i for i in range(start + 1, len(lines)) if lines[i].startswith("[")), len(lines))
+    at = next((i for i in range(start + 1, end) if lines[i].startswith(key)), None)
+    was = lines[at][len(key):] if at is not None else ""
+    if was == remote:
+        return was
+    if at is not None:
+        lines[at] = key + remote
+    else:
+        ins = end
+        while ins > start + 1 and lines[ins - 1] == "":
+            ins -= 1          # keep a blank line before the next section
+        lines.insert(ins, key + remote)
+    ini.write_bytes(((b"\xef\xbb\xbf" if raw.startswith(b"\xef\xbb\xbf") else b"") + nl.join(lines).encode("utf-8")))
+    return was
+
+
 @dataclass(frozen=True)
 class ModemProfile:
     """How Winlink Express runs a modem: the P2P session type selected in its main
@@ -558,6 +598,10 @@ class WinlinkAutomation:
             was = set_session_type(self.installs[st - 1], self.profile.session_type)
             if was and was != self.profile.session_type:
                 self.say(f"  {self.calls[st]}: session type set to {self.profile.session_type} (was {was})")
+            peer = self.calls[3 - st]
+            was = set_remote_callsign(self.installs[st - 1], self.profile.session_type, peer)
+            if was is not None and was != peer:
+                self.say(f"  {self.calls[st]}: {self.profile.session_type} remote callsign set to {peer} (was {was or 'empty'})")
         for st in (1, 2):
             self.procs.launch(self.installs[st - 1])
             self.ui[st].wait_main()

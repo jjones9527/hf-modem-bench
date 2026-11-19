@@ -587,3 +587,16 @@ def test_set_session_type_uses_the_active_callsigns_section(tmp_path):
     ini.write_text("[Properties]\nCallsign=VA3ZTF\n[VE3XZQ]\nMode=Ardop P2P\n[VA3ZTF]\nMode=Vara HF Winlink\n")
     assert set_session_type(tmp_path, "Vara HF P2P") == "Vara HF Winlink"
     assert ini.read_text() == "[Properties]\nCallsign=VA3ZTF\n[VE3XZQ]\nMode=Ardop P2P\n[VA3ZTF]\nMode=Vara HF P2P\n"
+
+
+def test_set_remote_callsign_adds_or_replaces_in_the_active_section(tmp_path):
+    from hfbench.bench import set_remote_callsign
+    ini = tmp_path / "RMS Express.ini"
+    ini.write_text("[Properties]\nCallsign=VA3ZTF\n[VE3XZQ]\nArdop P2P Remote Callsign=VA3ZTF\n"
+                   "[VA3ZTF]\nVara P2P Remote Callsign=VA3ZTF\n\n[Logs]\nx=1\n")
+    assert set_remote_callsign(tmp_path, "Ardop P2P", "VA3ZTF") == ""
+    assert ini.read_text() == ("[Properties]\nCallsign=VA3ZTF\n[VE3XZQ]\nArdop P2P Remote Callsign=VA3ZTF\n"
+                               "[VA3ZTF]\nVara P2P Remote Callsign=VA3ZTF\nArdop P2P Remote Callsign=VA3ZTF\n\n[Logs]\nx=1\n")
+    assert set_remote_callsign(tmp_path, "Vara HF P2P", "VE3XZQ") == "VA3ZTF"
+    assert "[VA3ZTF]\nVara P2P Remote Callsign=VE3XZQ\n" in ini.read_text()
+    assert set_remote_callsign(tmp_path, "Vara HF Winlink", "X") is None
