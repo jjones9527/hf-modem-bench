@@ -1,0 +1,32 @@
+# ARDOP 1.0.3.3 development build (ARSFI/ARDOP main at 48f2ae5, built on the bench, not published; test-plan.md
+# "ARDOP dev build"), swapped into both Winlink installs by scripts/windows/hfbench_ardop_swap.ps1. Same bench, levels
+# (ARDOP_Win TNC.ini unchanged: DriveLevel 90 / 75) and rules as ARDOP 1.0.2.9's Stage 1, so the two compare directly.
+# Crest: one 3 x 5 KB run per setting with tx_crest_log.py recording, as crest-ardop.
+[campaign]
+name = "crest-ardop133"
+stage = "crest"
+replicates = 1
+profiles = ["WGN"]
+snr_db = [40, 22, 17, 12, 7, 2, -2, -5]
+order = "sequential"
+abort_minutes = 25
+abort_retries = 1
+time_box_minutes = 20
+
+[ionos]
+bandwidth_hz = 3000
+multipaths = 2
+
+[payload]
+file = "Text_5KB"
+bytes = 5120
+sha256 = "85741279e9a689624407e58e599340c048a72fdd56c9695345c6a1ac827384d4"
+messages = 3
+
+[[modems]]
+name = "ARDOP"
+version = "1.0.3.3-dev"
+bandwidth_hz = 2000
+
+[[impairments]]
+name = "none"

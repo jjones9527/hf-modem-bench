@@ -1,0 +1,32 @@
+# ARDOP 1.0.3.3 development build (ARSFI/ARDOP main at 48f2ae5, built on the bench, not published; test-plan.md
+# "ARDOP dev build"), swapped into both Winlink installs by scripts/windows/hfbench_ardop_swap.ps1. Same bench, levels
+# (ARDOP_Win TNC.ini unchanged: DriveLevel 90 / 75) and rules as ARDOP 1.0.2.9's Stage 1, so the two compare directly.
+# Smoke: one run of 3 x Text_50KB at WGN 40: it connects, runs 16QAM, delivers intact; level and crest from the tx log.
+[campaign]
+name = "smoke-ardop133"
+stage = "smoke"
+replicates = 1
+profiles = ["WGN"]
+snr_db = [40]
+order = "sequential"
+abort_minutes = 40
+abort_retries = 3
+time_box_minutes = 30
+
+[ionos]
+bandwidth_hz = 3000
+multipaths = 2
+
+[payload]
+file = "Text_50KB"
+bytes = 51200
+sha256 = "3ec10a0b30de0039bb0b949d7e160a5d4625c03ba2f245a60785d3973e0279f9"
+messages = 3
+
+[[modems]]
+name = "ARDOP"
+version = "1.0.3.3-dev"
+bandwidth_hz = 2000
+
+[[impairments]]
+name = "none"
