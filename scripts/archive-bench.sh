@@ -30,6 +30,9 @@ for c in $(win 'cd %USERPROFILE%\hfbench\runs && for /d %d in (*) do @if exist %
   echo "campaign $c: $(ls "$A/$c" | wc -l | tr -d ' ') files"
 done
 
+# transmit-side crest logs (tx_crest_log.py: digital loopback, one line per burst)
+mkdir -p "$A/peaks"
+scp -q "$HFBENCH_HOST:hfbench/txcrest-*.jsonl" "$A/peaks/" 2>/dev/null || true
 scp -q "$HFBENCH_HOST:hfbench/listen-*.json" "$HFBENCH_HOST:hfbench/listen-*.txt" "$A/listen/" 2>/dev/null || true
 echo "listen: $(ls "$A/listen" | wc -l | tr -d ' ') files"
 
@@ -45,10 +48,19 @@ echo "relay: $(ls "$A/relay" | wc -l | tr -d ' ') files, mercury: $(ls "$A/mercu
 # Winlink session logs and ARDOP TNC logs, both installs
 for d in "${dates[@]}"; do
   for st in 1 2; do
-    if [ $st = 1 ]; then inst='C:\RMS Express'; call=VA3ZTF; else inst='C:\RMS Express 2'; call=VE3XZQ; fi
+    if [ $st = 1 ]; then inst='C:\RMS Express'; calls="VA3ZTF"; else inst='C:\RMS Express 2'; calls="VE3XZQ VA3ZTF"; fi
     out="$A/winlink/station$st"
-    f="$inst\\$call\\Logs\\RMS Express $d.log"
-    win "if exist \"$f\" type \"$f\"" > "$out/RMS Express $d.log"
+    # station 2 has two Winlink callsigns (VE3XZQ; VA3ZTF since the VARA runs, 18 Nov 2026):
+    # the first keeps the old file names, others go in a subfolder named for the callsign
+    first=1
+    for call in $calls; do
+      o=$out; [ $first = 1 ] || { o="$out/$call"; mkdir -p "$o"; }; first=0
+      for k in "RMS Express" Vara; do
+        f="$inst\\$call\\Logs\\$k $d.log"
+        win "if exist \"$f\" type \"$f\"" > "$o/$k $d.log"
+      done
+      find "$o" -name "*$d.log" -size 0 -delete
+    done
     for k in ARQSession Debug Exceptions; do
       f="$inst\\Logs\\ARDOP_WinTNC_${k}_$d.log"
       win "if exist \"$f\" type \"$f\"" > "$out/ARDOP_WinTNC_${k}_$d.log"

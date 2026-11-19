@@ -1,0 +1,2 @@
+run_id,outcome,attempted,delivered,corrupted,stall,cut,not_reached,delivered_bytes,integrity_bad,session_s,net_bps,goodput_median_bps,rate_median_bps,connect_s,sessions
+vara-reg-check2-0001,completed,3,3,0,0,0,0,126495,0,334,3029.820359281437,4062.9397590361446,3587.404255319149,8.0,1

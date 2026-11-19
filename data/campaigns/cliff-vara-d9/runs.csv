@@ -1,0 +1,3 @@
+run_id,outcome,attempted,delivered,corrupted,stall,cut,not_reached,delivered_bytes,integrity_bad,session_s,net_bps,goodput_median_bps,rate_median_bps,connect_s,sessions
+cliff-vara-d9-0001,timeboxed,2,2,0,0,2,6,8986,0,3609,19.919091160986422,24.14892562565391,23.994659546061417,10.0,1
+cliff-vara-d9-0002,timeboxed,2,2,0,0,2,6,8986,0,3608,19.924611973392462,23.485694287957937,23.34025974025974,10.0,1

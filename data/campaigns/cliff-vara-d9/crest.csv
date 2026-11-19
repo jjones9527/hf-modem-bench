@@ -1,0 +1,3 @@
+run_id,setting_db,st1_air_s,st1_bursts,st1_mean_dbfs,st1_papr_0.01pct_db,st1_papr_0.1pct_db,st1_papr_max_db,st2_air_s,st2_bursts,st2_mean_dbfs,st2_papr_0.01pct_db,st2_papr_0.1pct_db,st2_papr_max_db
+cliff-vara-d9-0001,-5,712.7,497,-15.47,3.08,3.08,3.08,2787.4,498,-15.39,3.03,3.03,3.03
+cliff-vara-d9-0002,-5,700.2,488,-15.47,3.08,3.08,3.08,2799.8,488,-15.39,3.03,3.03,3.03

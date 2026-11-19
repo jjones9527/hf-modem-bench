@@ -1,0 +1,2 @@
+run_id,outcome,attempted,delivered,corrupted,stall,cut,not_reached,delivered_bytes,integrity_bad,session_s,net_bps,goodput_median_bps,rate_median_bps,connect_s,sessions
+peak-vara-0001,completed,3,3,0,0,0,0,126478,0,348,2907.5402298850577,3920.7441860465115,3338.4554455445545,8.0,1

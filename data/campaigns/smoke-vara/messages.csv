@@ -1,0 +1,11 @@
+run_id,mid,sender,receiver,status,compressed_bytes,start_utc,end_utc,seconds,goodput_bps,xfer_start_utc,xfer_seconds,rate_bps,error,integrity
+smoke-vara-0001,ZT5IMS26F5CV,,,not_reached,,,,,,,,,,
+smoke-vara-0001,EU0F3SJWWZA6,2,1,corrupted,42146,2026-11-18T12:47:14+00:00,,,,,,,*** Link Error - Received data stream not correct format. ByteIndex=126302,
+smoke-vara-0001,3CBRIA53FVUY,,,not_reached,,,,,,,,,,
+smoke-vara-0001,5ZDXGY3MQ1KS,2,1,delivered,42111,2026-11-18T12:44:50+00:00,2026-11-18T12:46:52+00:00,121,2784.198347107438,2026-11-18T12:44:40+00:00,132.0,2552.181818181818,,ok
+smoke-vara-0001,JIDU1PNCHBLR,,,not_reached,,,,,,,,,,
+smoke-vara-0001,HH4IOCWKC0FJ,2,1,delivered,42083,2026-11-18T12:41:58+00:00,2026-11-18T12:44:29+00:00,151,2229.562913907285,2026-11-18T12:41:47+00:00,162.0,2078.1728395061727,,ok
+smoke-vara-0001,BVDVY3W9SWPI,,,not_reached,,,,,,,,,,
+smoke-vara-0001,G97HS01L0SLX,,,not_reached,,,,,,,,,,
+smoke-vara-0001,DQR0C2GU3GTU,,,not_reached,,,,,,,,,,
+smoke-vara-0001,HJLEP4BQDOZV,,,not_reached,,,,,,,,,,

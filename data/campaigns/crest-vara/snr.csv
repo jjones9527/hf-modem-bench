@@ -1,0 +1,9 @@
+run_id,setting_db,data_snr_db,data_n,control_snr_db,keyed_by,ardop_ptt_data,data_modes
+crest-vara-0001,40,25.84,11,,"tx log (sender, digital)",, 100%
+crest-vara-0002,22,17.93,11,,"tx log (sender, digital)",, 100%
+crest-vara-0003,17,13.5,14,,"tx log (sender, digital)",, 100%
+crest-vara-0004,12,9.18,22,,"tx log (sender, digital)",, 100%
+crest-vara-0005,7,5.43,38,,"tx log (sender, digital)",, 100%
+crest-vara-0006,2,1.73,78,,"tx log (sender, digital)",, 100%
+crest-vara-0007,-2,-0.6,87,,"tx log (sender, digital)",, 100%
+crest-vara-0008,-5,-3.47,92,,"tx log (sender, digital)",, 100%

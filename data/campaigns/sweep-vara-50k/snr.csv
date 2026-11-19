@@ -1,0 +1,10 @@
+run_id,setting_db,data_snr_db,data_n,control_snr_db,keyed_by,ardop_ptt_data,data_modes
+sweep-vara-50k-0001,17,13.44,380,,"tx log (sender, digital)",, 100%
+sweep-vara-50k-0002,22,17.88,243,,"tx log (sender, digital)",, 100%
+sweep-vara-50k-0003,22,17.88,238,,"tx log (sender, digital)",, 100%
+sweep-vara-50k-0004,22,17.88,235,,"tx log (sender, digital)",, 100%
+sweep-vara-50k-0005,17,13.46,370,,"tx log (sender, digital)",, 100%
+sweep-vara-50k-0006,40,25.84,179,,"tx log (sender, digital)",, 100%
+sweep-vara-50k-0007,40,25.83,177,,"tx log (sender, digital)",, 100%
+sweep-vara-50k-0008,40,25.83,200,,"tx log (sender, digital)",, 100%
+sweep-vara-50k-0009,17,13.41,377,,"tx log (sender, digital)",, 100%

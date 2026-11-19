@@ -1,0 +1,2 @@
+{"event": "start", "host": "BENCH-PC", "ionos_ack": "BANDWIDTH:3000=OK; MULTIPATH:2=OK; OFFSET:0=OK; FADE DEPTH:0=OK; FADE FREQ:0=OK; FM DEVIATION:0=OK; FM RATE:0=OK; WGN:40=OK", "log_connected_utc": "2026-11-18T11:50:15+00:00", "mids": "BOJTNKYD6TX9 92FBKI0CZOUQ PD5R732WUGTE", "run_id": "vara-level-0001", "t_local": "2026-11-18T06:50:15-05:00", "t_utc": "2026-11-18T11:50:15+00:00"}
+{"event": "end", "host": "BENCH-PC", "notes": "", "outcome": "completed", "run_id": "vara-level-0001", "t_local": "2026-11-18T06:56:03-05:00", "t_utc": "2026-11-18T11:56:03+00:00"}
