@@ -19,7 +19,9 @@ for d in "$@"; do
   ps "hfbench_vara_drive.ps1 -Level -$d" >> "$L"
   ps "hfbench_desktop.ps1 -HfArgs \"recover -d runs\\$c $c-0001\" -Out runs\\$c\\recover-pre.txt" >> "$L"
   "$here/bench_chain.sh" "$L" VARA "$c:2:relay"
-  got=$(cmd "cd hfbench && $hf results -d runs\\$c" | grep -E '^total:' | sed -E 's/^total: ([0-9]+)\/.*/\1/')
+  # delivered = the 'deliv' column summed over the step's runs (the summary prints no
+  # 'total:' line when nothing was attempted, so it can't be read from there)
+  got=$(cmd "cd hfbench && $hf results -d runs\\$c" | awk -v c="$c" '$1 ~ "^"c"-" {s += $3} END {print s + 0}')
   say "CLIFF: $c delivered ${got:-?}"
   [ "${got:-1}" = 0 ] && { say "CLIFF: reached at drive -$d"; break; }
 done
