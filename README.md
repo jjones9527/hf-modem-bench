@@ -13,6 +13,8 @@ Documents:
 
 | Document | Contents |
 | --- | --- |
+| [docs/wgn-report.md](docs/wgn-report.md) | **White-noise results, full report**: five modems, charts, comparisons and test details |
+| [docs/interim-report-wgn.md](docs/interim-report-wgn.md) | White-noise results, short summary |
 | [docs/test-plan.md](docs/test-plan.md) | Current plan: questions, metrics, stages, decisions |
 | [docs/results-log.md](docs/results-log.md) | Every campaign's results and bench incidents, in order |
 | [docs/test-protocol.md](docs/test-protocol.md) | Test design and run procedure |
@@ -20,22 +22,21 @@ Documents:
 | [docs/test-environment.md](docs/test-environment.md) | Hardware, software and settings of the bench |
 | [docs/log-formats.md](docs/log-formats.md) | Winlink, ARDOP, VARA-protocol and Mercury log formats |
 | [scripts/windows/README.md](scripts/windows/README.md) | Helper scripts on the Windows bench machine |
-| [docs/charts/](docs/charts/) | Published charts: ARDOP 1.0.2.9 WGN sweep (goodput, net throughput, delivery vs measured S:N; `points.csv`) |
+| [docs/charts/](docs/charts/) | Published charts: `interim-wgn/` for all five modems in white noise (net throughput, per-message rate, connect time, equal-peak view; `points.csv`) |
 | [docs/bug-reports/](docs/bug-reports/) | Reports sent upstream: ARDOP 1.0.2.9 carrier check, Mercury 1.9.23 receiver freeze (#579), Winlink P2P timer (Mercury #392) |
 
-## Status (15 Nov 2026)
+## Status (20 Nov 2026)
 
 | Part | Status |
 | --- | --- |
-| Matrix → run sheet, run stamping, manifest, payload tools | ✅ |
-| Winlink session log parser (ARDOP and VARA-style P2P lines), ARDOP session stats | ✅ |
-| Bench runner (`hfbench run --automate --recover`): IONOS serial control, message import, Start/Abort, 60-min time box, re-calls after failed connects, automatic recovery | ✅ |
-| Tone check, 16QAM path check, true-S:N recording (`hfbench audio check / qam / listen / listen-report`) | ✅ |
-| Per-message results and attachment check (`hfbench results --verify`), charts (`hfbench report`) | ✅ |
+| Bench software: run sheets, IONOS control, unattended runner with recovery, Winlink log parsing, attachment check, measured S:N, crest factors, charts | ✅ |
 | Bench relay for VARA-protocol modems (`scripts/vara_relay.py`): logs the host interface and holds Winlink's 5-min P2P timer | ✅ |
-| ARDOP 1.0.2.9 WGN sweep | ✅ done 13–15 Nov |
-| Mercury 1.9.23 WGN sweep | running (from 15 Nov) |
-| VARA HF, Data2G, Modem73, Aether HF, ULTRA; fading and impairments; ARDOP development build | planned ([test-plan.md](docs/test-plan.md)) |
+| White noise (WGN): ARDOP 1.0.2.9, Mercury 1.9.23, Data2G 0.5.1, VARA HF 4.9.1, Aether HF 0.2.0-beta.159 | ✅ done 13–20 Nov ([report](docs/wgn-report.md)) |
+| ARDOP 1.0.3.3 development build | 50 KB sweep only; newer build to come |
+| ULTRA 0.6.2 | paused (secup/ProjectUltra#38) |
+| Modem73, Quicksilver | not tested (no Winlink ARQ interface; not ready) |
+| Fading channels (CCIR), then other multipath | next ([test-plan.md](docs/test-plan.md)) |
+| Mercury re-test | on its next release |
 
 ## Install
 
