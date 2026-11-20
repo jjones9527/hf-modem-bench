@@ -36,17 +36,17 @@ to disconnect. That is what a user waits for. S:N is the signal-to-noise ratio *
 the receiver** for each modem's own data frames, in a 3 kHz bandwidth.
 
 - **Data2G** was fastest at every S:N and also worked lowest. It delivered every message in
-  every sweep.
+    every sweep.
 - **VARA HF** was second in good conditions. At the same S:N above about 15 dB it was about
-  25–35 % faster than Aether HF.
+    25–35 % faster than Aether HF.
 - **Aether HF** was third in good conditions. From about 5 to 12 dB it was level with VARA, and
-  it kept delivering about 2 dB lower than VARA. Like Data2G, it had no corruption and no
-  failures. It was the slowest to connect.
+    it kept delivering about 2 dB lower than VARA. Like Data2G, it had no corruption and no
+    failures. It was the slowest to connect.
 - **Mercury and ARDOP** were well behind in speed and stopped working at about −3 dB. Mercury's
-  receiver freezes are fixed in its code but not yet in a release. ARDOP's corruptions come from
-  a weak frame check in 1.0.2.9 ([results log](results-log.md)).
+    receiver freezes are fixed in its code but not yet in a release. ARDOP's corruptions come from
+    a weak frame check in 1.0.2.9 ([results log](results-log.md)).
 - No corrupted message ever reached a user: every corruption was caught by Winlink. Every
-  delivered attachment, over 1,700 in all, matched what was sent byte for byte.
+    delivered attachment, over 1,700 in all, matched what was sent byte for byte.
 
 ## 2. Modems
 
@@ -60,25 +60,26 @@ the receiver** for each modem's own data frames, in a 3 kHz bandwidth.
 
 **Not in this report's results:**
 
-- **ARDOP 1.0.3.3**, a development build (48f2ae5, not public). Only its 50 KB sweep was run
-  before testing stopped for a newer build. It uses a new OFDM waveform. Results so far, 84 of 86
-  delivered, all identical:
+**ARDOP 1.0.3.3**, a development build (48f2ae5, not public). Only its 50 KB sweep was run
+before testing stopped for a newer build. It uses a new OFDM waveform. Results so far, 84 of 86
+delivered, all identical:
 
-  | Measured S:N | Net (bit/s), 3 runs |
-  |---|---|
-  | 24.4 dB | 1,110 / 1,110 / 1,009 |
-  | 16.4 dB | 1,107 / 1,096 / 993 |
-  | 11.9 dB | 1,041 / 1,033 / 1,048 |
+| Measured S:N | Net (bit/s), 3 runs |
+|---|---|
+| 24.4 dB | 1,110 / 1,110 / 1,009 |
+| 16.4 dB | 1,107 / 1,096 / 993 |
+| 11.9 dB | 1,041 / 1,033 / 1,048 |
 
-  In the run at 1,009 and the run at 993, the session ended early. The sender's 60-second
-  inactivity timeout ran out while it was repeating a 26-second frame. Reported to its developer.
+In the run at 1,009 and the run at 993, the session ended early. The sender's 60-second
+inactivity timeout ran out while it was repeating a 26-second frame. Reported to its developer.
+
 - **ULTRA 0.6.2-pre-alpha**: paused. On this bench each station hears its own signal (section 3),
-  and ULTRA answered its own transmissions in an endless loop. Its TNC could also stay stuck after
-  a failed session. Reported to its developer
-  ([secup/ProjectUltra#38](https://github.com/secup/ProjectUltra/issues/38)).
+    and ULTRA answered its own transmissions in an endless loop. Its TNC could also stay stuck after
+    a failed session. Reported to its developer
+    ([secup/ProjectUltra#38](https://github.com/secup/ProjectUltra/issues/38)).
 - **Modem73 2.5.0**: skipped. As released it is a KISS packet modem, with one fixed mode chosen
-  by the operator, no ARQ and no Winlink host interface. Winlink Express can't drive it like the
-  others. The one Winlink-capable fork (modem73fm) is built for FM radios on Linux.
+    by the operator, no ARQ and no Winlink host interface. Winlink Express can't drive it like the
+    others. The one Winlink-capable fork (modem73fm) is built for FM radios on Linux.
 - **Quicksilver**: skipped. Its developer reported it wasn't ready for testing.
 
 ## 3. How the tests were done
@@ -86,15 +87,15 @@ the receiver** for each modem's own data frames, in a 3 kHz bandwidth.
 ### The bench
 
 - **Two Winlink Express 1.8.6.0 instances** on one Windows 10 PC. Station 1 is `C:\RMS Express`,
-  callsign VA3ZTF. Station 2 is a second install, callsign VE3XZQ (VA3ZTF for VARA HF). Each
-  station has its own USB sound card: station 1 a C-Media (Syba), station 2 a C-Media-based
-  Sabrent.
+    callsign VA3ZTF. Station 2 is a second install, callsign VE3XZQ (VA3ZTF for VARA HF). Each
+    station has its own USB sound card: station 1 a C-Media (Syba), station 2 a C-Media-based
+    Sabrent.
 - **One IONOS HF channel simulator** (Teensy, firmware 2.03) between them, wired for half-duplex
-  as in its manual. Each station's audio goes into one IONOS channel, and both outputs carry the
-  mix. Each station therefore also hears itself. Most modems ignore their own signal; ULTRA didn't.
+    as in its manual. Each station's audio goes into one IONOS channel, and both outputs carry the
+    mix. Each station therefore also hears itself. Most modems ignore their own signal; ULTRA didn't.
 - **White noise:** IONOS mode WGN, 3 kHz bandwidth, no offset, set over USB for every run.
 - **One-way traffic:** station 2 sends and station 1 receives, so data flows in one direction
-  and only control frames come back.
+    and only control frames come back.
 - **No radios.** PTT was by VOX (none), and no transmitter was involved.
 
 ### Levels
@@ -102,24 +103,24 @@ the receiver** for each modem's own data frames, in a 3 kHz bandwidth.
 The IONOS adds noise at a fixed level, so the S:N a modem gets depends on how loud its signal is.
 
 - **Calibration:** both stations were set with a 1,500 Hz test tone so that the tone's S:N
-  matches the IONOS setting. At WGN 20 they read −0.2 and −0.3 dB, and the tone check was
-  repeated before campaigns.
+    matches the IONOS setting. At WGN 20 they read −0.2 and −0.3 dB, and the tone check was
+    repeated before campaigns.
 - **Equal average power:** each modem's own level control was then set so its data frames
-  arrive at the tone's average power.
+    arrive at the tone's average power.
 - **Exceptions:** VARA HF ran 5.4 dB under that level, because its peaks turned the IONOS level
-  meter red. Aether HF ran 0.9 dB under it, because its peaks would otherwise clip; it peaked at
-  about 950 mV p-p on the IONOS with no red. ARDOP 1.0.2.9's PSK frames arrive 2.7–6.2 dB under
-  its 4FSK frames at the same drive.
+    meter red. Aether HF ran 0.9 dB under it, because its peaks would otherwise clip; it peaked at
+    about 950 mV p-p on the IONOS with no red. ARDOP 1.0.2.9's PSK frames arrive 2.7–6.2 dB under
+    its 4FSK frames at the same drive.
 - **Why it doesn't matter for the comparison:** all results are plotted against the S:N measured
-  at the receiver, not the IONOS setting. A modem that is quieter or louder at a given setting is
-  placed where its signal really was.
+    at the receiver, not the IONOS setting. A modem that is quieter or louder at a given setting is
+    placed where its signal really was.
 
 ### Measured S:N
 
 - **What is measured:** a recorder on the bench captures both receiving sound cards during every
-  campaign. For each run, the sender's data bursts are found and their power measured at the
-  receiver in a 3 kHz bandwidth. Bursts are found from the sender's own log, or from a digital
-  loopback of what it played.
+    campaign. For each run, the sender's data bursts are found and their power measured at the
+    receiver in a 3 kHz bandwidth. Bursts are found from the sender's own log, or from a digital
+    loopback of what it played.
 - **Noise:** measured in the quiet gap after each run.
 - **Data only:** short control frames are not counted.
 - **Detail:** the method for each modem is in [data/README.md](../data/README.md).
@@ -127,12 +128,12 @@ The IONOS adds noise at a fixed level, so the S:N a modem gets depends on how lo
 ### Workload and settings
 
 - **Payload:** ten different text messages per run, sent peer-to-peer from station 2 to
-  station 1.
-  - 50 KB set: 51,200 bytes each.
-  - 5 KB set: the first 5,120 bytes of each.
-  - Every received attachment is compared byte for byte with what was sent.
+    station 1.
+    - 50 KB set: 51,200 bytes each.
+    - 5 KB set: the first 5,120 bytes of each.
+    - Every received attachment is compared byte for byte with what was sent.
 - **Sweeps:** the same IONOS settings for every modem, three runs each, in a blocked random
-  order (same seed for every modem). Each run is limited to 60 minutes.
+    order (same seed for every modem). Each run is limited to 60 minutes.
 
   | Sweep | Payload | IONOS WGN settings |
   |---|---|---|
@@ -140,32 +141,32 @@ The IONOS adds noise at a fixed level, so the S:N a modem gets depends on how lo
   | Poor conditions | 5 KB | 17, 12, 7, 2, −2, −5 |
 
 - **Cliff search,** for modems still delivering at WGN −5:
-  - the IONOS stays at −5 and the modem's transmit level steps down;
-  - each step is two runs of ten 5 KB messages;
-  - the search stops at the first step that delivers nothing in two hours.
-  - WGN −10, the IONOS's highest noise setting, overloads its own output with any signal on
+    - the IONOS stays at −5 and the modem's transmit level steps down;
+    - each step is two runs of ten 5 KB messages;
+    - the search stops at the first step that delivers nothing in two hours.
+    - WGN −10, the IONOS's highest noise setting, overloads its own output with any signal on
     top, so it isn't used.
 - **Crest runs:** three short messages at eight settings, to measure each modem's transmitted
-  peak-to-average power ratio (PAPR) from a digital loopback of its sound-card output.
+    peak-to-average power ratio (PAPR) from a digital loopback of its sound-card output.
 - **Unattended operation.** A runner on the bench:
-  - sets the IONOS;
-  - queues messages by import;
-  - starts each session and watches it end;
-  - recovers if anything hangs (clears both Outboxes, restarts both Winlinks and the modem).
-  - All of it is logged.
+    - sets the IONOS;
+    - queues messages by import;
+    - starts each session and watches it end;
+    - recovers if anything hangs (clears both Outboxes, restarts both Winlinks and the modem).
+    - All of it is logged.
 - **The 5-minute timer.** In peer-to-peer sessions with a VARA-type modem, Winlink Express
-  disconnects after 5 minutes without new data, even mid-message. A small relay between station
-  2's Winlink and its modem held that disconnect so long, slow sessions could finish, as ARDOP's
-  do.
+    disconnects after 5 minutes without new data, even mid-message. A small relay between station
+    2's Winlink and its modem held that disconnect so long, slow sessions could finish, as ARDOP's
+    do.
 - **Busy detection** was off wherever a modem allows it. Data2G has no switch, but its detector
-  didn't block a sweep.
+    didn't block a sweep.
 
 ### What "net" and "per message" mean
 
 - **Net:** delivered message bytes × 8 / total session time (connect to disconnect), over the
-  ten messages.
+    ten messages.
 - **Per message:** the median of each message's own transfer rate, from the receiving Winlink's
-  log. It leaves out connect time and the gaps between messages.
+    log. It leaves out connect time and the gaps between messages.
 - **Connect:** time from the call to the connection.
 
 ## 4. Results compared
@@ -213,8 +214,8 @@ same S:N, so read across with care.
 - **VARA HF** delivered at −9.4 dB and nothing at −12.4 dB.
 - **ARDOP 1.0.2.9** delivered at about −3 dB and nothing at −6.0 dB.
 - **Mercury** wasn't stepped down: its testing ended before the cliff method was set up. It
-  delivered 4 of 10 at about −3 dB, and 3 of 10 at the out-of-range WGN −10 setting, where its
-  measured S:N (−9.9 dB) is uncertain.
+    delivered 4 of 10 at about −3 dB, and 3 of 10 at the out-of-range WGN −10 setting, where its
+    measured S:N (−9.9 dB) is uncertain.
 
 At the bottom, every modem uses a slow, robust mode (FSK, or Aether's 16-FSK floor), and these
 modes put more average power into the channel than the fast modes at the same peak level. That
@@ -238,13 +239,13 @@ sound card:
 | Data2G | 9.3 dB at the top, 5.5–7.7 dB lower down | FSK 3 dB |
 
 - **In this view Data2G is still ahead everywhere,** and its lead over VARA and Aether grows in
-  good conditions.
+    good conditions.
 - **VARA keeps its lead over Aether in good conditions,** at about a third faster at equal peak
-  power (2,803 against 2,090 bit/s at about 9 dB).
+    power (2,803 against 2,090 bit/s at about 9 dB).
 - **At the bottom, VARA's and Aether's constant-envelope FSK modes gain** and overlap Data2G's
-  lower modes.
+    lower modes.
 - **No modem here was asked to work peak-limited.** How each would choose its speed on a real,
-  peak-limited transmitter wasn't tested.
+    peak-limited transmitter wasn't tested.
 
 ## 5. Results by modem
 
@@ -323,7 +324,7 @@ All 339 delivered attachments were identical, with no failed sweep run and no ha
 changed from its defaults:
 
 - Busy reports off. With only `wait_for_clear` off, its detector still told Winlink "busy" after
-  the IONOS setting changed, and Winlink held its call.
+    the IONOS setting changed, and Winlink held its call.
 - Its default upload of session recordings and logs to the Aether project off.
 - A regulatory profile set, since Aether transmits nothing without one.
 
@@ -376,38 +377,38 @@ delivered at −6.0 dB. Its busy detector had to be turned off: it blocked every
 ## 6. Fairness and limitations
 
 - **White noise only.** No fading, no multipath, no interference. Fading (CCIR) tests are next,
-  and the ranking may change there.
+    and the ranking may change there.
 - **One bench, one direction.** Two Winlinks on one PC, peer-to-peer, station 2 to station 1.
-  There was no transmitter, so no ALC, no transmit/receive switching time and no real-radio
-  filters.
+    There was no transmitter, so no ALC, no transmit/receive switching time and no real-radio
+    filters.
 - **Each station hears itself** on a single half-duplex IONOS. All five modems here cope with
-  that; ULTRA didn't.
+    that; ULTRA didn't.
 - **Run counts.** Three runs per setting, except Mercury's 5 KB sweep (one run). Cliff steps are
-  two runs each. Small differences between neighbouring points are within run-to-run spread.
+    two runs each. Small differences between neighbouring points are within run-to-run spread.
 - **Different S:N points per modem.** Each modem's signal level differs, so its points fall at
-  its own measured S:N. Comparisons between modems are made along the measured-S:N axis, not
-  setting by setting. A by-setting comparison favours a modem whose signal arrives louder.
+    its own measured S:N. Comparisons between modems are made along the measured-S:N axis, not
+    setting by setting. A by-setting comparison favours a modem whose signal arrives louder.
 - **Levels.** Equal average power where possible; VARA HF (5.4 dB under) and Aether HF (0.9 dB
-  under) are documented exceptions. The axis is measured S:N in every case.
+    under) are documented exceptions. The axis is measured S:N in every case.
 - **Modem settings.** Defaults, except where the bench required otherwise. All changes are listed
-  in section 2 and in the results log.
+    in section 2 and in the results log.
 - **Versions.** Each modem was tested on one pinned version. Newer versions may differ, and
-  Mercury in particular is expected to.
+    Mercury in particular is expected to.
 - **The relay** held Winlink's 5-minute timer disconnect for VARA-type modems. Without it, long
-  messages at low S:N would fail in Winlink Express peer-to-peer sessions.
+    messages at low S:N would fail in Winlink Express peer-to-peer sessions.
 - **Mercury's and ARDOP's limits** are approximate. They were not searched with the cliff method.
 
 ## 7. Data and reproducibility
 
 - **Per-run data** (run sheets, results per run and per message, measured S:N, crest factors) is
-  in [data/](../data/). The chart data is in
-  [charts/interim-wgn/points.csv](charts/interim-wgn/points.csv).
+    in [data/](../data/). The chart data is in
+    [charts/interim-wgn/points.csv](charts/interim-wgn/points.csv).
 - **Raw logs:** Winlink session logs, modem logs, relay logs, S:N recordings and transmit crest
-  logs are attached to the GitHub releases, latest
-  [data-20261120](https://github.com/jjones9527/hf-modem-bench/releases/tag/data-20261120). They
-  are redacted only for the station's location and the bench computer's identifiers.
+    logs are attached to the GitHub releases, latest
+    [data-20261120](https://github.com/jjones9527/hf-modem-bench/releases/tag/data-20261120). They
+    are redacted only for the station's location and the bench computer's identifiers.
 - **The full record,** with every bench fault and decision, is in [results-log.md](results-log.md).
-  The plan is in [test-plan.md](test-plan.md) and the bench calibration in
-  [bench-setup.md](bench-setup.md).
+    The plan is in [test-plan.md](test-plan.md) and the bench calibration in
+    [bench-setup.md](bench-setup.md).
 - **The bench software** (runner, IONOS control, S:N and crest measurement) is in this
-  repository.
+    repository.
