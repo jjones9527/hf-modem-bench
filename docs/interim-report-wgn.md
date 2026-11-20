@@ -159,6 +159,8 @@ How it would choose on a peak-limited transmitter was not tested.
 2. ARDOP's next development build (1.0.3.3 was stopped after its 50 KB sweep for a newer
    build) and ULTRA (paused: it answers its own signal on this bench; reported to its
    developer).
+   Modem73 was not tested: as released it is a KISS packet modem with no ARQ or Winlink
+   interface, so Winlink Express can't use it like the others.
 3. Mercury, re-tested on its next release.
 4. Fading channels (CCIR) for every modem.
 

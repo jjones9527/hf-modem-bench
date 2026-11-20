@@ -2008,6 +2008,30 @@ log watch on this machine sometimes cut lines (operator side only). `archive-ben
 arrive about 1-2.5 dB stronger at the same drive; its 1,041 bit/s at 11.9 dB compares with 1.0.2.9's
 499 at 10.8 dB (5 KB) and its 50 KB time-outs at WGN 17.
 
+## Modem73 2.5.0: not tested (20 Nov 2026)
+
+The operator's download was the right one: RFnexus's own Windows port (`RFnexus/modem73-win`) of
+Modem73 2.5.0, the latest release (2 Nov 2026), two copies (`modem73.exe` sha256 e4165312…). But
+Modem73 is a physical-layer modem only: KISS over TCP (8001) and a JSON control port (8073), one
+operator-chosen mode at a time (OFDM BPSK-QAM4096 about 790 bit/s-13 kbit/s, ROBUST 149-1,150 bit/s,
+MFSK), with no connections, no ARQ, no speed adaptation and no VARA- or ARDOP-style host interface,
+so Winlink Express can't drive it as it drives the other modems here. The only Winlink-capable
+variant found, the fork `cgrant417/modem73fm` (VARA host interface, its own ARQ and speed ladder), is
+built and tested for FM radios through 9600 data jacks, Linux only, based on Modem73 2.4.2. Testing
+either (Modem73 as a fixed-mode AX.25 packet TNC, or the FM fork on an HF bench) would give numbers not
+comparable with the adaptive ARQ modems. **Decision (operator): skip Modem73**; for the final report:
+an OFDM modem of interest, not usable with Winlink Express as released; re-test if an ARQ/Winlink
+interface reaches an HF release.
+
+## White-noise stage complete (20 Nov 2026)
+
+Every modem that is stable and usable with Winlink Express has had the full white-noise set (50 KB and
+5 KB sweeps, crest runs, cliff search where it still delivered at WGN −5): **ARDOP 1.0.2.9, Mercury
+1.9.23, Data2G 0.5.1, VARA HF 4.9.1, Aether HF 0.2.0-beta.159** (summary: `docs/interim-report-wgn.md`).
+Not complete, by decision: ARDOP 1.0.3.3 (50 KB sweep only; Phil has a newer build), ULTRA 0.6.2
+(paused, secup/ProjectUltra#38), Modem73 (skipped, above); Mercury to be re-tested on its next release.
+Next: fading channels (CCIR) for the five.
+
 ## Planned next
 
 > **Superseded 13 Nov 2026 by [test-plan.md](test-plan.md)**, which covers the remaining modems, the metric changes and the open decisions. The items below are kept for the record.
