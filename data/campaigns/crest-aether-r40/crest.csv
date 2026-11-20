@@ -1,0 +1,2 @@
+run_id,setting_db,st1_air_s,st1_bursts,st1_mean_dbfs,st1_papr_0.01pct_db,st1_papr_0.1pct_db,st1_papr_max_db,st2_air_s,st2_bursts,st2_mean_dbfs,st2_papr_0.01pct_db,st2_papr_0.1pct_db,st2_papr_max_db
+crest-aether-r40-0001,40,31.6,24,-12.27,8.72,8.55,8.86,48.8,27,-12.19,10.21,9.65,10.48

@@ -1,0 +1,31 @@
+# Aether HF 0.2.0-beta.159 cliff search (20 Nov 2026): as VARA's and Data2G's, IONOS fixed at WGN -5 (WGN -10 out of spec),
+# tx_level 0.088 on both stations (12 dB under the bench level 0.35), 10 x 5 KB, two runs, relay, 60-min time box.
+# Measured S:N is the axis.
+[campaign]
+name = "cliff-aether-d12"
+stage = "cliff"
+replicates = 2
+profiles = ["WGN"]
+snr_db = [-5]
+order = "sequential"
+abort_minutes = 90
+abort_retries = 3
+time_box_minutes = 60
+
+[ionos]
+bandwidth_hz = 3000
+multipaths = 2
+
+[payload]
+file = "Text_5KB"
+bytes = 5120
+sha256 = "85741279e9a689624407e58e599340c048a72fdd56c9695345c6a1ac827384d4"
+messages = 10
+
+[[modems]]
+name = "Aether HF"
+version = "0.2.0-beta.159"
+bandwidth_hz = 2300
+
+[[impairments]]
+name = "none"

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Run bench campaigns one after another, unattended, from this machine over SSH.
 #   HFBENCH_HOST=user@host scripts/bench_chain.sh LOG MODEM CAMPAIGN:RUNS[:relay] ...
-# MODEM: ARDOP, VARA, Mercury, Data2G or ULTRA (which hang check to use, and how to restart it;
+# MODEM: ARDOP, VARA, Mercury, Data2G, ULTRA or Aether (which hang check to use, and how to restart it;
 # ULTRA restarts at its saved drive, hfbench\ultra\drive.txt).
 # For each campaign: start it on the bench (hfbench_start_campaign.ps1 -AutoContinue
 # -Recover [-Relay]), log every run result, watch for a hung modem (Mercury, Data2G: its
@@ -25,6 +25,7 @@ restart_modem() {  # $1 station
     Mercury) ps "hfbench_restart_mercury.ps1 -Station $1" >> "$L" ;;
     VARA) ps "hfbench_start_vara.ps1 -Station $1" >> "$L" ;;
     ULTRA) ps "hfbench_start_ultra.ps1 -Station $1" >> "$L" ;;
+    Aether) ps "hfbench_start_aether.ps1 -Station $1" >> "$L" ;;
   esac
 }
 

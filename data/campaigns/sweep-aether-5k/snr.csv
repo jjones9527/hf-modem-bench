@@ -1,0 +1,19 @@
+run_id,setting_db,data_snr_db,data_n,control_snr_db,keyed_by,ardop_ptt_data,data_modes
+sweep-aether-5k-0001,17,16.25,16,,"tx log (sender, digital)",, 100%
+sweep-aether-5k-0002,-2,1.15,106,,"tx log (sender, digital)",, 100%
+sweep-aether-5k-0003,12,11.41,21,,"tx log (sender, digital)",, 100%
+sweep-aether-5k-0004,17,16.27,16,,"tx log (sender, digital)",, 100%
+sweep-aether-5k-0005,-5,-1.78,105,,"tx log (sender, digital)",, 100%
+sweep-aether-5k-0006,12,11.44,22,,"tx log (sender, digital)",, 100%
+sweep-aether-5k-0007,-5,-1.88,102,,"tx log (sender, digital)",, 100%
+sweep-aether-5k-0008,-2,1.07,106,,"tx log (sender, digital)",, 100%
+sweep-aether-5k-0009,-5,-1.85,106,,"tx log (sender, digital)",, 100%
+sweep-aether-5k-0010,7,6.45,37,,"tx log (sender, digital)",, 100%
+sweep-aether-5k-0011,12,11.4,22,,"tx log (sender, digital)",, 100%
+sweep-aether-5k-0012,2,1.49,99,,"tx log (sender, digital)",, 100%
+sweep-aether-5k-0013,2,1.43,100,,"tx log (sender, digital)",, 100%
+sweep-aether-5k-0014,7,6.43,38,,"tx log (sender, digital)",, 100%
+sweep-aether-5k-0015,17,16.24,21,,"tx log (sender, digital)",, 100%
+sweep-aether-5k-0016,7,6.42,39,,"tx log (sender, digital)",, 100%
+sweep-aether-5k-0017,2,1.5,99,,"tx log (sender, digital)",, 100%
+sweep-aether-5k-0018,-2,1.12,106,,"tx log (sender, digital)",, 100%

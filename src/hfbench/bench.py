@@ -429,6 +429,10 @@ MODEM_PROFILES = {
     # (hfbench_start_ultra.ps1, one config per station), so no TNC path. Ports 8300/8310
     # (bring-up 19 Nov 2026).
     "ULTRA": ModemProfile("Vara HF P2P", "", "", verified=True, restart="hfbench_start_ultra.ps1"),
+    # Aether HF 0.2.0-beta.159: aetherd headless with its VARA-compatible host interface
+    # (hfbench_start_aether.ps1, one install and config per station), not launched by
+    # Winlink; recovery restarts both daemons. Ports 8300/8310 (bring-up 19 Nov 2026).
+    "Aether HF": ModemProfile("Vara HF P2P", "", "", verified=False, restart="hfbench_start_aether.ps1"),
 }
 
 

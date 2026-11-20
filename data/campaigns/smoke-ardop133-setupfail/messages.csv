@@ -1,0 +1,1 @@
+run_id,mid,sender,receiver,status,compressed_bytes,start_utc,end_utc,seconds,goodput_bps,xfer_start_utc,xfer_seconds,rate_bps,error,integrity

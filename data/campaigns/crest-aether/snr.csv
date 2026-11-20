@@ -1,0 +1,8 @@
+run_id,setting_db,data_snr_db,data_n,control_snr_db,keyed_by,ardop_ptt_data,data_modes
+crest-aether-0002,22,20.84,6,,"tx log (sender, digital)",, 100%
+crest-aether-0003,17,16.26,6,,"tx log (sender, digital)",, 100%
+crest-aether-0004,12,11.44,7,,"tx log (sender, digital)",, 100%
+crest-aether-0005,7,6.44,13,,"tx log (sender, digital)",, 100%
+crest-aether-0006,2,1.44,32,,"tx log (sender, digital)",, 100%
+crest-aether-0007,-2,1.14,36,,"tx log (sender, digital)",, 100%
+crest-aether-0008,-5,-1.85,37,,"tx log (sender, digital)",, 100%

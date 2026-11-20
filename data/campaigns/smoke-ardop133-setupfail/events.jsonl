@@ -1,0 +1,4 @@
+{"event": "start", "host": "BENCH-PC", "ionos_ack": "BANDWIDTH:3000=OK; MULTIPATH:2=OK; OFFSET:0=OK; FADE DEPTH:0=OK; FADE FREQ:0=OK; FM DEVIATION:0=OK; FM RATE:0=OK; WGN:40=OK", "run_id": "smoke-ardop133-0001", "t_local": "2026-11-19T06:05:07-05:00", "t_utc": "2026-11-19T11:05:07+00:00"}
+{"event": "end", "host": "BENCH-PC", "notes": "no connection within abort time", "outcome": "dnc", "run_id": "smoke-ardop133-0001", "t_local": "2026-11-19T06:45:08-05:00", "t_utc": "2026-11-19T11:45:08+00:00"}
+{"event": "recover", "host": "BENCH-PC", "notes": "attempt 1: Winlink Express main window for VA3ZTF not found", "ok": false, "run_id": "smoke-ardop133-0001", "t_local": "2026-11-19T06:46:05-05:00", "t_utc": "2026-11-19T11:46:05+00:00"}
+{"event": "recover", "host": "BENCH-PC", "notes": "attempt 2: Winlink Express main window for VA3ZTF not found", "ok": false, "run_id": "smoke-ardop133-0001", "t_local": "2026-11-19T06:47:10-05:00", "t_utc": "2026-11-19T11:47:10+00:00"}

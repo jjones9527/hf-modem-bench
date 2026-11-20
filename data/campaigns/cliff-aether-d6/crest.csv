@@ -1,0 +1,3 @@
+run_id,setting_db,st1_air_s,st1_bursts,st1_mean_dbfs,st1_papr_0.01pct_db,st1_papr_0.1pct_db,st1_papr_max_db,st2_air_s,st2_bursts,st2_mean_dbfs,st2_papr_0.01pct_db,st2_papr_0.1pct_db,st2_papr_max_db
+cliff-aether-d6-0001,-5,466.8,126,-12.68,3.04,3.04,3.05,2856.7,150,-12.66,3.03,3.02,3.04
+cliff-aether-d6-0002,-5,463.8,125,-12.68,3.04,3.04,3.05,2852.4,151,-12.66,3.03,3.02,3.04

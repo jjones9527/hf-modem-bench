@@ -1,0 +1,3 @@
+run_id,setting_db,data_snr_db,data_n,control_snr_db,keyed_by,ardop_ptt_data,data_modes
+cliff-aether-d9-0001,-5,-11.34,143,,"tx log (sender, digital)",, 100%
+cliff-aether-d9-0002,-5,-11.26,143,,"tx log (sender, digital)",, 100%

@@ -1,0 +1,2 @@
+{"event": "start", "host": "BENCH-PC", "ionos_ack": "BANDWIDTH:3000=OK; MULTIPATH:2=OK; OFFSET:0=OK; FADE DEPTH:0=OK; FADE FREQ:0=OK; FM DEVIATION:0=OK; FM RATE:0=OK; WGN:40=OK", "log_connected_utc": "2026-11-19T22:13:09+00:00", "mids": "I51S1AI63F7T 5BJORV2B1QIT 8U24IIIH45B9", "run_id": "cal-ultra-0001", "t_local": "2026-11-19T17:13:09-05:00", "t_utc": "2026-11-19T22:13:09+00:00"}
+{"event": "end", "host": "BENCH-PC", "notes": "", "outcome": "completed", "run_id": "cal-ultra-0001", "t_local": "2026-11-19T17:25:07-05:00", "t_utc": "2026-11-19T22:25:07+00:00"}

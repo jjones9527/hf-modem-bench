@@ -24,7 +24,7 @@ Callsigns (VA3ZTF, VE3XZQ) are kept. All times are UTC unless a file says otherw
 | `events.jsonl` | Append-only log of every start, end, mark, invalidation and recovery, as written during the run |
 | `manifest.csv` | One row per attempt (from the events): start/end, outcome, notes, Message-IDs. `final_attempt` marks the one that counts; `invalid` attempts are bench faults and excluded |
 | `runs.csv`, `messages.csv` | Per-run and per-message results from both stations' Winlink logs (`hfbench results --verify`): delivered / corrupted / stall / cut, goodput (receiver side), net throughput, attachment check against the payload |
-| `snr.csv` | Measured data S:N per run (`hfbench audio listen-report`; `scripts/mercury_snr.py` for Mercury, keyed by its PTT log; `scripts/data2g_snr.py` for Data2G, keyed by its TX lines, noise from the quiet gap after each run; `scripts/txlog_snr.py` for VARA HF, keyed by the sender's bursts in the transmit loopback log) |
+| `snr.csv` | Measured data S:N per run (`hfbench audio listen-report`; `scripts/mercury_snr.py` for Mercury, keyed by its PTT log; `scripts/data2g_snr.py` for Data2G, keyed by its TX lines, noise from the quiet gap after each run; `scripts/txlog_snr.py` for VARA HF, Aether HF and ARDOP 1.0.3.3, keyed by the sender's bursts in the transmit loopback log) |
 | `crest.csv` | The sender's transmitted peak-to-average ratio (PAPR) per run: measured (`scripts/tx_crest_log.py` + `crest_report.py`, crest and cliff campaigns), or for the sweeps taken from the modem's crest campaign at the same setting (`crest_by_setting.py`, `source` column) |
 | `console-*.txt` | The runner's console output |
 | `levels-tonecheck.json`, `qam-precheck.json` | The tone check and 16QAM path check made before the campaign |

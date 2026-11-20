@@ -1,0 +1,4 @@
+run_id,mid,sender,receiver,status,compressed_bytes,start_utc,end_utc,seconds,goodput_bps,xfer_start_utc,xfer_seconds,rate_bps,error,integrity
+crest-aether-r40-0001,W235LY4TL2TK,2,1,delivered,4502,2026-11-20T19:25:45+00:00,2026-11-20T19:25:55+00:00,9,4001.777777777778,2026-11-20T19:25:37+00:00,28.0,2573.4285714285716,,ok
+crest-aether-r40-0001,WHTTTD66J7IH,2,1,delivered,4505,2026-11-20T19:25:55+00:00,2026-11-20T19:26:05+00:00,10,3604.0,2026-11-20T19:25:37+00:00,28.0,2573.4285714285716,,ok
+crest-aether-r40-0001,LPEAVYL3B176,2,1,delivered,4515,2026-11-20T19:26:27+00:00,2026-11-20T19:26:36+00:00,9,4013.3333333333335,2026-11-20T19:26:20+00:00,16.0,2257.5,,ok

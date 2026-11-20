@@ -1,0 +1,3 @@
+{"event": "start", "host": "BENCH-PC", "ionos_ack": "BANDWIDTH:3000=OK; MULTIPATH:2=OK; OFFSET:0=OK; FADE DEPTH:0=OK; FADE FREQ:0=OK; FM DEVIATION:0=OK; FM RATE:0=OK; WGN:40=OK", "run_id": "cal-ultra-0001", "t_local": "2026-11-19T16:52:32-05:00", "t_utc": "2026-11-19T21:52:32+00:00"}
+{"event": "end", "host": "BENCH-PC", "notes": "no connection after 3 calls", "outcome": "dnc", "run_id": "cal-ultra-0001", "t_local": "2026-11-19T17:05:02-05:00", "t_utc": "2026-11-19T22:05:02+00:00"}
+{"event": "recover", "host": "BENCH-PC", "notes": "deleted 0 + 3 Outbox messages, 0 partial(s) quarantined", "ok": true, "run_id": "cal-ultra-0001", "t_local": "2026-11-19T17:06:03-05:00", "t_utc": "2026-11-19T22:06:03+00:00"}

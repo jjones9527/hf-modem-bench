@@ -1,0 +1,7 @@
+run_id,setting_db,data_snr_db,data_n,control_snr_db,keyed_by,ardop_ptt_data,data_modes
+sweep-ardop133-50k-0001,22,16.43,198,,"tx log (sender, digital)",, 100%
+sweep-ardop133-50k-0002,40,24.43,196,,"tx log (sender, digital)",, 100%
+sweep-ardop133-50k-0003,40,24.49,188,,"tx log (sender, digital)",, 100%
+sweep-ardop133-50k-0004,17,11.92,212,,"tx log (sender, digital)",, 100%
+sweep-ardop133-50k-0005,40,24.41,196,,"tx log (sender, digital)",, 100%
+sweep-ardop133-50k-0006,17,11.94,209,,"tx log (sender, digital)",, 100%

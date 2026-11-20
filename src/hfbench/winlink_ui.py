@@ -78,7 +78,10 @@ class WinlinkUI:
     def _mine(self, w) -> bool:
         if self.install is None:
             return True
-        pid = w.ProcessId
+        try:
+            pid = w.ProcessId
+        except Exception:   # the window closed while being read (COMError, 20 Nov 2026)
+            return False
         if pid not in self._pid_ok:
             self._pid_ok[pid] = _exe_dir(pid) == self.install
         return self._pid_ok[pid]

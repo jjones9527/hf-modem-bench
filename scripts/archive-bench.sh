@@ -44,6 +44,13 @@ scp -q "$HFBENCH_HOST:C:/Program Files/MercuryHF 2/logs/mercury_engine.log" "$A/
 mkdir -p "$A/data2g"
 scp -q "$HFBENCH_HOST:hfbench/data2g/*.log" "$A/data2g/" 2>/dev/null || true
 echo "relay: $(ls "$A/relay" | wc -l | tr -d ' ') files, mercury: $(ls "$A/mercury" | wc -l | tr -d ' ') files, data2g: $(ls "$A/data2g" | wc -l | tr -d ' ') files"
+# Aether HF daemon logs and configs (hfbench_start_aether.ps1; UTC), ULTRA TNC logs and the
+# mic-mute helper's log (hfbench_start_ultra.ps1, ultra_rxmute.py)
+mkdir -p "$A/aether/station1" "$A/aether/station2" "$A/ultra"
+scp -q "$HFBENCH_HOST:hfbench/aether/*.log" "$HFBENCH_HOST:hfbench/aether/level.txt" "$A/aether/" 2>/dev/null || true
+for st in 1 2; do scp -q "$HFBENCH_HOST:hfbench/aether/station$st/station.toml" "$A/aether/station$st/" 2>/dev/null || true; done
+scp -q "$HFBENCH_HOST:hfbench/ultra/*.log" "$HFBENCH_HOST:hfbench/ultra/*.conf" "$A/ultra/" 2>/dev/null || true
+echo "aether: $(ls "$A/aether" | wc -l | tr -d ' ') files, ultra: $(ls "$A/ultra" | wc -l | tr -d ' ') files"
 
 # Winlink session logs and ARDOP TNC logs, both installs
 for d in "${dates[@]}"; do

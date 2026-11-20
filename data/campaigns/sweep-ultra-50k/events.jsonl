@@ -1,0 +1,2 @@
+{"event": "start", "host": "BENCH-PC", "ionos_ack": "BANDWIDTH:3000=OK; MULTIPATH:2=OK; OFFSET:0=OK; FADE DEPTH:0=OK; FADE FREQ:0=OK; FM DEVIATION:0=OK; FM RATE:0=OK; WGN:17=OK", "run_id": "sweep-ultra-50k-0001", "t_local": "2026-11-19T18:01:28-05:00", "t_utc": "2026-11-19T23:01:28+00:00"}
+{"event": "end", "host": "BENCH-PC", "notes": "no connection after 3 calls", "outcome": "dnc", "run_id": "sweep-ultra-50k-0001", "t_local": "2026-11-19T18:14:07-05:00", "t_utc": "2026-11-19T23:14:07+00:00"}
