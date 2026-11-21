@@ -2032,6 +2032,47 @@ Not complete, by decision: ARDOP 1.0.3.3 (50 KB sweep only; Phil has a newer bui
 (paused, secup/ProjectUltra#38), Modem73 (skipped, above); Mercury to be re-tested on its next release.
 Next: fading channels (CCIR) for the five.
 
+## Stage 7: fading (CCIR), first attempt invalid: the IONOS ignores channel commands over USB (20-21 Nov 2026)
+
+**What happened.** VARA HF's CCIR campaign (ccir-vara-50k, profiles MPG/MPM/MPP at IONOS 30 and 20,
+started 20 Nov 21:40 UTC) delivered 10/10 at 3.1-4.6 kbit/s per message in every one of 15 runs, on
+MPP as on MPG and as fast as in white noise. The operator asked whether this followed an established
+protocol. N5TW's IONOS report ("Take Three", Nov 2020) has VARA at 30 dB at about 6.1 kbit/s on WGN,
+3.9 on MPG and 2.4 on MPP: fading should have cost it 40-60 %. The chain was stopped at run 16
+(marked invalid).
+
+**Diagnosis** (received level per 20-ms block, 3 kHz, at station 1's microphone):
+- VARA's data level varied by 2.5 dB (10-90 %) in a WGN run (sweep-vara-50k-0002) and by 2.7 dB in
+  the "MPM" and "MPP" runs: no fading.
+- A steady 1,500 Hz tone from station 2 (`fadetest.py`), IONOS set over USB to WGN, MPG, MPM, MPP or
+  MPD (2 or 4 paths): spread about 1 dB in every mode. `WGN:0` over USB did add noise, but
+  `OFFSET:100` didn't move the tone (1,499.8 Hz).
+- The operator set MPD with the knob, and the IONOS's own test tone fluctuated on its spectrum display.
+  With MPD set by hand and nothing sent over USB, our tone faded: spread 13.7 dB, dips to −22.7 dB.
+- With MPD set by hand, every run-sheet command sent over USB kept it fading, including `WGN:40` and
+  `MPG:40`. The fading rate stayed at MPD's (about 2.6-3.0 median crossings/s; MPG's 0.1 Hz would be
+  about ten times slower). `MPD:0` over USB did raise the noise.
+
+**Finding: on this IONOS (firmware 2.03) a channel-type command over USB (`WGN:`/`MPG:`/`MPM:`/`MPP:`/
+`MPD:`) changes the display and the S:N, but not the channel processing**: the processing stays in the
+mode last chosen with the knob (WGN from power-up). The frequency offset over USB had no effect either.
+- **The white-noise results stand**: the IONOS was in WGN from power-up throughout, the knob was never
+  moved, and the S:N was set over USB, which works.
+- **The 15 ccir-vara-50k runs were white noise** at those settings. Kept on the bench and in the data,
+  marked invalid for fading; not used.
+- For others: an IONOS driven over USB should be checked with a tone
+  before trusting a fading run (`fadetest.py`).
+
+**Decisions (operator, 21 Nov):**
+- **Protocol: N5TW's sweep plus MPM.** MPG, MPM and MPP, 2 paths, IONOS S:N 30, 25, 20, 15, 10, 5, 0:
+  50 KB at 30-20, 5 KB at 15-0, 2 runs each (42 runs per modem), the same for every modem. Measured S:N
+  is the axis, as before.
+- **The channel is set with the knob.** Runs are grouped by channel; at each change the bench pauses,
+  the operator turns the knob, and a tone check confirms the fading before the runs go on.
+
+Also seen: the IONOS level meter went red once at about 03:20-03:35 UTC while VARA run 16's session was
+still sending after the chain was stopped; it cleared when both VARAs were stopped.
+
 ## Planned next
 
 > **Superseded 13 Nov 2026 by [test-plan.md](test-plan.md)**, which covers the remaining modems, the metric changes and the open decisions. The items below are kept for the record.
