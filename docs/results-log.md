@@ -2073,6 +2073,16 @@ mode last chosen with the knob (WGN from power-up). The frequency offset over US
 Also seen: the IONOS level meter went red once at about 03:20-03:35 UTC while VARA run 16's session was
 still sending after the chain was stopped; it cleared when both VARAs were stopped.
 
+**VARA busy reports (21 Nov, 14:44-14:52 UTC).** On the first real fading runs (MPG) the operator saw VARA's
+busy detect on. VARA HF has no switch for it (none in VARA.ini or its menus), and with fading it
+reported `BUSY ON` to Winlink for about 1.5 s every 30 s; Winlink holds its call while BUSY is on. The
+bench relay now drops the modem's BUSY ON/OFF lines (`vara_relay.py --drop-busy`, the relay's default
+from 21 Nov 14:50, `relay-20261121-1450.log`): for Winlink that is busy detection off, as the plan asks.
+Only station 2 (the caller) goes through the relay; station 1 answers regardless. Earlier: in VARA's
+white-noise runs BUSY was reported about 10-40 times an hour, with connect times steady at 8-9 s;
+Data2G's (17 Nov, no switch either) 100-340 an hour, connect 4-5 s. Those results weren't held up
+measurably, and they stand.
+
 ## Planned next
 
 > **Superseded 13 Nov 2026 by [test-plan.md](test-plan.md)**, which covers the remaining modems, the metric changes and the open decisions. The items below are kept for the record.

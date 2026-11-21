@@ -1,8 +1,9 @@
-param([string]$Extra = "--hold-timeout-disconnect", [switch]$Restart)
+param([string]$Extra = "--hold-timeout-disconnect --drop-busy", [switch]$Restart)
 # The bench relay for VARA-type modems (VARA HF, Mercury, Data2G): station 2's Winlink
 # connects to 8320/8321, the relay passes everything to station 2's modem on 8310/8311
 # and logs it (relay-<stamp>.log). By default it holds Winlink's 5-min P2P timer
-# DISCONNECTs (see vara_relay.py); -Extra "" makes it a plain logger.
+# DISCONNECTs and drops the modem's BUSY reports (busy detection off; VARA and Data2G can't
+# switch theirs off; 21 Nov 2026) (see vara_relay.py); -Extra "" makes it a plain logger.
 # If a relay is already running it is left alone (restarting it would drop Winlink's
 # connection to the modem); -Restart stops it first.
 $dir = Join-Path $env:USERPROFILE 'hfbench'
@@ -10,6 +11,7 @@ $running = Get-CimInstance Win32_Process -Filter "Name='python.exe'" | Where-Obj
 if ($running -and -not $Restart) {
     $log = if ($running[0].CommandLine -match '--log "?([^"]+?\.log)') { Split-Path $Matches[1] -Leaf } else { '?' }
     $hold = if ($running[0].CommandLine -match 'hold-timeout-disconnect') { 'holding timer DISCONNECTs' } else { 'logging only' }
+    if ($running[0].CommandLine -match 'drop-busy') { $hold += ', dropping BUSY' } else { $hold += ', passing BUSY (restart with -Restart to drop it)' }
     "relay already running ($hold), log: $log"
     return
 }

@@ -23,7 +23,14 @@ write, its FQ) is passed through; Abort sends ABORT, which is never held.
 (15 Nov: the first version also required the modem's BUFFER to be above zero, and
 let through a timer DISCONNECT that came 0.6 s after BUFFER 0, before the receipt:
 sweep-mercury-50k-0003.)
-This changes the system under test; record it with every result.
+--drop-busy: the modem's BUSY ON / BUSY OFF reports are logged but not passed to the host.
+Winlink Express holds its call while its modem reports BUSY, and neither VARA HF nor Data2G
+can switch its busy detector off (21 Nov 2026: with real fading VARA reported BUSY for
+about 1.5 s every 30 s). For the host this is busy detection off, as the test plan asks for
+every modem. Only station 2's link (the caller) goes through the relay; station 1 answers
+calls whether or not its modem reports BUSY.
+
+These change the system under test; record them with every result.
 """
 from __future__ import annotations
 
@@ -36,8 +43,8 @@ from datetime import datetime, timezone
 
 class State:
     """What the relay knows about the link, for --hold-timeout-disconnect."""
-    def __init__(self, hold: bool, idle_s: float):
-        self.hold, self.idle_s = hold, idle_s
+    def __init__(self, hold: bool, idle_s: float, drop_busy: bool = False):
+        self.hold, self.idle_s, self.drop_busy = hold, idle_s, drop_busy
         self.last_host_data = time.monotonic()
         self.buffer = 0
 
@@ -73,6 +80,9 @@ async def pump(reader, writer, log: Log, port: str, direction: str, lines: bool,
                 ln = raw.decode("latin-1").strip()
                 if direction == "modem>host" and (m := re.match(r"BUFFER (\d+)$", ln)):
                     st.buffer = int(m.group(1))
+                if direction == "modem>host" and st.drop_busy and ln in ("BUSY ON", "BUSY OFF"):
+                    log.write(port, direction, f"{ln} [DROPPED: busy detection off, not passed to host]")
+                    continue
                 idle = time.monotonic() - st.last_host_data
                 if (direction == "host>modem" and ln == "DISCONNECT" and st.hold
                         and idle >= st.idle_s and back is not None):
@@ -117,13 +127,15 @@ async def main() -> None:
     ap.add_argument("--target", type=int, required=True, help="modem's control port (data = +1)")
     ap.add_argument("--log", required=True)
     ap.add_argument("--hold-timeout-disconnect", action="store_true")
+    ap.add_argument("--drop-busy", action="store_true", help="don't pass the modem's BUSY ON/OFF to the host")
     ap.add_argument("--idle-s", type=float, default=240.0,
                     help="host data-port silence that marks a DISCONNECT as the 5-min timer's (default 240)")
     a = ap.parse_args()
     log = Log(a.log)
-    st = State(a.hold_timeout_disconnect, a.idle_s)
+    st = State(a.hold_timeout_disconnect, a.idle_s, a.drop_busy)
     log.write("--", "--", f"relay start: {a.listen}/{a.listen + 1} -> {a.target}/{a.target + 1}"
-                          + (f", holding timer DISCONNECTs (idle >= {a.idle_s:.0f} s)" if st.hold else ""))
+                          + (f", holding timer DISCONNECTs (idle >= {a.idle_s:.0f} s)" if st.hold else "")
+                          + (", dropping BUSY reports" if st.drop_busy else ""))
     ctl = await asyncio.start_server(handler(a.target, log, "CTL", True, st), "127.0.0.1", a.listen)
     dat = await asyncio.start_server(handler(a.target + 1, log, "DAT", False, st), "127.0.0.1", a.listen + 1)
     print(f"relay {a.listen}/{a.listen + 1} -> {a.target}/{a.target + 1}, logging to {a.log}", flush=True)

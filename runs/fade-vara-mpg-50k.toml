@@ -1,0 +1,34 @@
+# Stage 7 (fading, N5TW sweep plus MPM; decided 21 Nov 2026): VARA HF 4.9.1, registered at both ends (both
+# stations VA3ZTF), ALC drive -3, one-way 2 -> 1 through the relay. IONOS channel MPG, 2 paths, 3 kHz.
+# THE CHANNEL IS SET WITH THE IONOS KNOB (over USB firmware 2.03 sets only the display and S:N); the
+# run sheet's MPG command keeps the display in step and sets the S:N. Tone check before the group.
+# 50 KB at 30-20, 5 KB at 15-0, 2 runs each, 60-min time box. Measured S:N is the axis.
+[campaign]
+name = "fade-vara-mpg-50k"
+stage = "fading"
+replicates = 2
+profiles = ["MPG"]
+snr_db = [30, 25, 20]
+order = "blocked-random"
+order_seed = 60
+abort_minutes = 90
+abort_retries = 3
+time_box_minutes = 60
+
+[ionos]
+bandwidth_hz = 3000
+multipaths = 2
+
+[payload]
+file = "Text_50KB"
+bytes = 51200
+sha256 = "3ec10a0b30de0039bb0b949d7e160a5d4625c03ba2f245a60785d3973e0279f9"
+messages = 10
+
+[[modems]]
+name = "VARA HF"
+version = "4.9.1"
+bandwidth_hz = 2750
+
+[[impairments]]
+name = "none"
