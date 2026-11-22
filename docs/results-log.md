@@ -2083,6 +2083,29 @@ white-noise runs BUSY was reported about 10-40 times an hour, with connect times
 Data2G's (17 Nov, no switch either) 100-340 an hour, connect 4-5 s. Those results weren't held up
 measurably, and they stand.
 
+### VARA HF on fading channels, MPG and MPM (21-22 Nov 2026; MPP still to run)
+
+IONOS channel set with the knob and checked with `ionos_fadetest.py` before each group: MPG spread
+6-13 dB, 0.16-0.32 median crossings/s; MPM 11-12 dB, 0.8-0.95/s (MPD for comparison about 3/s).
+Relay dropping VARA's BUSY reports. 2 runs per setting, net bit/s (per-message median in brackets):
+
+| IONOS S:N | MPG (good) | MPM (moderate) |
+|---|---|---|
+| 30 (50 KB) | 1,848 / 1,765 (1,876-1,944) | 1,685 / 1,694 (1,783-1,847) |
+| 25 (50 KB) | 1,606 / 1,637 (1,692-1,722) | 1,705 / 1,569 (1,675-1,809) |
+| 20 (50 KB) | 1,404 / 1,389 (1,442-1,454) | 1,408 / 1,414 (1,482-1,485) |
+| 15 (5 KB) | 824 / 768 | 775 / 770 |
+| 10 (5 KB) | 505 / 450 | 512 / 497 |
+| 5 (5 KB) | 214 / 205 | 264 / 215 |
+| 0 (5 KB) | 115 / 111 | 129 / 128 |
+
+**280 of 280 delivered, all identical; connect 8 s in every run.** MPG and MPM are within run-to-run
+spread of each other at every setting. Against N5TW's 2020 VARA on MPG (about 3.9, 2.6 and 1.6 kbit/s at
+30, 25 and 20 dB), these are lower at the top and about equal at 20 dB; our VARA runs 5.4 dB under the
+reference level (its peaks), so measured S:N will place them. One run (fade-vara-mpm-50k-0006) hit a
+runner COM error while preparing and was run again after the 5 KB set. Measured S:N and the MPP group
+to follow; MPP paused 22 Nov 06:40 UTC for Phil's updated ARDOP (operator).
+
 ## Planned next
 
 > **Superseded 13 Nov 2026 by [test-plan.md](test-plan.md)**, which covers the remaining modems, the metric changes and the open decisions. The items below are kept for the record.
