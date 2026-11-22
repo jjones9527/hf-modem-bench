@@ -23,6 +23,7 @@ the compressed data, which can't be redacted without breaking them.
 from __future__ import annotations
 
 import datetime as dt
+import fnmatch
 import io
 import re
 import shutil
@@ -67,8 +68,26 @@ def check(data: bytes, pairs, name: str) -> None:
         sys.exit(f"private address survived redaction in {name}")
 
 
+def load_excludes() -> list[str]:
+    """export-exclude.local (git-ignored): one glob per line, matched against campaign names and
+    against raw files' paths under logs/archive/ (e.g. winlink/*/ARDOP_WinTNC_*_20261122.log).
+    For work that stays private until its owner agrees (Phil's ARDOP builds, 22 Nov 2026)."""
+    f = ROOT / "export-exclude.local"
+    if not f.exists():
+        return []
+    return [l.strip() for l in f.read_text().splitlines() if l.strip() and not l.startswith("#")]
+
+
+EXCLUDES = load_excludes()
+
+
+def excluded(name: str) -> bool:
+    return any(fnmatch.fnmatch(name, pat) for pat in EXCLUDES)
+
+
 def campaigns() -> list[Path]:
-    return sorted(p for p in ARCHIVE.iterdir() if p.is_dir() and (p / "runsheet.csv").exists())
+    return sorted(p for p in ARCHIVE.iterdir()
+                  if p.is_dir() and (p / "runsheet.csv").exists() and not excluded(p.name))
 
 
 def export_small(pairs) -> int:
@@ -111,6 +130,8 @@ def export_raw(pairs) -> Path:
             if not base.exists():
                 continue
             for f in sorted(p for p in base.rglob("*") if p.is_file()):
+                if excluded(f.relative_to(ARCHIVE).as_posix()):
+                    continue
                 b = redact(f.read_bytes(), pairs)
                 check(b, pairs, str(f))
                 info = tarfile.TarInfo(f"bench-data/{f.relative_to(ARCHIVE)}")
@@ -128,6 +149,8 @@ def export_raw(pairs) -> Path:
 
 
 if __name__ == "__main__":
+    if EXCLUDES:
+        print(f"excluding {len(EXCLUDES)} pattern(s) from export-exclude.local")
     pairs = load_redactions()
     n = export_small(pairs)
     print(f"data/: {n} files")

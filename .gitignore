@@ -21,3 +21,5 @@ payloads/*
 
 # private strings for scripts/export_audit_data.py
 redact.local
+export-exclude.local
+logs/private/
