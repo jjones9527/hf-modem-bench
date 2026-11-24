@@ -2083,28 +2083,32 @@ white-noise runs BUSY was reported about 10-40 times an hour, with connect times
 Data2G's (17 Nov, no switch either) 100-340 an hour, connect 4-5 s. Those results weren't held up
 measurably, and they stand.
 
-### VARA HF on fading channels, MPG and MPM (21-22 Nov 2026; MPP still to run)
+### VARA HF on fading channels, MPG, MPM and MPP (21-24 Nov 2026)
 
 IONOS channel set with the knob and checked with `ionos_fadetest.py` before each group: MPG spread
-6-13 dB, 0.16-0.32 median crossings/s; MPM 11-12 dB, 0.8-0.95/s (MPD for comparison about 3/s).
-Relay dropping VARA's BUSY reports. 2 runs per setting, net bit/s (per-message median in brackets):
+6-13 dB, 0.16-0.32 median crossings/s; MPM 11-12 dB, 0.8-0.95/s; MPP 15.8 dB, 1.37/s (MPD for comparison
+about 3/s). Relay dropping VARA's BUSY reports. 2 runs per setting, net bit/s (per-message median in
+brackets):
 
-| IONOS S:N | MPG (good) | MPM (moderate) |
-|---|---|---|
-| 30 (50 KB) | 1,848 / 1,765 (1,876-1,944) | 1,685 / 1,694 (1,783-1,847) |
-| 25 (50 KB) | 1,606 / 1,637 (1,692-1,722) | 1,705 / 1,569 (1,675-1,809) |
-| 20 (50 KB) | 1,404 / 1,389 (1,442-1,454) | 1,408 / 1,414 (1,482-1,485) |
-| 15 (5 KB) | 824 / 768 | 775 / 770 |
-| 10 (5 KB) | 505 / 450 | 512 / 497 |
-| 5 (5 KB) | 214 / 205 | 264 / 215 |
-| 0 (5 KB) | 115 / 111 | 129 / 128 |
+| IONOS S:N | MPG (good) | MPM (moderate) | MPP (poor) |
+|---|---|---|---|
+| 30 (50 KB) | 1,848 / 1,765 (1,876-1,944) | 1,685 / 1,694 (1,783-1,847) | 1,401 / 1,363 (1,426-1,548) |
+| 25 (50 KB) | 1,606 / 1,637 (1,692-1,722) | 1,705 / 1,569 (1,675-1,809) | 1,347 / 1,345 (1,362-1,397) |
+| 20 (50 KB) | 1,404 / 1,389 (1,442-1,454) | 1,408 / 1,414 (1,482-1,485) | 1,221 / 1,298 (1,280-1,387) |
+| 15 (5 KB) | 824 / 768 | 775 / 770 | 783 / 762 |
+| 10 (5 KB) | 505 / 450 | 512 / 497 | 593 / 557 |
+| 5 (5 KB) | 214 / 205 | 264 / 215 | 220 / 247 |
+| 0 (5 KB) | 115 / 111 | 129 / 128 | 136 / 136 |
 
-**280 of 280 delivered, all identical; connect 8 s in every run.** MPG and MPM are within run-to-run
-spread of each other at every setting. Against N5TW's 2020 VARA on MPG (about 3.9, 2.6 and 1.6 kbit/s at
-30, 25 and 20 dB), these are lower at the top and about equal at 20 dB; our VARA runs 5.4 dB under the
-reference level (its peaks), so measured S:N will place them. One run (fade-vara-mpm-50k-0006) hit a
-runner COM error while preparing and was run again after the 5 KB set. Measured S:N and the MPP group
-to follow; MPP paused 22 Nov 06:40 UTC for Phil's updated ARDOP (operator).
+**420 of 420 delivered, all identical; connect 8 s in every run.** MPG and MPM are within run-to-run
+spread of each other at every setting. MPP costs 15-25 % at 20-30 dB; from 15 dB down it is level with
+MPG and MPM (at 10 and 0 dB slightly ahead, by more than their run-to-run spread). The IONOS S:N is its
+setting, the average over the fading; measured S:N from the recordings (to 24 Nov 04:24 UTC: MPP's last
+four 5 KB runs fall after it) is still to do. Against N5TW's 2020 VARA on MPG (about 3.9, 2.6 and 1.6
+kbit/s at 30, 25 and 20 dB), these are lower at the top and about equal at 20 dB; our VARA runs 5.4 dB
+under the reference level (its peaks), so measured S:N will place them. One run (fade-vara-mpm-50k-0006)
+hit a runner COM error while preparing and was run again after the 5 KB set. MPP was paused 22 Nov 06:40
+UTC for other work and run 23-24 Nov (22:52-06:48 UTC), on the same Winlink Express 1.8.6.0.
 
 ## Planned next
 
