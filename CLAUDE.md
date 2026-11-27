@@ -15,7 +15,7 @@ Read these instead of the whole history:
 | Need | File |
 | --- | --- |
 | Current stage, order and every decision (D1-D7, dated) | `docs/test-plan.md`, **bottom of the "Decisions" table** |
-| Latest results | `docs/results-log.md`, **last section only** (the file is 2,000+ lines; grep for the campaign name or ask the `scout` agent) |
+| Latest results | `docs/results/` **current stage file** (now `7-fading.md`); `docs/results-log.md` is the index. For older stages, grep `docs/results/` or ask the `scout` agent |
 | How a run is done | `docs/test-protocol.md` section 7 |
 | Wiring and calibration | `docs/bench-setup.md` |
 | Bench-machine scripts | `scripts/windows/README.md` |
@@ -31,7 +31,7 @@ As of 27 Nov 2026: white-noise stage complete for five modems; fading (MPG/MPM/M
 - **VARA-protocol modems** (VARA HF, Mercury, Data2G, ULTRA) run with the bench relay (`-Relay`), which holds Winlink Express's 5-minute P2P timer DISCONNECT. Label every such result.
 - **Don't reinstall `hfbench`** on the bench machine while a recording or campaign is running from `hfbench.exe`.
 - **Bench scripts run in the desktop session.** Over SSH there are no audio devices or Winlink windows; use the `hfbench_*.ps1` wrappers, which register interactive scheduled tasks.
-- **Never change levels, drive, or modem settings mid-stage** without recording it in `docs/test-plan.md` (Decisions) and `docs/results-log.md`.
+- **Never change levels, drive, or modem settings mid-stage** without recording it in `docs/test-plan.md` (Decisions) and the current `docs/results/` stage file.
 
 ## Privacy
 
@@ -49,7 +49,7 @@ Python 3.11+; core tools use only the standard library. matplotlib for charts, p
 ## After each campaign
 
 1. `hfbench results -d runs/<campaign> --verify payloads/<set>`; measured S:N with `scripts/txlog_snr.py` or `hfbench audio listen-report`.
-2. Append the campaign to `docs/results-log.md` (setup, table of measured S:N and net bit/s, delivered/identical counts, incidents).
+2. Append the campaign to the current stage file in `docs/results/` (setup, table of measured S:N and net bit/s, delivered/identical counts, incidents).
 3. Update the Decisions table in `docs/test-plan.md` and the status table in `README.md` if the stage moved.
 4. Commit with a one-line summary that names the modem, profile and result (existing history shows the style).
 
