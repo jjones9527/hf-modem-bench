@@ -23,3 +23,7 @@ payloads/*
 redact.local
 export-exclude.local
 logs/private/
+
+# Claude Code: per-session handoff notes and personal settings
+.claude/handoff/
+.claude/settings.local.json
