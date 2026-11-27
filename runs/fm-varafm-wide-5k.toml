@@ -1,0 +1,33 @@
+# Stage 8 (FM, DRAFT, docs/fm-test-plan.md; not yet in the Decisions table): VARA FM Wide, IONOS WGN at 6000 Hz
+# (the S:N reference is 6000 Hz). One-way station 2 (VE3XZQ) -> station 1 (VA3ZTF), 10 messages per run,
+# recovery on, 60-min time box. Drive fixed at the drive sweep's choice (record it before running).
+# Check whether Winlink's 5-min P2P DISCONNECT hits VARA FM (D6); if so start with -Relay. Measured S:N is the axis.
+
+[campaign]
+name = "fm-varafm-wide-5k"
+stage = "fm"
+replicates = 3
+profiles = ["WGN"]
+snr_db = [15, 10, 5, 0]
+order = "blocked-random"
+order_seed = 92
+abort_minutes = 90
+abort_retries = 3
+time_box_minutes = 60
+
+[ionos]
+bandwidth_hz = 6000
+multipaths = 2
+
+[payload]
+file = "Text_5KB"
+bytes = 5120
+sha256 = "85741279e9a689624407e58e599340c048a72fdd56c9695345c6a1ac827384d4"
+messages = 10
+
+[[modems]]
+name = "VARA FM"
+version = "TBD"
+
+[[impairments]]
+name = "none"

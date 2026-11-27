@@ -247,6 +247,8 @@ The updated build verifies RS parity as well as the CRC, which should remove the
 16QAM corruption. It is tested at the end, on the same points as 1.0.2.9, and
 labelled as a development build in every chart and table.
 
+**Stage 8 (draft, 27 Nov 2026): FM modems, VARA FM and Loki FM.** After the Data2G fading. WGN only, IONOS 3 kHz (narrow) and 6 kHz (wide), plus a drive sweep; Loki FM through its own runner until it has a Winlink interface. Plan and open questions: [fm-test-plan.md](fm-test-plan.md). Not adopted until recorded in the Decisions table.
+
 ## Time budget (unattended running)
 
 A 10-message run takes about 45–60 min at good S:N, and the 60-min time box limits

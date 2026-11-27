@@ -433,6 +433,10 @@ MODEM_PROFILES = {
     # (hfbench_start_aether.ps1, one install and config per station), not launched by
     # Winlink; recovery restarts both daemons. Ports 8300/8310 (bring-up 19 Nov 2026).
     "Aether HF": ModemProfile("Vara HF P2P", "", "", verified=False, restart="hfbench_start_aether.ps1"),
+    # VARA FM (draft, docs/fm-test-plan.md): VARA's TCP interface, Winlink session type
+    # "Vara FM P2P" (name to confirm at bring-up). Started on its own like VARA HF, so no
+    # TNC path. Unverified until a smoke run reads the session window.
+    "VARA FM": ModemProfile("Vara FM P2P", "", "", verified=False),
 }
 
 

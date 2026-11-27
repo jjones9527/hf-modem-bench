@@ -16,6 +16,7 @@ Documents:
 | [docs/wgn-report.md](docs/wgn-report.md) | **White-noise results, full report**: five modems, charts, comparisons and test details |
 | [docs/interim-report-wgn.md](docs/interim-report-wgn.md) | White-noise results, short summary |
 | [docs/test-plan.md](docs/test-plan.md) | Current plan: questions, metrics, stages, decisions |
+| [docs/fm-test-plan.md](docs/fm-test-plan.md) | Draft plan for the FM stage: VARA FM and Loki FM |
 | [docs/results-log.md](docs/results-log.md) | Every campaign's results and bench incidents, in order (index; entries in [docs/results/](docs/results/), one file per stage) |
 | [docs/test-protocol.md](docs/test-protocol.md) | Test design and run procedure |
 | [docs/bench-setup.md](docs/bench-setup.md) | Wiring, level matching and the current calibration |
