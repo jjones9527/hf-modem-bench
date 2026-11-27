@@ -1,0 +1,35 @@
+# v2 (26 Nov 2026): redo of fade-data2g-mpg-5k (output_volume -1.0; superseded, IONOS Lvl over 1,200 mV p-p at S:N 0). Same seeds.
+# Stage 7 (fading, N5TW sweep plus MPM; decided 21 Nov 2026): Data2G 0.5.1, output_volume -5.0 on both (26 Nov: at -1.0 and -3.0 the IONOS Lvl reached 1,200-1,300 mV p-p on MPG at S:N 0; at -5.0 under 1,000, operator),
+# one-way station 2 (VE3XZQ) -> station 1 (VA3ZTF) through the relay, as the Data2G WGN sweeps. IONOS channel MPG, 2 paths,
+# 3 kHz. THE CHANNEL IS SET WITH THE IONOS KNOB (over USB firmware 2.03 sets only the display and S:N); the
+# run sheet's MPG command keeps the display in step and sets the S:N. Tone check before the group.
+# 50 KB at 30-20, 5 KB at 15-0, 2 runs each, 60-min time box. Measured S:N is the axis.
+[campaign]
+name = "fade-data2g-mpg-5k-v2"
+stage = "fading"
+replicates = 2
+profiles = ["MPG"]
+snr_db = [15, 10, 5, 0]
+order = "blocked-random"
+order_seed = 61
+abort_minutes = 90
+abort_retries = 3
+time_box_minutes = 60
+
+[ionos]
+bandwidth_hz = 3000
+multipaths = 2
+
+[payload]
+file = "Text_5KB"
+bytes = 5120
+sha256 = "85741279e9a689624407e58e599340c048a72fdd56c9695345c6a1ac827384d4"
+messages = 10
+
+[[modems]]
+name = "Data2G"
+version = "0.5.1"
+bandwidth_hz = 2750
+
+[[impairments]]
+name = "none"

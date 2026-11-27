@@ -2110,6 +2110,39 @@ under the reference level (its peaks), so measured S:N will place them. One run 
 hit a runner COM error while preparing and was run again after the 5 KB set. MPP was paused 22 Nov 06:40
 UTC for other work and run 23-24 Nov (22:52-06:48 UTC), on the same Winlink Express 1.8.6.0.
 
+### Data2G 0.5.1 on fading channels, MPG (26-27 Nov 2026)
+
+**Level first.** The first MPG group ran at `output_volume=-1.0` (the WGN setting). At S:N 0 the operator
+saw the IONOS Lvl stay above 1,200 mV p-p, over the protocol's limit: fading peaks are largest at low S:N.
+That group was stopped (`fade-data2g-mpg-5k-0005` ended invalid) and both campaigns marked superseded;
+the runs they completed (50 KB 1-6, 5 KB 1-4) are not results, because the level at the time is not known
+to have been clean. Level checks at MPG S:N 0, one 5 KB run each, operator watching the meter:
+`lvl-data2g-mpg-v3`/`-v3b` at -3.0 still reached about 1,300 mV p-p; `lvl-data2g-mpg-v5` at -5.0 stayed
+under 1,000 (10/10 delivered, 257 bit/s net). Both stations now run at -5.0, set in
+`hfbench\data2g\station{1,2}.conf` (`scripts/windows/hfbench_d2gvol.ps1`) so a restart keeps it. Every
+Data2G fading campaign uses -5.0. Measured S:N is the axis, so the lower drive shows up there rather than
+skewing the comparison.
+
+**MPG redo** (`fade-data2g-mpg-50k-v2`, `fade-data2g-mpg-5k-v2`; same seeds and order), 26 Nov 23:47 to
+27 Nov 03:28 UTC, tone check before the group. Measured S:N from the transmit log and station 1's
+recording (`scripts/txlog_snr.py`), per run; net bit/s (per-message median in brackets):
+
+| IONOS S:N | Payload | Measured S:N | Net bit/s |
+|---|---|---|---|
+| 30 | 50 KB | 22.9 / 24.0 dB | 4,254 (4,890) / 4,309 (4,890) |
+| 25 | 50 KB | 20.7 / 20.3 dB | 3,778 (4,442) / 4,155 (4,719) |
+| 20 | 50 KB | 17.7 / 17.3 dB | 3,031 (3,374) / 2,859 (3,136) |
+| 15 | 5 KB | 13.5 / 13.1 dB | 1,417 (1,763) / 1,105 (1,167) |
+| 10 | 5 KB | 9.8 / 10.0 dB | 1,066 (1,392) / 1,091 (1,477) |
+| 5 | 5 KB | 4.2 / 4.8 dB | 589 (670) / 549 (628) |
+| 0 | 5 KB | -0.7 / -0.6 dB | 274 (290) / 297 (309) |
+
+**140 of 140 delivered, all identical; connect 4-5 s (one 20 s).** Net 3,632 bit/s over the 50 KB sessions,
+571 over the 5 KB. Measured S:N is 6-7 dB under the setting at 25-30 and within 1.5 dB of it from 15 down
+(at the top the modem's own signal level, now lower, limits it). Against VARA HF on the same preset
+(above), net, by IONOS setting (VARA's measured S:N is still to do), Data2G is about 2.1-2.5 x faster at
+20-30 dB, 1.6 x at 15, 2.3 x at 10, 2.7 x at 5 and 2.5 x at 0 dB. MPP and MPM follow at -5.0.
+
 ## Planned next
 
 > **Superseded 13 Nov 2026 by [test-plan.md](test-plan.md)**, which covers the remaining modems, the metric changes and the open decisions. The items below are kept for the record.
